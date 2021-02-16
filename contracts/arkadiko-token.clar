@@ -41,7 +41,11 @@
   (begin
     (print recipient)
     (print amount)
-    (if (is-ok (ft-mint? arkadiko amount recipient))
+    (if
+      (and
+        (is-eq tx-sender mint-owner)
+        (is-ok (ft-mint? arkadiko amount recipient))
+      )
       (ok true)
       (err false)
     )
@@ -53,7 +57,11 @@
   (begin
     (print recipient)
     (print amount)
-    (if (is-ok (ft-burn? arkadiko amount recipient))
+    (if
+      (and
+        (is-eq tx-sender mint-owner)
+        (is-ok (ft-burn? arkadiko amount recipient))
+      )
       (ok amount)
       (err false)
     )

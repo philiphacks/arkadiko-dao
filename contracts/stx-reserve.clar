@@ -1,10 +1,12 @@
-(define-constant stx-reserve-address 'ST26FVX16539KKXZKJN098Q08HRX3XBAP541MFS0P)
+(define-constant stx-reserve-address 'S02J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKPVKG2CE)
 
 (define-data-var stability-fee uint u1)
 (define-data-var liquidation-ratio uint u150)
 (define-data-var maximum-debt uint u100000000)
 (define-data-var liquidation-penalty uint u13)
-(define-constant err-collateral-failed u51)
+(define-constant err-transfer-failed u49)
+(define-constant err-minter-failed u50)
+(define-constant token-minter (as-contract tx-sender))
 
 ;; Map of reserve entries
 ;; The entry consists of username and a public url
@@ -26,19 +28,19 @@
   )
 )
 
-(define-public (collateralize (stx-amount uint) (sender principal))
-  (if (is-ok (stx-transfer? stx-amount sender stx-reserve-address))
+(define-public (collateralize-and-mint (stx-amount uint) (sender principal))
+  (if (is-ok (print (stx-transfer? stx-amount sender stx-reserve-address)))
     (begin
       (let ((coins (arkadiko-count stx-amount)))
-        (if (is-ok (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.arkadiko-token mint sender (get amount coins)))
+        (if (is-ok (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.arkadiko-token mint token-minter (get amount coins)))
           (begin
             (map-insert reserve { user: sender } { balance: stx-amount })
             (ok stx-amount)
           )
-          (err err-collateral-failed)
+          (err err-minter-failed)
         )
       )
     )
-    (err err-collateral-failed)
+    (err err-transfer-failed)
   )
 )
