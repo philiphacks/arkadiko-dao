@@ -12,8 +12,8 @@
 ;;(define-map reserve ((reserve-id uint)) ((name (buff 30)) (balance uint)))
 (define-map reserve { user: principal } { balance: uint })
 
-;; stx-amount * current-stx-price == dollar-collateral-posted
-;; 100 * (dollar-collateral-posted / liquidation-ratio) == stablecoins to mint 
+;; stx-amount * current-stx-price-in-cents == dollar-collateral-posted
+;; (dollar-collateral-posted / liquidation-ratio) == stablecoins to mint
 (define-read-only (arkadiko-count (stx-amount uint))
   (let ((current-stx-price (contract-call? .oracle get-price)))
     (let ((amount (/ (* stx-amount (get price current-stx-price)) (var-get liquidation-ratio))))
@@ -27,6 +27,9 @@
   )
 )
 
+;; accept collateral in STX tokens
+;; save STX in stx-reserve-address
+;; calculate price and collateralisation ratio
 (define-public (collateralize-and-mint (stx-amount uint) (sender principal))
   (let ((coins (arkadiko-count stx-amount)))
     (match (print (stx-transfer? stx-amount sender stx-reserve-address))

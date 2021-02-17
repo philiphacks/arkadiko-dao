@@ -35,9 +35,6 @@
 )
 
 (define-public (mint (recipient principal) (amount uint))
-  ;; accept collateral in STX tokens
-  ;; save STX in stx-reserve-address
-  ;; calculate price and collateralisation ratio
   (begin
     (print recipient)
     (print amount)
