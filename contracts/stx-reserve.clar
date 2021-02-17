@@ -8,8 +8,7 @@
 (define-constant token-minter (as-contract tx-sender))
 
 ;; Map of reserve entries
-;; The entry consists of username and a public url
-;;(define-map reserve ((reserve-id uint)) ((name (buff 30)) (balance uint)))
+;; The entry consists of a user principal with their STX balance collateralized
 (define-map reserve { user: principal } { balance: uint })
 
 ;; stx-amount * current-stx-price-in-cents == dollar-collateral-posted
