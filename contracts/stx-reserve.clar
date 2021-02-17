@@ -16,7 +16,7 @@
 ;; stx-amount * current-stx-price == dollar-collateral-posted
 ;; 100 * (dollar-collateral-posted / liquidation-ratio) == stablecoins to mint 
 (define-read-only (arkadiko-count (stx-amount uint))
-  (let ((current-stx-price (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.oracle get-price)))
+  (let ((current-stx-price (contract-call? .oracle get-price)))
     (let ((amount (* u100 (/ (* stx-amount (get price current-stx-price)) (var-get liquidation-ratio)))))
       (begin
         (print amount)
@@ -31,8 +31,18 @@
 (define-public (collateralize-and-mint (stx-amount uint) (sender principal))
   (let ((tx-output (stx-transfer? stx-amount sender stx-reserve-address)))
     (if (is-ok tx-output)
-      (ok 1)
-      (err tx-output)
+      (begin
+        (let ((coins (arkadiko-count stx-amount)))
+          (if (is-ok (contract-call? .arkadiko-token mint token-minter (get amount coins)))
+            (begin
+              (map-insert reserve { user: sender } { balance: stx-amount })
+              (ok stx-amount)
+            )
+            (err err-minter-failed)
+          )
+        )
+      )
+      (err err-transfer-failed)
     )
   )
 )

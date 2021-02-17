@@ -4,6 +4,7 @@ import {
   StacksTransaction,
   TxBroadcastResultOk,
   TxBroadcastResultRejected,
+  makeContractCall
 } from "@stacks/transactions";
 import { StacksTestnet } from "@stacks/network";
 
@@ -14,7 +15,7 @@ import { ADDR1, testnetKeyMap } from "./mocknet";
 
 export const local = true;
 export const mocknet = true;
-export const noSidecar = true;
+export const noSidecar = false;
 
 const STACKS_CORE_API_URL = local ? noSidecar ? "http://localhost:20443" : "http://localhost:3999" : "https://stacks-node-api.blockstack.org";
 export const STACKS_API_URL = local ? "http://localhost:3999" : "https://stacks-node-api.blockstack.org";
@@ -55,6 +56,24 @@ export async function handleTransaction(transaction: StacksTransaction) {
   }
   console.log(processed, result);
   return result as TxBroadcastResultOk;
+}
+
+export async function callContractFunction(contractName, functionName, args) {
+  const txOptions = {
+    contractAddress: contractAddress,
+    contractName: contractName,
+    functionName: functionName,
+    functionArgs: args,
+    senderKey: secretKey,
+    validateWithAbi: true,
+    network
+  };
+
+  console.log('Sending transaction', contractName);
+  const transaction = await makeContractCall(txOptions);
+  console.log(transaction);
+
+  return handleTransaction(transaction);
 }
 
 export async function deployContract(contractName: string, changeCode: (string) => string = unchanged) {
@@ -104,18 +123,18 @@ async function processingWithSidecar(
   }
   if (value.tx_status === "pending") {
     console.log(value);
-  } else if (count === 10) {
+  } else if (count === 3) {
     console.log(value);
   }
 
-  if (count > 30) {
-    console.log("failed after 30 trials");
+  if (count > 10) {
+    console.log("failed after 10 tries");
     console.log(value);
     return false;
   }
 
   if (mocknet) {
-    await timeout(5000);
+    await timeout(3000);
   } else {
     await timeout(120000);
   }

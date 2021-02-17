@@ -1,20 +1,12 @@
-import { Client, Provider, ProviderRegistry, Result } from "@blockstack/clarity";
+import { Client, Provider, ProviderRegistry, Result, Transaction } from "@blockstack/clarity";
 import {
-  // bufferCVFromString,
-  // callReadOnlyFunction,
-  // contractPrincipalCV,
-  // cvToHex,
-  // falseCV,
-  // listCV,
-  makeContractCall,
-  // PostConditionMode,
-  // someCV,
-  // standardPrincipalCV,
-  // trueCV,
-  uintCV
+  callReadOnlyFunction,
+  StacksTransaction,
+  uintCV,
+  standardPrincipalCV
 } from "@stacks/transactions";
 import { assert } from "chai";
-import { deployContract } from "./utils";
+import { deployContract, callContractFunction } from "./utils";
 
 describe("stacks reserve test suite", () => {
   let stxReserveClient: Client;
@@ -23,43 +15,42 @@ describe("stacks reserve test suite", () => {
   let provider: Provider;
 
   const addresses = [
-    "SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7",
-    "S02J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKPVKG2CE",
-    "SZ2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKQ9H6DPR"
+    "ST2ZRX0K27GW0SP3GJCEMHD95TQGJMKB7G9Y0X1MH"
   ];
   const alice = addresses[0];
-  const bob = addresses[1];
-  const zoe = addresses[2];
 
   before(async () => {
     provider = await ProviderRegistry.createProvider();
+    oracleClient = new Client("S1G2081040G2081040G2081040G208105NK8PE5.oracle", "oracle", provider);
+    tokenClient = new Client("S1G2081040G2081040G2081040G208105NK8PE5.arkadiko-token", "arkadiko-token", provider);
     stxReserveClient = new Client("SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.stx-reserve", "stx-reserve", provider);
-    oracleClient = new Client("SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.oracle", "oracle", provider);
-    tokenClient = new Client("SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.arkadiko-token", "arkadiko-token", provider);
 
-    await oracleClient.deployContract();
-    await tokenClient.deployContract();
+    await deployContract('oracle');
+    await deployContract('arkadiko-token');
+    await deployContract('stx-reserve');
   });
 
-  it("should have a valid syntax", async () => {
-    await stxReserveClient.checkContract();
-  });
+  // it("should have a valid syntax", async () => {
+  //   await stxReserveClient.checkContract();
+  // });
 
   describe("deploying an instance of the contract", () => {
-    before(async () => {
-      await stxReserveClient.deployContract();
-    });
-
     it("should mint 5 tokens through collateralize-and-mint", async () => {
       const value = 5;
-      const tx = stxReserveClient.createTransaction({
-        method: { name: "collateralize-and-mint", args: [`u${value}`, `'${alice}`] }
-      })
-      await tx.sign(alice);
-      const receipt = await stxReserveClient.submitTransaction(tx);
-      const result = Result.unwrap(receipt);
+      console.log('Calling collateralize-and-mint function');
+      const result = await callContractFunction(
+        'stx-reserve',
+        'collateralize-and-mint',
+        [uintCV(value), standardPrincipalCV(alice)]
+      );
+      console.log(result);
+      // await tx.sign(alice);
 
-      assert.equal(result, 5);
+      // const result = handleTransaction(tx);
+      // const receipt = await stxReserveClient.submitTransaction(tx);
+      // const result = Result.unwrap(receipt);
+
+      // assert.equal(result, 5);
     });
   });
 
