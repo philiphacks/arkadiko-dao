@@ -14,6 +14,7 @@ import {
   uintCV
 } from "@stacks/transactions";
 import { assert } from "chai";
+import { deployContract } from "./utils";
 
 describe("stacks reserve test suite", () => {
   let stxReserveClient: Client;
@@ -35,11 +36,12 @@ describe("stacks reserve test suite", () => {
     stxReserveClient = new Client("SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.stx-reserve", "stx-reserve", provider);
     oracleClient = new Client("SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.oracle", "oracle", provider);
     tokenClient = new Client("SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.arkadiko-token", "arkadiko-token", provider);
+
+    await oracleClient.deployContract();
+    await tokenClient.deployContract();
   });
 
   it("should have a valid syntax", async () => {
-    await oracleClient.deployContract();
-    await tokenClient.deployContract();
     await stxReserveClient.checkContract();
   });
 
@@ -48,8 +50,8 @@ describe("stacks reserve test suite", () => {
       await stxReserveClient.deployContract();
     });
 
-    it("should mint 20 tokens through collateralize-and-mint", async () => {
-      const value = 20;
+    it("should mint 5 tokens through collateralize-and-mint", async () => {
+      const value = 5;
       const tx = stxReserveClient.createTransaction({
         method: { name: "collateralize-and-mint", args: [`u${value}`, `'${alice}`] }
       })
@@ -57,10 +59,7 @@ describe("stacks reserve test suite", () => {
       const receipt = await stxReserveClient.submitTransaction(tx);
       const result = Result.unwrap(receipt);
 
-      // const query = stxReserveClient.createQuery({ method: { name: "collateralize-and-mint", args: [`u${value}`, `'${alice}`] } });
-      // const receipt = await stxReserveClient.submitQuery(query);
-      // const result = Result.unwrapUInt(receipt);
-      assert.equal(result, 30);
+      assert.equal(result, 5);
     });
   });
 

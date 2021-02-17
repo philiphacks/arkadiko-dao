@@ -29,18 +29,10 @@
 )
 
 (define-public (collateralize-and-mint (stx-amount uint) (sender principal))
-  (if (is-ok (print (stx-transfer? stx-amount sender stx-reserve-address)))
-    (begin
-      (let ((coins (arkadiko-count stx-amount)))
-        (if (is-ok (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.arkadiko-token mint token-minter (get amount coins)))
-          (begin
-            (map-insert reserve { user: sender } { balance: stx-amount })
-            (ok stx-amount)
-          )
-          (err err-minter-failed)
-        )
-      )
+  (let ((tx-output (stx-transfer? stx-amount sender stx-reserve-address)))
+    (if (is-ok tx-output)
+      (ok 1)
+      (err tx-output)
     )
-    (err err-transfer-failed)
   )
 )
