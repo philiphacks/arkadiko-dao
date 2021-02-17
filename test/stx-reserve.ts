@@ -24,10 +24,6 @@ describe("stacks reserve test suite", () => {
     oracleClient = new Client("SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.oracle", "oracle", provider);
     tokenClient = new Client("SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.arkadiko-token", "arkadiko-token", provider);
     stxReserveClient = new Client("SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.stx-reserve", "stx-reserve", provider);
-
-    await deployContract('oracle');
-    await deployContract('arkadiko-token');
-    await deployContract('stx-reserve');
   });
 
   // it("should have a valid syntax", async () => {
@@ -37,6 +33,12 @@ describe("stacks reserve test suite", () => {
   // });
 
   describe("deploying an instance of the contract", () => {
+    before(async () => {
+      await deployContract('oracle');
+      await deployContract('arkadiko-token');
+      await deployContract('stx-reserve');
+    });
+
     it("should mint 5 tokens through collateralize-and-mint", async () => {
       console.log('Calling orcale set-price function');
       const orcaleResult = await callContractFunction(
