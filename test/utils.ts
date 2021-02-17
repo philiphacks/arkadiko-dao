@@ -65,8 +65,8 @@ export async function callContractFunction(contractName, functionName, args) {
     functionName: functionName,
     functionArgs: args,
     senderKey: secretKey,
-    validateWithAbi: true,
-    network
+    network,
+    postConditionMode: 0x01 // PostconditionMode.Allow
   };
 
   console.log('Sending transaction', contractName);

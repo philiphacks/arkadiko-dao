@@ -41,12 +41,14 @@
   (begin
     (print recipient)
     (print amount)
+    (print tx-sender)
+    (print mint-owner)
     (if
       (and
         (is-eq tx-sender mint-owner)
         (is-ok (ft-mint? arkadiko amount recipient))
       )
-      (ok true)
+      (ok amount)
       (err false)
     )
   )

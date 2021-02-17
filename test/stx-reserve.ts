@@ -21,8 +21,8 @@ describe("stacks reserve test suite", () => {
 
   before(async () => {
     provider = await ProviderRegistry.createProvider();
-    oracleClient = new Client("S1G2081040G2081040G2081040G208105NK8PE5.oracle", "oracle", provider);
-    tokenClient = new Client("S1G2081040G2081040G2081040G208105NK8PE5.arkadiko-token", "arkadiko-token", provider);
+    oracleClient = new Client("SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.oracle", "oracle", provider);
+    tokenClient = new Client("SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.arkadiko-token", "arkadiko-token", provider);
     stxReserveClient = new Client("SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.stx-reserve", "stx-reserve", provider);
 
     await deployContract('oracle');
@@ -31,11 +31,20 @@ describe("stacks reserve test suite", () => {
   });
 
   // it("should have a valid syntax", async () => {
+  //   await tokenClient.deployContract();
+  //   await oracleClient.deployContract();
   //   await stxReserveClient.checkContract();
   // });
 
   describe("deploying an instance of the contract", () => {
     it("should mint 5 tokens through collateralize-and-mint", async () => {
+      console.log('Calling orcale set-price function');
+      const orcaleResult = await callContractFunction(
+        'oracle',
+        'update-price',
+        [uintCV(77)]
+      );
+
       const value = 5;
       console.log('Calling collateralize-and-mint function');
       const result = await callContractFunction(
@@ -44,13 +53,7 @@ describe("stacks reserve test suite", () => {
         [uintCV(value), standardPrincipalCV(alice)]
       );
       console.log(result);
-      // await tx.sign(alice);
-
-      // const result = handleTransaction(tx);
-      // const receipt = await stxReserveClient.submitTransaction(tx);
-      // const result = Result.unwrap(receipt);
-
-      // assert.equal(result, 5);
+      assert.equal(true, true);
     });
   });
 

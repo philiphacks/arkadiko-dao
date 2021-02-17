@@ -1,5 +1,4 @@
 (define-constant stx-reserve-address 'S02J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKPVKG2CE)
-
 (define-data-var stability-fee uint u1)
 (define-data-var liquidation-ratio uint u150)
 (define-data-var maximum-debt uint u100000000)
@@ -17,7 +16,7 @@
 ;; 100 * (dollar-collateral-posted / liquidation-ratio) == stablecoins to mint 
 (define-read-only (arkadiko-count (stx-amount uint))
   (let ((current-stx-price (contract-call? .oracle get-price)))
-    (let ((amount (* u100 (/ (* stx-amount (get price current-stx-price)) (var-get liquidation-ratio)))))
+    (let ((amount (/ (* stx-amount (get price current-stx-price)) (var-get liquidation-ratio))))
       (begin
         (print amount)
         (print current-stx-price)
@@ -29,20 +28,17 @@
 )
 
 (define-public (collateralize-and-mint (stx-amount uint) (sender principal))
-  (let ((tx-output (stx-transfer? stx-amount sender stx-reserve-address)))
-    (if (is-ok tx-output)
-      (begin
-        (let ((coins (arkadiko-count stx-amount)))
-          (if (is-ok (contract-call? .arkadiko-token mint token-minter (get amount coins)))
-            (begin
-              (map-insert reserve { user: sender } { balance: stx-amount })
-              (ok stx-amount)
-            )
-            (err err-minter-failed)
-          )
+  (let ((coins (arkadiko-count stx-amount)))
+    (match (print (stx-transfer? stx-amount sender stx-reserve-address))
+      success (match (print (as-contract (contract-call? .arkadiko-token mint sender (get amount coins))))
+        transferred (begin
+          (print "minted tokens! inserting into map now.")
+          (map-insert reserve { user: sender } { balance: stx-amount })
+          (ok (get amount coins))
         )
+        error (err err-transfer-failed)
       )
-      (err err-transfer-failed)
+      error (err err-minter-failed)
     )
   )
 )
