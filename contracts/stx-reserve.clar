@@ -6,7 +6,7 @@
 (define-data-var liquidation-penalty uint u13)
 (define-constant err-transfer-failed u49)
 (define-constant err-minter-failed u50)
-(define-constant token-minter (as-contract tx-sender))
+(define-constant err-burn-failed u51)
 
 ;; Map of reserve entries
 ;; The entry consists of a user principal with their STX balance collateralized
@@ -19,7 +19,7 @@
 ;; stx-amount * current-stx-price-in-cents == dollar-collateral-posted
 ;; (dollar-collateral-posted / liquidation-ratio) == stablecoins to mint
 (define-read-only (calculate-arkadiko-count (stx-amount uint))
-  (let ((current-stx-price (contract-call? .oracle get-price)))
+  (let ((current-stx-price (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.oracle get-price)))
     (let ((amount (/ (* stx-amount (get price current-stx-price)) (var-get collateral-to-debt-ratio))))
       (begin
         (print amount)
@@ -33,7 +33,7 @@
 )
 
 (define-read-only (calculate-current-collateral-to-debt-ratio (user principal))
-  (let ((current-stx-price (contract-call? .oracle get-price)))
+  (let ((current-stx-price (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.oracle get-price)))
     (let ((current-vault (get-vault user)))
       (begin
         {
@@ -53,7 +53,7 @@
 (define-public (collateralize-and-mint (stx-amount uint) (sender principal))
   (let ((coins (calculate-arkadiko-count stx-amount)))
     (match (print (stx-transfer? stx-amount sender stx-reserve-address))
-      success (match (print (as-contract (contract-call? .arkadiko-token mint sender (get amount coins))))
+      success (match (print (as-contract (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.arkadiko-token mint sender (get amount coins))))
         transferred (begin
           (print "minted tokens! inserting into map now.")
           (map-set vaults { user: sender } { stx-collateral: stx-amount, coins-minted: (get amount coins) })
@@ -71,13 +71,13 @@
 ;; and thus collateral to debt ratio > liquidation ratio
 (define-public (burn (stablecoin-amount uint) (sender principal))
   (let ((vault (map-get? vaults { user: sender })))
-    (match (print (as-contract (contract-call? .arkadiko-token burn sender (get vault coins-minted))))
+    (match (print (as-contract (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.arkadiko-token burn sender (unwrap-panic (get coins-minted vault)))))
       success (begin
         (map-delete vaults { user: sender })
+        (ok true)
       )
-      error (err u550)
+      error (err err-burn-failed)
     )
-    (ok 1)
   )
 )
 
