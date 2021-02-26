@@ -8,13 +8,23 @@
       (if (> (get amount collateral-to-debt-ratio) (unwrap-panic liquidation-ratio))
         (begin
           (print "Vault is in danger. Time to liquidate.")
-          (if (unwrap-panic (as-contract (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.stx-reserve liquidate vault-address)))
-            (ok true)
-            (err err-liquidation-failed)
+          (let ((stx-collateral (unwrap-panic (as-contract (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.stx-reserve liquidate vault-address)))))
+            (if
+              (and
+                (is-some stx-collateral)
+                (unwrap-panic (start-auction (unwrap-panic stx-collateral)))
+              )
+              (ok true)
+              (err err-liquidation-failed)
+            )
           )
         )
         (ok true)
       )
     )
   )
+)
+
+(define-private (start-auction (stx-collateral uint))
+  (ok true)
 )

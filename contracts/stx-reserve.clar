@@ -104,8 +104,10 @@
         (match (print (as-contract (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.arkadiko-token burn vault-address (unwrap-panic (get coins-minted vault)))))
           success (match (stx-transfer? (unwrap-panic (get stx-collateral vault)) stx-reserve-address stx-liquidation-reserve)
             transferred (begin
-              (map-delete vaults { user: tx-sender })
-              (ok true)
+              (let ((stx-collateral (get stx-collateral vault)))
+                (map-delete vaults { user: tx-sender })
+                (ok stx-collateral)
+              )
             )
             error (err err-transfer-failed)
           )
