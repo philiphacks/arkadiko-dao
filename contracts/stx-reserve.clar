@@ -9,22 +9,63 @@
 (define-constant err-burn-failed u4)
 
 ;; risk parameters
-(define-data-var stability-fee uint u1)
 (define-data-var liquidation-ratio uint u150)
 (define-data-var collateral-to-debt-ratio uint u200)
 (define-data-var maximum-debt uint u100000000)
 (define-data-var liquidation-penalty uint u13)
 
-;; Map of reserve entries
+;; Map of vault entries
 ;; The entry consists of a user principal with their STX balance collateralized
 (define-map vaults { user: principal } { stx-collateral: uint, coins-minted: uint })
 
+;; getters
 (define-read-only (get-vault (user principal))
   (unwrap-panic (map-get? vaults { user: user }))
 )
 
 (define-read-only (get-liquidation-ratio)
   (ok (var-get liquidation-ratio))
+)
+
+;; setters accessible only by DAO contract
+(define-public (set-liquidation-ratio (ratio uint))
+  (if (is-eq contract-caller 'ST2ZRX0K27GW0SP3GJCEMHD95TQGJMKB7G9Y0X1MH.dao)
+    (begin
+      (var-set liquidation-ratio ratio)
+      (ok (var-get liquidation-ratio))
+    )
+    (ok (var-get liquidation-ratio))
+  )
+)
+
+(define-public (set-collateral-to-debt-ratio (ratio uint))
+  (if (is-eq contract-caller 'ST2ZRX0K27GW0SP3GJCEMHD95TQGJMKB7G9Y0X1MH.dao)
+    (begin
+      (var-set collateral-to-debt-ratio ratio)
+      (ok (var-get collateral-to-debt-ratio))
+    )
+    (ok (var-get collateral-to-debt-ratio))
+  )
+)
+
+(define-public (set-maximum-debt (debt uint))
+  (if (is-eq contract-caller 'ST2ZRX0K27GW0SP3GJCEMHD95TQGJMKB7G9Y0X1MH.dao)
+    (begin
+      (var-set maximum-debt debt)
+      (ok (var-get maximum-debt))
+    )
+    (ok (var-get maximum-debt))
+  )
+)
+
+(define-public (set-liquidation-penalty (penalty uint))
+  (if (is-eq contract-caller 'ST2ZRX0K27GW0SP3GJCEMHD95TQGJMKB7G9Y0X1MH.dao)
+    (begin
+      (var-set liquidation-penalty penalty)
+      (ok (var-get liquidation-penalty))
+    )
+    (ok (var-get liquidation-penalty))
+  )
 )
 
 ;; stx-amount * current-stx-price-in-cents == dollar-collateral-posted

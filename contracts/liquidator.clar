@@ -19,7 +19,7 @@
             )
           )
         )
-        (ok true)
+        (ok true) ;; false alarm - vault is not at risk. just return successful response
       )
     )
   )
