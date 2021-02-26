@@ -1,0 +1,25 @@
+(define-constant err-already-registered u1)
+(define-constant err-not-registered u2)
+(define-map keepers { user: principal } { added-on-block-height: uint })
+
+(define-public (is-keeper (user principal))
+  (ok (is-some (map-get? keepers { user: user })))
+)
+
+(define-public (is-not-keeper (user principal))
+  (ok (is-none (map-get? keepers { user: user })))
+)
+
+(define-public (register)
+  (if (unwrap-panic (is-not-keeper tx-sender))
+    (ok (map-set keepers { user: tx-sender } { added-on-block-height: block-height }))
+    (err err-already-registered)
+  )
+)
+
+(define-public (unregister)
+  (if (unwrap-panic (is-keeper tx-sender))
+    (ok (map-delete keepers { user: tx-sender }))
+    (err err-not-registered)
+  )
+)
