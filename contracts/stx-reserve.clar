@@ -71,7 +71,7 @@
 ;; stx-amount * current-stx-price-in-cents == dollar-collateral-posted
 ;; (dollar-collateral-posted / liquidation-ratio) == stablecoins to mint
 (define-read-only (calculate-arkadiko-count (stx-amount uint))
-  (let ((current-stx-price (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.oracle get-price)))
+  (let ((current-stx-price (contract-call? .oracle get-price)))
     (let ((amount (/ (* stx-amount (get price current-stx-price)) (var-get collateral-to-debt-ratio))))
       (begin
         (print amount)
@@ -85,7 +85,7 @@
 )
 
 (define-read-only (calculate-current-collateral-to-debt-ratio (user principal))
-  (let ((current-stx-price (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.oracle get-price)))
+  (let ((current-stx-price (contract-call? .oracle get-price)))
     (let ((current-vault (get-vault user)))
       (begin
         {
@@ -105,7 +105,7 @@
 (define-public (collateralize-and-mint (stx-amount uint) (sender principal))
   (let ((coins (calculate-arkadiko-count stx-amount)))
     (match (print (stx-transfer? stx-amount sender stx-reserve-address))
-      success (match (print (as-contract (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.arkadiko-token mint sender (get amount coins))))
+      success (match (print (as-contract (contract-call? .arkadiko-token mint sender (get amount coins))))
         transferred (begin
           (print "minted tokens! inserting into map now.")
           (map-set vaults { user: sender } { stx-collateral: stx-amount, coins-minted: (get amount coins) })
@@ -123,7 +123,7 @@
 ;; and thus collateral to debt ratio > liquidation ratio
 (define-public (burn (stablecoin-amount uint))
   (let ((vault (map-get? vaults { user: tx-sender })))
-    (match (print (as-contract (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.arkadiko-token burn tx-sender (unwrap-panic (get coins-minted vault)))))
+    (match (print (as-contract (contract-call? .arkadiko-token burn tx-sender (unwrap-panic (get coins-minted vault)))))
       success (match (stx-transfer? (unwrap-panic (get stx-collateral vault)) stx-reserve-address tx-sender)
         transferred (begin
           (map-delete vaults { user: tx-sender })
@@ -142,7 +142,7 @@
   (if (is-eq contract-caller 'ST2ZRX0K27GW0SP3GJCEMHD95TQGJMKB7G9Y0X1MH.liquidator)
     (begin
       (let ((vault (map-get? vaults { user: vault-address })))
-        (match (print (as-contract (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.arkadiko-token burn vault-address (unwrap-panic (get coins-minted vault)))))
+        (match (print (as-contract (contract-call? .arkadiko-token burn vault-address (unwrap-panic (get coins-minted vault)))))
           success (match (stx-transfer? (unwrap-panic (get stx-collateral vault)) stx-reserve-address stx-liquidation-reserve)
             transferred (begin
               (let ((stx-collateral (get stx-collateral vault)))
