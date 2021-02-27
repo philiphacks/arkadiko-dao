@@ -1,7 +1,7 @@
 ;; errors
 (define-constant err-liquidation-failed u1)
 
-;; only callable by a registered keeper
+;; only callable by a registered stacker
 (define-public (notify-risky-reserve (vault-address principal))
   (let ((collateral-to-debt-ratio (unwrap-panic (contract-call? .stx-reserve calculate-current-collateral-to-debt-ratio vault-address))))
     (let ((liquidation-ratio (contract-call? .stx-reserve get-liquidation-ratio)))

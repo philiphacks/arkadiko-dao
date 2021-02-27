@@ -1,17 +1,17 @@
 import { Client, Provider, ProviderRegistry, Result, Transaction } from "@blockstack/clarity";
 import { assert } from "chai";
 
-describe("keeper registry unit test suite", () => {
-  let keeperRegistryClient: Client;
+describe("stacker registry unit test suite", () => {
+  let stackerRegistryClient: Client;
   let provider: Provider;
 
   before(async () => {
     provider = await ProviderRegistry.createProvider();
-    keeperRegistryClient = new Client("SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.keeper-registry", "keeper-registry", provider);
+    stackerRegistryClient = new Client("SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.stacker-registry", "stacker-registry", provider);
   });
 
   it("should have a valid syntax", async () => {
-    await keeperRegistryClient.checkContract();
+    await stackerRegistryClient.checkContract();
   });
 
   after(async () => {
