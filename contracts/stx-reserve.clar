@@ -68,32 +68,24 @@
   )
 )
 
-;; stx-amount * current-stx-price-in-cents == dollar-collateral-posted
-;; (dollar-collateral-posted / liquidation-ratio) == stablecoins to mint
-(define-read-only (calculate-arkadiko-count (stx-amount uint))
-  (let ((current-stx-price (contract-call? .oracle get-price)))
-    (let ((amount (/ (* stx-amount (get price current-stx-price)) (var-get collateral-to-debt-ratio))))
-      (begin
-        (print amount)
-        (print current-stx-price)
-        (print (var-get liquidation-ratio))
-        (print (var-get collateral-to-debt-ratio))
-        { amount: amount }
-      )
+;; MAIN LOGIC
+
+;; calculate the amount of stablecoins to mint, based on posted STX amount
+;; ustx-amount * stx-price-in-cents == dollar-collateral-posted-in-cents
+;; (dollar-collateral-posted-in-cents / collateral-to-debt-ratio) == stablecoins to mint
+(define-read-only (calculate-arkadiko-count (ustx-amount uint))
+  (let ((stx-price-in-cents (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.oracle get-price)))
+    (let ((amount (/ (* ustx-amount (get price stx-price-in-cents)) (var-get collateral-to-debt-ratio))))
+      (ok amount)
     )
   )
 )
 
 (define-read-only (calculate-current-collateral-to-debt-ratio (user principal))
-  (let ((current-stx-price (contract-call? .oracle get-price)))
+  (let ((stx-price-in-cents (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.oracle get-price)))
     (let ((current-vault (get-vault user)))
-      (begin
-        {
-          amount: (/
-            (* (get stx-collateral (unwrap-panic (map-get? vaults { user: user }))) (get price current-stx-price))
-            (get coins-minted (unwrap-panic (map-get? vaults { user: user })))
-          )
-        }
+      (let ((amount (/ (* (get stx-collateral current-vault) (get price stx-price-in-cents)) (get coins-minted current-vault))))
+        (ok amount)
       )
     )
   )
@@ -103,13 +95,13 @@
 ;; save STX in stx-reserve-address
 ;; calculate price and collateralisation ratio
 (define-public (collateralize-and-mint (stx-amount uint) (sender principal))
-  (let ((coins (calculate-arkadiko-count stx-amount)))
+  (let ((coins (unwrap-panic (calculate-arkadiko-count stx-amount))))
     (match (print (stx-transfer? stx-amount sender stx-reserve-address))
-      success (match (print (as-contract (contract-call? .arkadiko-token mint sender (get amount coins))))
+      success (match (print (as-contract (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.arkadiko-token mint sender coins)))
         transferred (begin
           (print "minted tokens! inserting into map now.")
-          (map-set vaults { user: sender } { stx-collateral: stx-amount, coins-minted: (get amount coins) })
-          (ok (get amount coins))
+          (map-set vaults { user: sender } { stx-collateral: stx-amount, coins-minted: coins })
+          (ok coins)
         )
         error (err err-transfer-failed)
       )
@@ -123,7 +115,7 @@
 ;; and thus collateral to debt ratio > liquidation ratio
 (define-public (burn (stablecoin-amount uint))
   (let ((vault (map-get? vaults { user: tx-sender })))
-    (match (print (as-contract (contract-call? .arkadiko-token burn tx-sender (unwrap-panic (get coins-minted vault)))))
+    (match (print (as-contract (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.arkadiko-token burn tx-sender (unwrap-panic (get coins-minted vault)))))
       success (match (stx-transfer? (unwrap-panic (get stx-collateral vault)) stx-reserve-address tx-sender)
         transferred (begin
           (map-delete vaults { user: tx-sender })
@@ -142,7 +134,7 @@
   (if (is-eq contract-caller 'ST2ZRX0K27GW0SP3GJCEMHD95TQGJMKB7G9Y0X1MH.liquidator)
     (begin
       (let ((vault (map-get? vaults { user: vault-address })))
-        (match (print (as-contract (contract-call? .arkadiko-token burn vault-address (unwrap-panic (get coins-minted vault)))))
+        (match (print (as-contract (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.arkadiko-token burn vault-address (unwrap-panic (get coins-minted vault)))))
           success (match (stx-transfer? (unwrap-panic (get stx-collateral vault)) stx-reserve-address stx-liquidation-reserve)
             transferred (begin
               (let ((stx-collateral (get stx-collateral vault)))
