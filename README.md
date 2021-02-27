@@ -51,7 +51,9 @@ The $ARE governance token is used to manage and vote on proposals put forward by
 [ ] Ability for Stackers to buy up liquidated STX collateral
 [ ] Front-end with Blockstack account & wallet integration
 [ ] Liquidation Engine
+[ ] Build trait to allow multiple vault types
 
+[ ] v2 - Allow more than 1 vault per STX address? Not sure if this is required as you can just create a new STX address/vault
 [ ] v2 - Auction Engine
 [ ] v2 - Stack collateralized $STX to earn BTC
 [ ] v2 - Option to choose to stack collateral or not

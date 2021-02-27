@@ -16,7 +16,7 @@
 
 ;; Map of vault entries
 ;; The entry consists of a user principal with their STX balance collateralized
-(define-map vaults { user: principal } { stx-collateral: uint, coins-minted: uint })
+(define-map vaults { user: principal } { stx-collateral: uint, coins-minted: uint, at-block-height: uint })
 
 ;; getters
 (define-read-only (get-vault (user principal))
@@ -100,7 +100,7 @@
       success (match (print (as-contract (contract-call? .arkadiko-token mint sender coins)))
         transferred (begin
           (print "minted tokens! inserting into map now.")
-          (map-set vaults { user: sender } { stx-collateral: ustx-amount, coins-minted: coins })
+          (map-set vaults { user: sender } { stx-collateral: ustx-amount, coins-minted: coins, at-block-height: block-height })
           (ok coins)
         )
         error (err err-transfer-failed)
