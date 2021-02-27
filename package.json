@@ -15,12 +15,16 @@
     "test:watch": "mocha --watch"
   },
   "devDependencies": {
+    "@stacks/connect": "^4.3.1",
     "@stacks/transactions": "^1.2.2",
     "@types/chai": "^4.1.7",
     "@types/mocha": "^5.2.7",
     "@types/node": "^10",
     "chai": "^4.2.0",
     "mocha": "^6.1.4",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-router-dom": "^5.2.0",
     "ts-node": "^8.2.0",
     "typescript": "^3.5.2"
   },
