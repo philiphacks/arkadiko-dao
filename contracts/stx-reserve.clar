@@ -1,3 +1,5 @@
+;;(impl-trait '.vault-trait.vault-trait)
+
 ;; addresses
 (define-constant stx-reserve-address 'S02J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKPVKG2CE)
 (define-constant stx-liquidation-reserve 'S02J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKPVKG2CE)
@@ -113,7 +115,7 @@
 ;; burn stablecoin to free up STX tokens
 ;; method assumes position has not been liquidated
 ;; and thus collateral to debt ratio > liquidation ratio
-(define-public (burn (stablecoin-amount uint))
+(define-public (burn)
   (let ((vault (get-vault tx-sender)))
     (match (print (as-contract (contract-call? .arkadiko-token burn tx-sender (get coins-minted vault))))
       success (match (stx-transfer? (get stx-collateral vault) stx-reserve-address tx-sender)
