@@ -1,8 +1,7 @@
 import {
   callReadOnlyFunction,
   uintCV,
-  standardPrincipalCV,
-  cvToString,
+  standardPrincipalCV
 } from "@stacks/transactions";
 import { assert } from "chai";
 import {
