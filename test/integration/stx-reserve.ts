@@ -5,7 +5,6 @@ import {
   cvToString,
 } from "@stacks/transactions";
 import { assert } from "chai";
-import { Console } from "console";
 import {
   deployContract,
   callContractFunction,
