@@ -11,7 +11,7 @@
     (collateralize-and-mint (uint principal) (response uint uint))
 
     ;; burn all the stablecoin in the vault of tx-sender and return collateral
-    (burn () (response uint uint))
+    (burn () (response bool uint))
 
     ;; liquidate the vault of principal. only callable by liquidator smart contract
     (liquidate (principal) (response uint uint))

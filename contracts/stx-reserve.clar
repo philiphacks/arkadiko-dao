@@ -1,4 +1,4 @@
-;;(impl-trait '.vault-trait.vault-trait)
+(impl-trait .vault-trait.vault-trait)
 
 ;; addresses
 (define-constant stx-reserve-address 'S02J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKPVKG2CE)
