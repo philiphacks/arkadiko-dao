@@ -29,6 +29,18 @@
   (ok (var-get liquidation-ratio))
 )
 
+(define-read-only (get-collateral-to-debt-ratio)
+  (ok (var-get collateral-to-debt-ratio))
+)
+
+(define-read-only (get-maximum-debt)
+  (ok (var-get maximum-debt))
+)
+
+(define-read-only (get-liquidation-penalty)
+  (ok (var-get liquidation-penalty))
+)
+
 ;; setters accessible only by DAO contract
 (define-public (set-liquidation-ratio (ratio uint))
   (if (is-eq contract-caller 'ST2ZRX0K27GW0SP3GJCEMHD95TQGJMKB7G9Y0X1MH.dao)
