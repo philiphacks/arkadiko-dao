@@ -35,11 +35,13 @@ const Auth = () => {
 
     return `${addr.substring(0, 5)}...${addr.substring(addr.length - 1, addr.length - 6)}`;
   };
+  const env = process.env.REACT_APP_NETWORK_ENV;
 
   return (
     <Box>
       <Avatar />
-      <Link to ="/"><Text fontWeight="300">Market</Text></Link>
+      <Box display="inline-block" color="feedback.info">using ArkDAO on {env}</Box>
+      <Link to ="/"><Text fontWeight="300" ml={5}>Market</Text></Link>
       <Link to ="/governance"><Text fontWeight="300" ml={5}>Governance</Text></Link>
       <Link to ="/profile"><Text fontWeight="300" ml={5}>{shortAddress()}</Text></Link>
       <Text

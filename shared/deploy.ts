@@ -1,9 +1,14 @@
 import { deployContract } from "./utils";
 
 export async function deploy() {
-  await deployContract("arkadiko-token");
-  await deployContract("oracle");
-  await deployContract("stx-reserve");
+  await deployContract('vault-trait.clar');
+  await deployContract('oracle.clar');
+  await deployContract('arkadiko-token.clar');
+  await deployContract('stx-reserve.clar');
+
+  await deployContract('liquidator.clar');
+  await deployContract('stacker-registry.clar');
+  await deployContract('auction-engine.clar');
 };
 
 deploy();

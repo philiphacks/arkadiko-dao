@@ -20,5 +20,5 @@ export function resolveNetwork() {
 }
 
 export function getContractAddress(contractName) {
-  return contractAddresses[contractAddresses][process.env.REACT_APP_NETWORK_ENV];
+  return contractAddresses[contractName][process.env.REACT_APP_NETWORK_ENV];
 }

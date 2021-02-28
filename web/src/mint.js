@@ -3,13 +3,15 @@ import {
   uintCV,
   standardPrincipalCV,
 } from '@stacks/transactions';
-import { resolveNetwork, getContractAddress } from 'utils';
-import { getAppDetails } from 'auth';
+import { resolveNetwork, getContractAddress } from './utils';
+import { getUserData, getAppDetails } from './auth';
 
-export function mint(recipientAddress, amountInUSTX) {
+export async function mint() {
+  const addr = getUserData().profile.stxAddress;
+  const amountInUSTX = 500 * 1000000;
   const functionArgs = [
     uintCV(amountInUSTX),
-    standardPrincipalCV(recipientAddress)
+    standardPrincipalCV(addr)
   ];
   
   const options = {
