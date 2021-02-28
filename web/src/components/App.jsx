@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Signin } from './Signin';
 import { Header } from './Header';
+import { Main } from './Main';
 import { ThemeProvider, theme, CSSReset, ToastProvider } from '@blockstack/ui';
 import { userSession } from '../auth';
 
@@ -22,7 +23,7 @@ export default class App extends Component {
           <div className="site-wrapper">
             <div className="site-wrapper-inner">
               <Header />
-              {!userSession.isUserSignedIn() ? <Signin /> : `<div>`}
+              {!userSession.isUserSignedIn() ? <Signin /> : <Main />}
             </div>
           </div>
         </ToastProvider>

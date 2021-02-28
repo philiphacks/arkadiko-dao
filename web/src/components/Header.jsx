@@ -40,6 +40,7 @@ const Auth = () => {
     <Box>
       <Avatar />
       <Link to ="/"><Text fontWeight="300">Market</Text></Link>
+      <Link to ="/governance"><Text fontWeight="300" ml={5}>Governance</Text></Link>
       <Link to ="/profile"><Text fontWeight="300" ml={5}>{shortAddress()}</Text></Link>
       <Text
         fontWeight="300"
