@@ -2,9 +2,12 @@ import { StacksTestnet, StacksMocknet, StacksMainnet } from '@stacks/network';
 
 const contractAddresses = {
   'stx-reserve': {
-    'mocknet': '',
+    'mocknet': 'ST2ZRX0K27GW0SP3GJCEMHD95TQGJMKB7G9Y0X1MH',
     'testnet': '',
     'mainnet': ''
+  },
+  'arkadiko-token': {
+    'mocknet': 'ST2ZRX0K27GW0SP3GJCEMHD95TQGJMKB7G9Y0X1MH'
   }
 }
 
