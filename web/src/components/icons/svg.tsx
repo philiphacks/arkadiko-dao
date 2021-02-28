@@ -15,5 +15,7 @@ export const Svg = ({
   fill = 'none',
   ...rest
 }: SVG) => {
-  return <Box as="svg" width={width} height={height} viewBox={viewBox} fill={fill} {...rest} />;
+  return <Box as="svg" width={width} height={height} {...rest} />;
 };
+
+//   return <Box as="svg" width={width} height={height} viewBox={viewBox} fill={fill} {...rest} />;
