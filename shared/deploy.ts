@@ -1,10 +1,10 @@
-import { describe } from "mocha";
 import { deployContract } from "./utils";
 
-describe("arkadiko deploys suite", () => {
-  it("deploys", async () => {
-    await deployContract("arkadiko-token");
-    await deployContract("oracle");
-    await deployContract("stx-reserve");
-  });
-});
+export async function deploy() {
+  await deployContract("arkadiko-token");
+  await deployContract("oracle");
+  await deployContract("stx-reserve");
+};
+
+deploy();
+// TS_NODE_COMPILER_OPTIONS='{"module":"commonjs","target":"es2019"}' ts-node shared/deploy.ts

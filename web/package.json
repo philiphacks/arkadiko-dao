@@ -25,7 +25,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint src/**/*.{js,jsx}",
-    "lint:fix": "eslint src/**/*.{jsx,js} --fix"
+    "lint:fix": "eslint src/**/*.{jsx,js} --fix",
+    "deploy": "TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"target\":\"es2019\"}' ts-node shared/deploy.ts"
   },
   "eslintConfig": {
     "extends": "react-app"

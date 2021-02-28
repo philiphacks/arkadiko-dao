@@ -77,9 +77,7 @@ export async function callContractFunction(contractName: string, functionName: s
 }
 
 export async function deployContract(contractName: string, changeCode: (str: string) => string = unchanged) {
-  const codeBody = fs
-    .readFileSync(`./contracts/${contractName}.clar`)
-    .toString();
+  const codeBody = fs.readFileSync(`./clarity/contracts/${contractName}.clar`).toString();
   var transaction = await makeContractDeploy({
     contractName,
     codeBody: changeCode(codeBody),
