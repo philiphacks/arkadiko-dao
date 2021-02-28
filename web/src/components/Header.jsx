@@ -2,6 +2,7 @@ import React from 'react';
 import { Flex, Box, Text } from '@blockstack/ui';
 import { getPerson, getUserData, userSession } from '../auth';
 import { Logo } from './icons/logo';
+import { Link } from 'react-router-dom'
 
 const Auth = () => {
   if (!userSession.isUserSignedIn()) {
@@ -29,10 +30,17 @@ const Auth = () => {
     return null;
   };
 
+  const shortAddress = () => {
+    const addr = getUserData().profile.stxAddress;
+
+    return `${addr.substring(0, 5)}...${addr.substring(addr.length - 1, addr.length - 6)}`;
+  };
+
   return (
     <Box>
       <Avatar />
-      <Text fontWeight="500">{getUserData().username}</Text>
+      <Link to ="/"><Text fontWeight="300">Market</Text></Link>
+      <Link to ="/profile"><Text fontWeight="300" ml={5}>{shortAddress()}</Text></Link>
       <Text
         fontWeight="300"
         display="inline-block"
