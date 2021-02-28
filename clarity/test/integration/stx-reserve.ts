@@ -10,7 +10,7 @@ import {
   callContractFunction,
   contractAddress,
   network,
-} from "../utils";
+} from "../../../shared/utils";
 
 describe("stacks reserve test suite", () => {
   const addresses = [
