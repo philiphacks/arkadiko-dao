@@ -9,6 +9,7 @@ const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const InlineChunkHtmlPlugin = require('react-dev-utils/InlineChunkHtmlPlugin');
+const Dotenv = require('dotenv-webpack');
 
 /* eslint-enable @typescript-eslint/no-var-requires */
 
@@ -168,6 +169,7 @@ module.exports = {
   devtool: getSourceMap(),
   watch: false,
   plugins: [
+    new Dotenv(),
     new webpack.IgnorePlugin(/^\.\/wordlists\/(?!english)/, /bip39\/src$/),
     new webpack.HashedModuleIdsPlugin(),
     new CheckerPlugin(),

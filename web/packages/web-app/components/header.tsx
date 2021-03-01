@@ -20,6 +20,7 @@ const shortAddress = () => {
 
 export const Header: React.FC<HeaderProps> = ({ signOut }) => {
   const state = useContext(AppContext);
+  console.log(process.env);
   const env = process.env.REACT_APP_NETWORK_ENV;
 
   return (
@@ -28,9 +29,9 @@ export const Header: React.FC<HeaderProps> = ({ signOut }) => {
         <StacksLogo color="black" maxHeight="26px" display="inline-block" ml="-10px" mr="15px" />
         ArkDAO
       </Box>
+      <Box display="inline-block" color="feedback.info" mr={5}>using ArkDAO on {env}</Box>
       {state.userData ? (
         <Box>
-          <Box display="inline-block" color="feedback.info" mr={5}>using ArkDAO on {env}</Box>
 
           <Text ml={5} mr={5} fontWeight="300">{shortAddress()}</Text>
           <Link

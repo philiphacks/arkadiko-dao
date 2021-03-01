@@ -7,13 +7,18 @@ export const Auth: React.FC = () => {
   return (
     <Box>
       <Text display="block" textStyle="body.large">
-        Sign in with your Stacks Wallet to try out a demo of the Stacks 2.0 blockchain.
+        The first liquidity and stablecoin protocol built natively on Stacks and Bitcoin.
       </Text>
-      <ButtonGroup spacing={space('base')} mt={space('base-loose')}>
-        <Button size="lg" mode="primary" onClick={() => doOpenAuth()} data-test="sign-up">
-          Sign up
-        </Button>
-      </ButtonGroup>
+      <Text display="block" textStyle="body.large">
+        Arkadiko is an open source and non-custodial liquidity protocol for minting stablecoins, earning interest on deposits and borrowing assets.
+      </Text>
+      <Box alignContent="center">
+        <ButtonGroup spacing={space('base')} mt={space('base-loose')}>
+          <Button size="lg" mode="primary" onClick={() => doOpenAuth()} data-test="sign-up">
+            Connect Wallet
+          </Button>
+        </ButtonGroup>
+      </Box>
     </Box>
   );
 };
