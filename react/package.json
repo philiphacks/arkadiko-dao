@@ -1,0 +1,78 @@
+{
+  "name": "root",
+  "private": true,
+  "scripts": {
+    "typecheck": "lerna run typecheck --parallel --no-bail --stream",
+    "dev": "NODE_ENV=development yarn lerna exec --parallel 'yarn dev' --scope test-app --scope @stacks/app",
+    "bootstrap": "lerna exec --parallel 'yarn'",
+    "build:connect": "lerna run build --scope @stacks/connect",
+    "build:connect-ui": "lerna run build --scope @stacks/connect-ui",
+    "build:app": "yarn build:connect-ui && lerna run prod:web --scope @stacks/app",
+    "build:test-app": "lerna run prod:web --scope test-app",
+    "build:test": "lerna run build:test --parallel --stream",
+    "build:test:watch": "lerna run build:test:watch --parallel --stream",
+    "build:extension": "lerna run prod:ext --stream",
+    "deploy-contracts": "lerna run deploy-contracts --stream",
+    "lint": "yarn lint:eslint && yarn lint:prettier",
+    "lint:eslint": "eslint \"packages/**/src/**/*.{ts,tsx}\"",
+    "lint:fix": "eslint \"packages/**/src/**/*.{ts,tsx}\" --fix",
+    "lint:prettier": "prettier --check \"packages/**/src/**/*.{ts,tsx}\" *.js",
+    "lint:prettier:fix": "prettier --write \"packages/**/src/**/*.{ts,tsx}\" *.js",
+    "postinstall": "yarn build:connect-ui",
+    "serve:test": "lerna run serve:test --parallel --stream"
+  },
+  "prettier": "@blockstack/prettier-config",
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@blockstack/eslint-config": "^1.0.5",
+    "@blockstack/prettier-config": "^0.0.6",
+    "@commitlint/cli": "^8.3.5",
+    "@commitlint/config-conventional": "^8.3.4",
+    "@commitlint/config-lerna-scopes": "^8.3.4",
+    "@typescript-eslint/eslint-plugin": "4.2.0",
+    "@typescript-eslint/parser": "4.2.0",
+    "babel-eslint": "^10.1.0",
+    "cross-env": "^7.0.2",
+    "eslint": "^7.0.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-config-react-app": "^5.2.1",
+    "eslint-plugin-flowtype": "^4.7.0",
+    "eslint-plugin-import": "^2.21.2 ",
+    "eslint-plugin-jest": "^23.11.0",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-prettier": "^3.1.3",
+    "eslint-plugin-react": "^7.20.0",
+    "eslint-plugin-react-hooks": "^4.2.0",
+    "husky": "^4.2.3",
+    "http-server": "0.12.3",
+    "lerna": "^3.22.1",
+    "prettier": "^2.0.5",
+    "web-ext": "^5.4.1",
+    "typescript": "4.1.2",
+    "yalc": "^1.0.0-pre.42"
+  },
+  "dependencies": {
+    "@babel/preset-env": "^7.10.3",
+    "tsdx": "^0.14.1"
+  },
+  "resolutions": {
+    "@blockstack/eslint-config": "^1.0.5",
+    "@blockstack/prettier-config": "^0.0.6",
+    "@typescript-eslint/eslint-plugin": "4.2.0",
+    "@typescript-eslint/parser": "4.2.0",
+    "@types/node": "12.7.12",
+    "buffer": "5.6.0",
+    "typescript": "4.1.2",
+    "eslint-plugin-import": "2.21.2"
+  },
+  "webExt": {
+    "sourceDir": "packages/app/dist/"
+  }
+}
