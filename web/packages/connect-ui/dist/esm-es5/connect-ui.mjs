@@ -1,5 +1,5 @@
-import { b as bootstrapLazy } from './index-655c1ebb.js';
-import { p as patchBrowser } from './patch-efaa0b2c.js';
+import { b as bootstrapLazy } from './index-ad1139ae.js';
+import { p as patchBrowser } from './patch-f6719303.js';
 patchBrowser().then(function (options) {
-    return bootstrapLazy([["connect-modal", [[1, "connect-modal", { "authOptions": [16], "openedInstall": [32] }]]]], options);
+    return bootstrapLazy([["connect-modal", [[1, "connect-modal", { "authOptions": [16] }]]]], options);
 });

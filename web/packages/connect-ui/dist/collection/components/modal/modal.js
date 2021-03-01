@@ -1,13 +1,11 @@
-import { Component, h, Prop, Event, State } from '@stencil/core';
+import { Component, h, Prop, Event } from '@stencil/core';
+import { state, Screens } from '../../store';
 import { CloseIcon } from './assets/close-icon';
-import { getBrowser } from './extension-util';
-import { StacksIcon } from './assets/stacks-icon';
+import { ChevronIcon } from './assets/chevron-icon';
+import { Intro } from './screens/screens-intro';
+import { HowItWorks } from './screens/screens-how-it-works';
 export class Modal {
-    handleOpenedInstall() {
-        this.openedInstall = true;
-    }
     render() {
-        const browser = getBrowser();
         const handleContainerClick = (event) => {
             var _a;
             const target = event.target;
@@ -18,29 +16,12 @@ export class Modal {
         return (h("div", { class: "modal-container", onClick: handleContainerClick },
             h("div", { class: "modal-body" },
                 h("div", { class: "modal-top" },
-                    h(CloseIcon, { onClick: () => this.onCloseModal.emit() })),
+                    state.screen === Screens.HOW_IT_WORKS ? h(ChevronIcon, null) : null,
+                    h("div", null),
+                    state.screen !== Screens.HOW_IT_WORKS ? (h(CloseIcon, { onClick: () => this.onCloseModal.emit() })) : null),
                 h("div", { class: "modal-content" },
-                    h("div", null,
-                        h("div", { class: "hero-icon" },
-                            h(StacksIcon, null)),
-                        h("span", { class: "modal-header pxl" },
-                            "Use ",
-                            this.authOptions.appDetails.name,
-                            " with Stacks"),
-                        h("div", { class: "intro-subtitle pxl" },
-                            "Stacks Wallet gives you control over your digital assets and data in apps like",
-                            ' ',
-                            this.authOptions.appDetails.name,
-                            ".",
-                            browser ? ` Add it to ${browser} to continue.` : ''),
-                        this.openedInstall ? (h("div", { class: "intro-subtitle pxl" }, "After installing Stacks Wallet, reload this page and sign in.")) : (h("div", { class: "button-container" },
-                            h("button", { class: "button", onClick: () => {
-                                    window.open('https://www.hiro.so/wallet/install-web', '_blank');
-                                    this.openedInstall = true;
-                                } },
-                                h("span", null, "Install Stacks Wallet")))),
-                        h("div", { class: "modal-footer" },
-                            h("span", { class: "link", onClick: () => window.open('https://www.hiro.so/questions/how-does-stacks-work', '_blank') }, "How it works")))))));
+                    state.screen === Screens.INTRO && (h(Intro, { authOptions: this.authOptions, signUp: this.onSignUp, signIn: this.onSignIn })),
+                    state.screen === Screens.HOW_IT_WORKS && h(HowItWorks, { signUp: this.onSignUp })))));
     }
     static get is() { return "connect-modal"; }
     static get encapsulation() { return "shadow"; }
@@ -61,7 +42,7 @@ export class Modal {
                 "references": {
                     "AuthOptions": {
                         "location": "import",
-                        "path": "@stacks/connect/types/auth"
+                        "path": "@stacks/connect/auth"
                     }
                 }
             },
@@ -72,9 +53,6 @@ export class Modal {
                 "text": ""
             }
         }
-    }; }
-    static get states() { return {
-        "openedInstall": {}
     }; }
     static get events() { return [{
             "method": "onSignUp",

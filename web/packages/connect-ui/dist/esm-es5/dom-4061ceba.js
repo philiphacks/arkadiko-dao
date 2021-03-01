@@ -380,8 +380,7 @@
                 b.c[e](a);
         } return this.__CE_shadowRoot = a; });
         O && O.get ? a(Element.prototype, O) : W && W.get ? a(HTMLElement.prototype, W) : da(c, function (b) {
-            a(b, { enumerable: !0, configurable: !0, get: function () { return H.call(this, !0).innerHTML; },
-                set: function (a) { var b = "template" === this.localName, c = b ? this.content : this, e = G.call(document, this.namespaceURI, this.localName); for (e.innerHTML = a; 0 < c.childNodes.length;)
+            a(b, { enumerable: !0, configurable: !0, get: function () { return H.call(this, !0).innerHTML; }, set: function (a) { var b = "template" === this.localName, c = b ? this.content : this, e = G.call(document, this.namespaceURI, this.localName); for (e.innerHTML = a; 0 < c.childNodes.length;)
                     K.call(c, c.childNodes[0]); for (a = b ? e.content : e; 0 < a.childNodes.length;)
                     I.call(c, a.childNodes[0]); } });
         });

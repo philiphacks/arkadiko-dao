@@ -9,6 +9,6 @@ node_modules
 test
 pages
 .next
-test-app
+web-app
 .circleci
 .github

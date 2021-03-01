@@ -10,5 +10,5 @@
   "engines": {
     "node": ">=14"
   },
-  "workspaces": ["clarity", "react"]
+  "workspaces": ["clarity", "web"]
 }
