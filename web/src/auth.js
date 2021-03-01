@@ -1,7 +1,14 @@
 import { AppConfig, UserSession, showConnect } from '@stacks/connect';
 import { Person } from '@stacks/profile';
 
-const appConfig = new AppConfig(['store_write', 'publish_data']);
+const appConfig = new AppConfig(
+  [],
+  'http://localhost:3000',
+  'http://localhost:3000',
+  '',
+  'http://locahost:9333',
+  'http://localhost:9333'
+);
 
 export const userSession = new UserSession({ appConfig });
 
@@ -19,7 +26,7 @@ export function authenticate() {
     finished: () => {
       window.location.reload();
     },
-    userSession: userSession,
+    userSession: userSession
   });
 }
 

@@ -1643,7 +1643,7 @@
   dependencies:
     tslib "^2.0.0"
 
-"@stacks/auth@^1.0.0-beta.19":
+"@stacks/auth@^1.0.0-beta.19", "@stacks/auth@^1.0.2":
   version "1.2.3"
   resolved "https://registry.yarnpkg.com/@stacks/auth/-/auth-1.2.3.tgz#7318436b5c69a3f65a52450470ae5c0f8c2ff65a"
   integrity sha512-EDXX1hiQ9UnAjrX4D1UyeVZQF647RdtC6EYAIxzgn2L6XxARACGpn+d/fRpE1q411y94lF/2Oqj8MPSwDb/NHQ==
@@ -1664,6 +1664,14 @@
   dependencies:
     cross-fetch "^3.0.6"
 
+"@stacks/connect-react@^2.17.15":
+  version "2.17.15"
+  resolved "https://registry.yarnpkg.com/@stacks/connect-react/-/connect-react-2.17.15.tgz#0207cd4d0b72a40fd5d4d042133076c05cf57801"
+  integrity sha512-0em3CRhKTu/2ohVQ0GSsV3P2joUI5utZjQ5ZlzLGWgeep0ugU7hcyxWUCBi3Zlz2H0TgzK5Vb3VsooiY9k29wQ==
+  dependencies:
+    "@stacks/connect" "^4.3.15"
+    jsontokens "^3.0.0"
+
 "@stacks/connect-ui@^2.17.16":
   version "2.17.16"
   resolved "https://registry.yarnpkg.com/@stacks/connect-ui/-/connect-ui-2.17.16.tgz#35ada7a8e601f3f736da29ec1ffdf7c8ad85e39f"
@@ -1671,7 +1679,7 @@
   dependencies:
     "@stencil/core" "^1.17.3"
 
-"@stacks/connect@^4.3.1":
+"@stacks/connect@^4.3.15":
   version "4.3.15"
   resolved "https://registry.yarnpkg.com/@stacks/connect/-/connect-4.3.15.tgz#30f98cae6f569715573cf3b319a9b5b35d65fe98"
   integrity sha512-nanEzEPi+CLNdwR6nx4vjC1v0rzPN/PfUT+vF5GlqCpp+xwMHGU06Xk39HNdg2aoRevMCqk6DwQ21DniuqHd3A==
@@ -1714,6 +1722,14 @@
     jsontokens "^3.0.0"
     schema-inspector "^1.7.0"
     zone-file "^1.0.0"
+
+"@stacks/rpc-client@^0.8.15":
+  version "0.8.15"
+  resolved "https://registry.yarnpkg.com/@stacks/rpc-client/-/rpc-client-0.8.15.tgz#bdf7a38ff498f661cfc3b676dcce5f7f47a1b7e9"
+  integrity sha512-+lWJOahazTdBgTpBRYXlmphcBla6G/PQ/QGwRZoTPACjxUdiGalbUZBdElMh4E0Z7avgv3L+EL1+uBcdwp7R9A==
+  dependencies:
+    "@blockstack/stacks-transactions" "0.7.0"
+    cross-fetch "^3.0.4"
 
 "@stacks/transactions@^1.2.2":
   version "1.2.4"
@@ -2037,6 +2053,11 @@
     "@types/minimatch" "*"
     "@types/node" "*"
 
+"@types/history@*":
+  version "4.7.8"
+  resolved "https://registry.yarnpkg.com/@types/history/-/history-4.7.8.tgz#49348387983075705fe8f4e02fb67f7daaec4934"
+  integrity sha512-S78QIYirQcUoo6UJZx9CSP0O2ix9IaeAXwQi26Rhr/+mg7qqPy8TzaxHSUut7eGjL8WmLccT7/MXf304WjqHcA==
+
 "@types/hoist-non-react-statics@*":
   version "3.3.1"
   resolved "https://registry.yarnpkg.com/@types/hoist-non-react-statics/-/hoist-non-react-statics-3.3.1.tgz#1124aafe5118cb591977aeb1ceaaed1070eb039f"
@@ -2137,6 +2158,30 @@
   dependencies:
     "@types/node" "*"
 
+"@types/react-dom@^16.9.6":
+  version "16.9.11"
+  resolved "https://registry.yarnpkg.com/@types/react-dom/-/react-dom-16.9.11.tgz#752e223a1592a2c10f2668b215a0e0667f4faab1"
+  integrity sha512-3UuR4MoWf5spNgrG6cwsmT9DdRghcR4IDFOzNZ6+wcmacxkFykcb5ji0nNVm9ckBT4BCxvCrJJbM4+EYsEEVIg==
+  dependencies:
+    "@types/react" "^16"
+
+"@types/react-router-dom@^5.1.7":
+  version "5.1.7"
+  resolved "https://registry.yarnpkg.com/@types/react-router-dom/-/react-router-dom-5.1.7.tgz#a126d9ea76079ffbbdb0d9225073eb5797ab7271"
+  integrity sha512-D5mHD6TbdV/DNHYsnwBTv+y73ei+mMjrkGrla86HthE4/PVvL1J94Bu3qABU+COXzpL23T1EZapVVpwHuBXiUg==
+  dependencies:
+    "@types/history" "*"
+    "@types/react" "*"
+    "@types/react-router" "*"
+
+"@types/react-router@*":
+  version "5.1.11"
+  resolved "https://registry.yarnpkg.com/@types/react-router/-/react-router-5.1.11.tgz#b01ce4cb21bf7d6b32edc862fc1e2c0088044b5b"
+  integrity sha512-ofHbZMlp0Y2baOHgsWBQ4K3AttxY61bDMkwTiBOkPg7U6C/3UwwB5WaIx28JmSVi/eX3uFEMRo61BV22fDQIvg==
+  dependencies:
+    "@types/history" "*"
+    "@types/react" "*"
+
 "@types/react-transition-group@^4.2.4":
   version "4.4.1"
   resolved "https://registry.yarnpkg.com/@types/react-transition-group/-/react-transition-group-4.4.1.tgz#e1a3cb278df7f47f17b5082b1b3da17170bd44b1"
@@ -2148,6 +2193,14 @@
   version "17.0.2"
   resolved "https://registry.yarnpkg.com/@types/react/-/react-17.0.2.tgz#3de24c4efef902dd9795a49c75f760cbe4f7a5a8"
   integrity sha512-Xt40xQsrkdvjn1EyWe1Bc0dJLcil/9x2vAuW7ya+PuQip4UYUaXyhzWmAbwRsdMgwOFHpfp7/FFZebDU6Y8VHA==
+  dependencies:
+    "@types/prop-types" "*"
+    csstype "^3.0.2"
+
+"@types/react@^16":
+  version "16.14.4"
+  resolved "https://registry.yarnpkg.com/@types/react/-/react-16.14.4.tgz#365f6a1e117d1eec960ba792c7e1e91ecad38e6f"
+  integrity sha512-ETj7GbkPGjca/A4trkVeGvoIakmLV6ZtX3J8dcmOpzKzWVybbrOxanwaIPG71GZwImoMDY6Fq4wIe34lEqZ0FQ==
   dependencies:
     "@types/prop-types" "*"
     csstype "^3.0.2"
@@ -4521,6 +4574,11 @@ data-urls@^1.0.0, data-urls@^1.1.0:
     abab "^2.0.0"
     whatwg-mimetype "^2.2.0"
     whatwg-url "^7.0.0"
+
+dayjs@^1.8.29:
+  version "1.10.4"
+  resolved "https://registry.yarnpkg.com/dayjs/-/dayjs-1.10.4.tgz#8e544a9b8683f61783f570980a8a80eaf54ab1e2"
+  integrity sha512-RI/Hh4kqRc1UKLOAf/T5zdMMX5DQIlDxwUe3wSyMMnEbGunnpENCdbUgM+dW7kXidZqCttBrmw7BhN4TMddkCw==
 
 debug@2.6.9, debug@^2.2.0, debug@^2.3.3, debug@^2.6.0, debug@^2.6.9:
   version "2.6.9"

@@ -14,7 +14,9 @@ const contractAddresses = {
 export function resolveNetwork() {
   if (process.env.REACT_APP_NETWORK_ENV === 'mocknet') {
     console.log('Connecting to Mocknet');
-    return new StacksMocknet();
+    const network = new StacksMocknet();
+    network.coreApiUrl = "http://localhost:3999";
+    return network;
   } else if (process.env.REACT_APP_NETWORK_ENV === 'testnet') {
     return new StacksTestnet();
   } else {

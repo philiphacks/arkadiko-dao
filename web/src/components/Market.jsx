@@ -11,7 +11,7 @@ export const Market = () => {
         </Text>
         <Box p={[5]} borderWidth="1px" borderRadius="lg" overflow="hidden" mt={[2, '30px']}>
           <Text display="block">Mint 500 STX to Stablecoin</Text>
-          <Button mt={[1, '5px']} onClick={() => mint()}>Button</Button>
+          <Button mt={[1, '5px']} onClick={() => mint()}>Mint</Button>
         </Box>
       </Box>
     </Box>

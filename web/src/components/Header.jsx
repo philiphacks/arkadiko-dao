@@ -32,6 +32,7 @@ const Auth = () => {
 
   const shortAddress = () => {
     const addr = getUserData().profile.stxAddress;
+    console.log(getUserData(), userSession);
 
     return `${addr.substring(0, 5)}...${addr.substring(addr.length - 1, addr.length - 6)}`;
   };

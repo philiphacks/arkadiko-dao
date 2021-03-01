@@ -14,12 +14,14 @@ export async function mint() {
     standardPrincipalCV(addr)
   ];
   
+  const network = resolveNetwork();
+  console.log(network);
   const options = {
     contractAddress: getContractAddress('stx-reserve'),
     contractName: 'stx-reserve',
     functionName: 'collateralize-and-mint',
     functionArgs,
-    network: resolveNetwork(),
+    network: network,
     appDetails: getAppDetails(),
     onFinish: data => {
       console.log('Stacks Transaction:', data.stacksTransaction);
