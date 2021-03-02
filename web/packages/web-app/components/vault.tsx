@@ -6,14 +6,9 @@ import { useConnect } from '@stacks/connect-react';
 import BN from 'bn.js';
 import {
   uintCV,
-  intCV,
-  bufferCV,
   broadcastTransaction,
   createStacksPrivateKey,
-  stringAsciiCV,
-  stringUtf8CV,
   standardPrincipalCV,
-  trueCV,
   makeStandardSTXPostCondition,
   makeSTXTokenTransfer,
   FungibleConditionCode,
@@ -21,7 +16,7 @@ import {
 } from '@stacks/transactions';
 import { ExplorerLink } from './explorer-link';
 
-export const Debugger = () => {
+export const Vault = () => {
   const { doContractCall, doSTXTransfer } = useConnect();
   const address = useSTXAddress();
   const [txId, setTxId] = useState<string>('');
@@ -42,28 +37,16 @@ export const Debugger = () => {
     clearState();
     const authOrigin = getAuthOrigin();
     const args = [
-      uintCV(1234),
-      intCV(-234),
-      bufferCV(Buffer.from('hello, world')),
-      stringAsciiCV('hey-ascii'),
-      stringUtf8CV('hey-utf8'),
-      standardPrincipalCV('STB44HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6'),
-      trueCV(),
+      uintCV(10 * 1000000),
+      standardPrincipalCV(address || '')
     ];
     await doContractCall({
       network,
       authOrigin,
-      contractAddress: 'STB44HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6',
-      contractName: 'faker',
-      functionName: 'rawr',
+      contractAddress: 'ST2ZRX0K27GW0SP3GJCEMHD95TQGJMKB7G9Y0X1MH',
+      contractName: 'stx-reserve',
+      functionName: 'collateralize-and-mint',
       functionArgs: args,
-      postConditions: [
-        makeStandardSTXPostCondition(
-          address || '',
-          FungibleConditionCode.LessEqual,
-          new BN('100', 10)
-        ),
-      ],
       finished: data => {
         console.log('finished faker!', data);
         console.log(data.stacksTransaction.auth.spendingCondition?.nonce.toNumber());

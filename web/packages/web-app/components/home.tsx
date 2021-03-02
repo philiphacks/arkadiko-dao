@@ -3,13 +3,13 @@ import { AppContext } from '@common/context';
 import { Box, Text, Flex, space, BoxProps } from '@blockstack/ui';
 import { Auth } from './auth';
 import { Tab } from './tab';
-import { Status } from './status';
-import { Counter } from './counter';
-import { Debugger } from './debugger';
+import { Borrow } from './borrow';
+import { Governance } from './governance';
+import { Vault } from './vault';
 import { getBalance } from '@common/get-balance';
 // import { ExplorerLink } from './explorer-link';
 
-type Tabs = 'status' | 'counter' | 'debug';
+type Tabs = 'borrow' | 'governance' | 'vault';
 
 const Container: React.FC<BoxProps> = ({ children, ...props }) => {
   return (
@@ -23,7 +23,7 @@ const Container: React.FC<BoxProps> = ({ children, ...props }) => {
 
 export const Home: React.FC = () => {
   const state = useContext(AppContext);
-  const [tab, setTab] = useState<Tabs>('debug');
+  const [tab, setTab] = useState<Tabs>('vault');
   const balance = getBalance();
 
   const Page: React.FC = () => {
@@ -36,21 +36,21 @@ export const Home: React.FC = () => {
             </Text>
           </Box>
           <Flex>
-            <Tab active={tab === 'debug'}>
-              <Text onClick={() => setTab('debug')}>Mint & Burn</Text>
+            <Tab active={tab === 'vault'}>
+              <Text onClick={() => setTab('vault')}>Mint & Burn</Text>
             </Tab>
-            <Tab active={tab === 'status'}>
-              <Text onClick={() => setTab('status')}>Borrow & Lend</Text>
+            <Tab active={tab === 'borrow'}>
+              <Text onClick={() => setTab('borrow')}>Borrow & Lend</Text>
             </Tab>
-            <Tab active={tab === 'counter'}>
-              <Text onClick={() => setTab('counter')}>Governance</Text>
+            <Tab active={tab === 'governance'}>
+              <Text onClick={() => setTab('governance')}>Governance</Text>
             </Tab>
           </Flex>
         </Container>
         <Container>
-          {tab === 'status' && <Status />}
-          {tab === 'counter' && <Counter />}
-          {tab === 'debug' && <Debugger />}
+          {tab === 'borrow' && <Borrow />}
+          {tab === 'governance' && <Governance />}
+          {tab === 'vault' && <Vault />}
         </Container>
       </>
     );

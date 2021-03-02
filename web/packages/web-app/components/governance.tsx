@@ -6,7 +6,7 @@ import { getRPCClient } from '@common/utils';
 import { ContractCallTransaction } from '@blockstack/stacks-blockchain-sidecar-types';
 import { TxCard } from '@components/tx-card';
 
-export const Counter = () => {
+export const Governance = () => {
   const [transactions, setTransactions] = useState<ContractCallTransaction[]>([]);
   const client = getRPCClient();
 
@@ -49,8 +49,6 @@ export const Counter = () => {
           </Flex>
         </>
       )}
-
-      <CounterActions />
     </Box>
   );
 };

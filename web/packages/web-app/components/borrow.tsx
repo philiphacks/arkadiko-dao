@@ -15,7 +15,7 @@ import { ContractCallTransaction } from '@blockstack/stacks-blockchain-sidecar-t
 import { TxCard } from '@components/tx-card';
 import { useSTXAddress } from '@common/use-stx-address';
 
-export const Status = () => {
+export const Borrow = () => {
   const stxAddress = useSTXAddress();
   const [status, setStatus] = useState('');
   const [readStatus, setReadStatus] = useState('');
