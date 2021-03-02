@@ -9,15 +9,13 @@ import {
   broadcastTransaction,
   createStacksPrivateKey,
   standardPrincipalCV,
-  makeStandardSTXPostCondition,
   makeSTXTokenTransfer,
-  FungibleConditionCode,
   privateKeyToString,
 } from '@stacks/transactions';
 import { ExplorerLink } from './explorer-link';
 
 export const Vault = () => {
-  const { doContractCall, doSTXTransfer } = useConnect();
+  const { doContractCall } = useConnect();
   const address = useSTXAddress();
   const [txId, setTxId] = useState<string>('');
   const [txType, setTxType] = useState<string>('');
@@ -48,25 +46,27 @@ export const Vault = () => {
       functionName: 'collateralize-and-mint',
       functionArgs: args,
       finished: data => {
-        console.log('finished faker!', data);
+        console.log('finished collateralizing!', data);
         console.log(data.stacksTransaction.auth.spendingCondition?.nonce.toNumber());
         setState('Contract Call', data.txId);
       },
     });
   };
 
-  const stxTransfer = async (amount: string) => {
+  const callBurn = async () => {
     clearState();
     const authOrigin = getAuthOrigin();
-    await doSTXTransfer({
+    await doContractCall({
       network,
       authOrigin,
-      amount,
-      memo: 'From demo app',
-      recipient: 'STB44HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6',
+      contractAddress: 'ST2ZRX0K27GW0SP3GJCEMHD95TQGJMKB7G9Y0X1MH',
+      contractName: 'stx-reserve',
+      functionName: 'burn',
+      functionArgs: [],
       finished: data => {
-        console.log('finished stx transfer!', data);
-        setState('Stacks Transfer', data.txId);
+        console.log('finished burn!', data);
+        console.log(data.stacksTransaction.auth.spendingCondition?.nonce.toNumber());
+        setState('Contract Call', data.txId);
       },
     });
   };
@@ -88,22 +88,6 @@ export const Vault = () => {
     console.log(result);
   }
 
-  const getFaucetTokens = async () => {
-    clearState();
-    const authOrigin = getAuthOrigin();
-    await doContractCall({
-      network,
-      authOrigin,
-      contractAddress: 'STB44HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6',
-      contractName: 'connect-token',
-      functionName: 'faucet',
-      functionArgs: [],
-      finished: data => {
-        console.log('finished faucet!', data);
-        setState('Token Faucet', data.txId);
-      },
-    });
-  };
   return (
     <Box py={6}>
       <Text as="h2" textStyle="display.small">
@@ -131,12 +115,12 @@ export const Vault = () => {
           <Button mt={3} onClick={callCollateralizeAndMint}>
             Mint Stablecoin w/ 10 STX
           </Button>
-          <Button mt={3} onClick={() => stxTransfer('102')}>
+          <Button mt={3} onClick={() => callBurn()}>
             Burn Stablecoin in Vault
           </Button>
           {env == 'mocknet' ? (
             <Button mt={3} onClick={() => addMocknetStx()}>
-              Get tokens from mocknet
+              Get 10 STX tokens from mocknet
             </Button>
           ) : (
             <Button mt={3} onClick={() => addMocknetStx()}>

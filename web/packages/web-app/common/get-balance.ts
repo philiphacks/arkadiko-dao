@@ -9,16 +9,12 @@ export const getBalance = () => {
   const [balance, setBalance] = useState('');
   const client = getRPCClient();
 
-  // interface BalanceResponse {
-  //   txId?: string;
-  //   success: boolean;
-  // }
-
   useEffect(() => {
     const getBalance = async () => {
       if (stxAddress) {
         try {
           const { balance } = await client.fetchAccount(stxAddress);
+          console.log(balance);
           setBalance(balance.toString());
         } catch (error) {
           console.error('Unable to connect to Stacks Blockchain');

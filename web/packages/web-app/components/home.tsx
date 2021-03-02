@@ -7,7 +7,7 @@ import { Borrow } from './borrow';
 import { Governance } from './governance';
 import { Vault } from './vault';
 import { getBalance } from '@common/get-balance';
-// import { ExplorerLink } from './explorer-link';
+import { getStxPrice } from '@common/get-stx-price';
 
 type Tabs = 'borrow' | 'governance' | 'vault';
 
@@ -24,17 +24,23 @@ const Container: React.FC<BoxProps> = ({ children, ...props }) => {
 export const Home: React.FC = () => {
   const state = useContext(AppContext);
   const [tab, setTab] = useState<Tabs>('vault');
-  const balance = getBalance();
 
   const Page: React.FC = () => {
+    const balance = getBalance();
+    const price = parseFloat(getStxPrice().price);
     return (
       <>
         <Container borderColor="#F0F0F5" borderWidth={0} borderBottomWidth="1px">
-          <Box>
-            <Text textStyle="body.large" display="block" mb={5}>
-              Current STX balance: {parseInt(balance['balance'], 10) / 1000000} STX
-            </Text>
-          </Box>
+          {state.userData ? (
+            <Box>
+              <Text textStyle="body.large" display="block" mb={5}>
+                Current STX balance: {parseInt(balance['balance'], 10) / 1000000} STX
+              </Text>
+              <Text textStyle="body.large" display="block" mb={5}>
+                Current STX price: ${price / 100}
+              </Text>
+            </Box>
+          ) : null }
           <Flex>
             <Tab active={tab === 'vault'}>
               <Text onClick={() => setTab('vault')}>Mint & Burn</Text>

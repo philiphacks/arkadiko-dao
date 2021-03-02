@@ -12,4 +12,22 @@ export async function deploy() {
 };
 
 deploy();
+
+// README
+// 1. Update temp code
+// Change
+// const codeBody = fs.readFileSync(`./contracts/${contractName}.clar`).toString();
+// to
+// const codeBody = fs.readFileSync(`./clarity/contracts/${contractName}.clar`).toString();
+// in shared/utils.ts
+
+// 2. Deploy contracts
 // TS_NODE_COMPILER_OPTIONS='{"module":"commonjs","target":"es2019"}' ts-node shared/deploy.ts
+
+// 3. call the oracle with the latest price
+// stx call_contract_func -t -H "http://localhost:20443" -I "http://localhost:3999" ST2ZRX0K27GW0SP3GJCEMHD95TQGJMKB7G9Y0X1MH oracle update-price 200 2 b8d99fd45da58038d630d9855d3ca2466e8e0f89d3894c4724f0efc9ff4b51f001
+
+// 4. Check result
+// curl "http://localhost:3999/extended/v1/tx/0x4b19dfd939300a35e9050f08fc2ec4eb0ae587d98df34f03ba6b02e800ddab64"
+
+// 5. Use app
