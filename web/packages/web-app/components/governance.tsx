@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { space, Box, Text, Flex } from '@blockstack/ui';
 import { ExplorerLink } from './explorer-link';
-import { CounterActions } from './counter-actions';
 import { getRPCClient } from '@common/utils';
 import { ContractCallTransaction } from '@blockstack/stacks-blockchain-sidecar-types';
 import { TxCard } from '@components/tx-card';

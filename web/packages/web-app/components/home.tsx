@@ -28,16 +28,20 @@ export const Home: React.FC = () => {
   const Page: React.FC = () => {
     const balance = getBalance();
     const price = parseFloat(getStxPrice().price);
+
     return (
       <>
         <Container borderColor="#F0F0F5" borderWidth={0} borderBottomWidth="1px">
           {state.userData ? (
             <Box>
-              <Text textStyle="body.large" display="block" mb={5}>
-                Current STX balance: {parseInt(balance['balance'], 10) / 1000000} STX
+              <Text textStyle="body.large" display="block">
+                Current $STX balance: {parseInt(balance.balance['stx'], 10) / 1000000} STX
+              </Text>
+              <Text textStyle="body.large" display="block">
+                Current $DIKO balance: {parseInt(balance.balance['arkadiko'], 10) / 1000000} DIKO
               </Text>
               <Text textStyle="body.large" display="block" mb={5}>
-                Current STX price: ${price / 100}
+                Current $STX price: ${price / 100}
               </Text>
             </Box>
           ) : null }

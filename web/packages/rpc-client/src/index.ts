@@ -64,6 +64,18 @@ export class RPCClient {
     };
   }
 
+  async fetchBalances(principal: string) {
+    const url = `${this.url}/extended/v1/address/${principal}/balances`;
+    const response = await fetch(url, { credentials: 'omit' });
+    const data = await response.json();
+    // console.log(data);
+    return {
+      stx: data.stx.balance,
+      arkadiko: data.fungible_tokens['ST2ZRX0K27GW0SP3GJCEMHD95TQGJMKB7G9Y0X1MH.arkadiko-token::arkadiko'].balance,
+      nonce: data.nonce,
+    };
+  }
+
   async broadcastTX(hex: Buffer) {
     const url = `${this.url}/v2/transactions`;
     const response = await fetch(url, {
