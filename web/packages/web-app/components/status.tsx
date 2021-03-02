@@ -102,6 +102,22 @@ export const Status = () => {
   };
 
   const handleStatus = (evt: React.FormEvent<HTMLInputElement>) => {
+    // <Box width="100%" mt={3}>
+    //   <Input
+    //     type="text"
+    //     placeholder="Enter an STX address"
+    //     textStyle="body.small"
+    //     value={address}
+    //     onChange={handleAddress}
+    //     name="status"
+    //     maxWidth="300px"
+    //     onKeyUp={(e: React.KeyboardEvent<HTMLInputElement>) => {
+    //       if (e.key === 'enter') {
+    //         void onSubmitRead();
+    //       }
+    //     }}
+    //   />
+    // </Box>
     setStatus(evt.currentTarget.value || '');
   };
 
@@ -112,97 +128,13 @@ export const Status = () => {
   return (
     <Box py={6}>
       <Text as="h2" textStyle="display.small">
-        Status smart contract
-      </Text>
-      <Text textStyle="body.large" display="block" my={space('loose')}>
-        Try a smart contract where anyone can write their public status, like a decentralized
-        Twitter. You can read someone else's status by entering their address.
+        Borrowing and Lending will be live in v2 of ArkadikoDAO
       </Text>
       <ExplorerLink
-        txId="STB44HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6.status"
+        txId="STB44HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6.borrow-lend"
         text="View contract in explorer"
         skipConfirmCheck
       />
-
-      {transactions.length > 0 && (
-        <>
-          <Text display="block" my={space('base-loose')} textStyle="body.large.medium">
-            Latest statuses
-          </Text>
-          <Flex flexWrap="wrap" justifyContent="left">
-            {transactions.slice(0, 3).map(t => (
-              <TxCard tx={t} label={JSON.parse(t.tx_result?.repr || '')} />
-            ))}
-          </Flex>
-        </>
-      )}
-
-      <Text display="block" my={space('base-loose')} textStyle="body.large.medium">
-        Write a status
-      </Text>
-
-      <Box width="100%" mt={3}>
-        <Input
-          type="text"
-          placeholder="Enter your status"
-          textStyle="body.small"
-          value={status}
-          onChange={handleStatus}
-          name="status"
-          maxWidth="300px"
-          onKeyUp={(e: React.KeyboardEvent<HTMLInputElement>) => {
-            if (e.key === 'enter') {
-              void onSubmitWrite();
-            }
-          }}
-        />
-      </Box>
-      {txId && <ExplorerLink txId={txId} />}
-      <Button my={space('base-loose')} onClick={onSubmitWrite}>
-        Write status
-      </Button>
-
-      <Text display="block" my={space('base-loose')} textStyle="body.large.medium">
-        Read a status
-      </Text>
-
-      {stxAddress && (
-        <Text display="block" my={space('base-loose')} textStyle="body.small">
-          If you want to read your own status, your address is {stxAddress}.
-        </Text>
-      )}
-
-      <Box width="100%" mt={3}>
-        <Input
-          type="text"
-          placeholder="Enter an STX address"
-          textStyle="body.small"
-          value={address}
-          onChange={handleAddress}
-          name="status"
-          maxWidth="300px"
-          onKeyUp={(e: React.KeyboardEvent<HTMLInputElement>) => {
-            if (e.key === 'enter') {
-              void onSubmitRead();
-            }
-          }}
-        />
-      </Box>
-
-      {readStatus && (
-        <Text display="block" fontWeight={600} my={3} width="100%">
-          {readStatus}
-        </Text>
-      )}
-
-      {error && (
-        <Text display="block" color="red" width="100%" fontSize={1} mt={2}>
-          {error}
-        </Text>
-      )}
-      <Button my={space('base-loose')} onClick={onSubmitRead} isLoading={loading}>
-        Read status
-      </Button>
     </Box>
   );
 };

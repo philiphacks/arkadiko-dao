@@ -29,11 +29,7 @@ export const Counter = () => {
   return (
     <Box py={6}>
       <Text as="h2" textStyle="display.small">
-        Counter smart contract
-      </Text>
-      <Text textStyle="body.large" display="block" my={space('loose')}>
-        Try a smart contract that keeps a single "counter" state variable. The public methods
-        "increment" and "decrement" change the value of the counter.
+        Governance will be live in v2 of ArkadikoDAO
       </Text>
       <ExplorerLink
         txId="STB44HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6.counter"

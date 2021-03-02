@@ -6,8 +6,8 @@ import { Tab } from './tab';
 import { Status } from './status';
 import { Counter } from './counter';
 import { Debugger } from './debugger';
-import { useFaucet } from '@common/use-faucet';
-import { ExplorerLink } from './explorer-link';
+import { getBalance } from '@common/get-balance';
+// import { ExplorerLink } from './explorer-link';
 
 type Tabs = 'status' | 'counter' | 'debug';
 
@@ -24,21 +24,16 @@ const Container: React.FC<BoxProps> = ({ children, ...props }) => {
 export const Home: React.FC = () => {
   const state = useContext(AppContext);
   const [tab, setTab] = useState<Tabs>('debug');
-  const faucet = useFaucet();
+  const balance = getBalance();
 
   const Page: React.FC = () => {
     return (
       <>
         <Container borderColor="#F0F0F5" borderWidth={0} borderBottomWidth="1px">
           <Box>
-            {faucet.txId ? (
-              <>
-                <Text textStyle="body.large" display="block">
-                  We've requested some testnet STX from the faucet for you.
-                </Text>
-                <ExplorerLink txId={faucet.txId} />
-              </>
-            ) : null}
+            <Text textStyle="body.large" display="block" mb={5}>
+              Current STX balance: {parseInt(balance['balance'], 10) / 1000000} STX
+            </Text>
           </Box>
           <Flex>
             <Tab active={tab === 'debug'}>

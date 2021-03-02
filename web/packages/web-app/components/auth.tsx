@@ -9,7 +9,7 @@ export const Auth: React.FC = () => {
       <Text display="block" textStyle="body.large">
         The first liquidity and stablecoin protocol built natively on Stacks and Bitcoin.
       </Text>
-      <Text display="block" textStyle="body.large">
+      <Text display="block" my={space('base-loose')} textStyle="body.large.medium">
         Arkadiko is an open source and non-custodial liquidity protocol for minting stablecoins, earning interest on deposits and borrowing assets.
       </Text>
       <Box alignContent="center">

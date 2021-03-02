@@ -1,28 +1,32 @@
 import React, { useState } from 'react';
 import { space, Box, Text, Button, ButtonGroup } from '@blockstack/ui';
 import { getAuthOrigin, stacksNetwork as network } from '@common/utils';
-import { demoTokenContract } from '@common/contracts';
 import { useSTXAddress } from '@common/use-stx-address';
 import { useConnect } from '@stacks/connect-react';
+import BN from 'bn.js';
 import {
   uintCV,
   intCV,
   bufferCV,
+  broadcastTransaction,
+  createStacksPrivateKey,
   stringAsciiCV,
   stringUtf8CV,
   standardPrincipalCV,
   trueCV,
   makeStandardSTXPostCondition,
+  makeSTXTokenTransfer,
   FungibleConditionCode,
+  privateKeyToString,
 } from '@stacks/transactions';
 import { ExplorerLink } from './explorer-link';
-import BN from 'bn.js';
 
 export const Debugger = () => {
-  const { doContractCall, doSTXTransfer, doContractDeploy } = useConnect();
+  const { doContractCall, doSTXTransfer } = useConnect();
   const address = useSTXAddress();
   const [txId, setTxId] = useState<string>('');
   const [txType, setTxType] = useState<string>('');
+  const env = process.env.REACT_APP_NETWORK_ENV;
 
   const clearState = () => {
     setTxId('');
@@ -34,7 +38,7 @@ export const Debugger = () => {
     setTxType(type);
   };
 
-  const callFaker = async () => {
+  const callCollateralizeAndMint = async () => {
     clearState();
     const authOrigin = getAuthOrigin();
     const args = [
@@ -84,33 +88,22 @@ export const Debugger = () => {
     });
   };
 
-  const deployContract = async () => {
+  const addMocknetStx = async () => {
     clearState();
-    const authOrigin = getAuthOrigin();
-    await doContractDeploy({
-      network,
-      authOrigin,
-      contractName: `demo-deploy-${new Date().getTime().toString()}`,
-      codeBody: demoTokenContract,
-      finished: data => {
-        console.log('finished stx transfer!', data);
-        setState('Contract Deploy', data.txId);
-      },
-    });
-  };
+    const key = '9aef533e754663a453984b69d36f109be817e9940519cc84979419e2be00864801';
+    const senderKey = createStacksPrivateKey(key);
+    console.log('Adding STX from mocknet address to', address, 'on network', network);
 
-  const callNullContract = async () => {
-    clearState();
-    const authOrigin = getAuthOrigin();
-    await doContractCall({
-      network,
-      authOrigin,
-      contractAddress: 'STB44HYPYAT2BB2QE513NSP81HTMYWBJP02HPGK6',
-      contractName: `connect-token-${new Date().getTime()}`,
-      functionName: 'faucet',
-      functionArgs: [],
+    const transaction = await makeSTXTokenTransfer({
+      recipient: standardPrincipalCV(address || ''),
+      amount: new BN(10000000),
+      senderKey: privateKeyToString(senderKey),
+      network: network
     });
-  };
+    console.log(transaction);
+    const result = await broadcastTransaction(transaction, network);
+    console.log(result);
+  }
 
   const getFaucetTokens = async () => {
     clearState();
@@ -131,11 +124,16 @@ export const Debugger = () => {
   return (
     <Box py={6}>
       <Text as="h2" textStyle="display.small">
-        Debugger
+        Mint and Burn
       </Text>
-      <Text textStyle="body.large" display="block" my={space('base')}>
-        Try out a bunch of different transactions on the Stacks blockchain testnet.
+      <Text textStyle="body.large" display="block">
+        Mint some stablecoin using uSTX, or burn them all
       </Text>
+      <ExplorerLink
+        txId="ST2ZRX0K27GW0SP3GJCEMHD95TQGJMKB7G9Y0X1MH.stx-reserve"
+        text="View contract in explorer"
+        skipConfirmCheck
+      />
       {txId && (
         <Text textStyle="body.large" display="block" my={space('base')}>
           <Text color="green" fontSize={1}>
@@ -147,24 +145,21 @@ export const Debugger = () => {
 
       <Box>
         <ButtonGroup spacing={4} my="base">
-          <Button mt={3} onClick={callFaker}>
-            Contract call
+          <Button mt={3} onClick={callCollateralizeAndMint}>
+            Mint Stablecoin w/ 10 STX
           </Button>
           <Button mt={3} onClick={() => stxTransfer('102')}>
-            STX transfer
+            Burn Stablecoin in Vault
           </Button>
-          {/* <Button mt={3} onClick={() => stxTransfer((1000000 * 1000000).toString())}>
-            Big STX transfer
-          </Button> */}
-          <Button mt={3} onClick={deployContract}>
-            Contract deploy
-          </Button>
-          <Button mt={3} onClick={getFaucetTokens}>
-            Get tokens
-          </Button>
-          <Button mt={3} onClick={callNullContract}>
-            Non-existent contract
-          </Button>
+          {env == 'mocknet' ? (
+            <Button mt={3} onClick={() => addMocknetStx()}>
+              Get tokens from mocknet
+            </Button>
+          ) : (
+            <Button mt={3} onClick={() => addMocknetStx()}>
+              Drain the faucet on testnet
+            </Button>
+          )}
         </ButtonGroup>
       </Box>
     </Box>

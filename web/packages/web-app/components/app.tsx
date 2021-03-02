@@ -8,7 +8,7 @@ import { defaultState, AppContext, AppState } from '@common/context';
 import { Header } from '@components/header';
 import { Home } from '@components/home';
 
-const icon = '/assets/messenger-app-icon.png';
+const icon = '/assets/logo.png';
 export const App: React.FC = () => {
   const [state, setState] = React.useState<AppState>(defaultState());
   const [authResponse, setAuthResponse] = React.useState('');
