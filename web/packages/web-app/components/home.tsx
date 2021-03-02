@@ -8,6 +8,7 @@ import { Governance } from './governance';
 import { Vault } from './vault';
 import { getBalance } from '@common/get-balance';
 import { getStxPrice } from '@common/get-stx-price';
+import { getVault } from '@common/get-vaults';
 
 type Tabs = 'borrow' | 'governance' | 'vault';
 
@@ -28,6 +29,7 @@ export const Home: React.FC = () => {
   const Page: React.FC = () => {
     const balance = getBalance();
     const price = parseFloat(getStxPrice().price);
+    // getVault();
 
     return (
       <>
@@ -40,8 +42,11 @@ export const Home: React.FC = () => {
               <Text textStyle="body.large" display="block">
                 Current $DIKO balance: {parseInt(balance.balance['arkadiko'], 10) / 1000000} DIKO
               </Text>
-              <Text textStyle="body.large" display="block" mb={5}>
+              <Text textStyle="body.large" display="block">
                 Current $STX price: ${price / 100}
+              </Text>
+              <Text textStyle="body.large" display="block" mb={5}>
+                Current Vault: 
               </Text>
             </Box>
           ) : null }

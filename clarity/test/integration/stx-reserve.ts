@@ -50,13 +50,12 @@ describe("stacks reserve test suite", () => {
         senderAddress: contractAddress,
         network: network,
       });
-      console.log(vault);
       assert.equal(
-        cvToJSON(vault).data['coins-minted']['value'].toString(),
+        cvToJSON(vault).value['coins-minted']['value'].toString(),
         "1925000"
       );
       assert.equal(
-        cvToJSON(vault).data['stx-collateral']['value'].toString(),
+        cvToJSON(vault).value['stx-collateral']['value'].toString(),
         "5000000"
       );
     });

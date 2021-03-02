@@ -45,6 +45,7 @@ export const Vault = () => {
       contractName: 'stx-reserve',
       functionName: 'collateralize-and-mint',
       functionArgs: args,
+      postConditionMode: 0x01,
       finished: data => {
         console.log('finished collateralizing!', data);
         console.log(data.stacksTransaction.auth.spendingCondition?.nonce.toNumber());
