@@ -42,14 +42,24 @@ describe("stacks reserve test suite", () => {
         [uintCV(value), standardPrincipalCV(alice)]
       );
       console.log(result);
-      const vault = await callReadOnlyFunction({
+      const vaultEntries = await callReadOnlyFunction({
         contractAddress: contractAddress,
         contractName: "stx-reserve",
-        functionName: "get-vault",
+        functionName: "get-vault-entries",
         functionArgs: [standardPrincipalCV(alice)],
         senderAddress: contractAddress,
         network: network,
       });
+      const arr = cvToJSON(vaultEntries).value.ids.value;
+      const vault = await callReadOnlyFunction({
+        contractAddress: contractAddress,
+        contractName: "stx-reserve",
+        functionName: "get-vault-by-id",
+        functionArgs: [uintCV(arr[arr.length - 1].value)],
+        senderAddress: contractAddress,
+        network: network,
+      });
+
       assert.equal(
         cvToJSON(vault).value['coins-minted']['value'].toString(),
         "1925000"
