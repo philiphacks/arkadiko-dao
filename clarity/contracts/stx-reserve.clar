@@ -18,13 +18,13 @@
 
 ;; Map of vault entries
 ;; The entry consists of a user principal with their STX balance collateralized
-(define-map vaults { id: uint } { address: principal, stx-collateral: uint, coins-minted: uint, at-block-height: uint })
+(define-map vaults { id: uint } { id: uint, address: principal, stx-collateral: uint, coins-minted: uint, at-block-height: uint })
 (define-map vault-entries { user: principal } { ids: (list 2000 uint) })
 (define-data-var last-vault-id uint u0)
 
 ;; getters
 (define-read-only (get-vault-by-id (id uint))
-  (unwrap! (map-get? vaults { id: id }) (tuple (address 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP) (stx-collateral u0) (coins-minted u0) (at-block-height u0)))
+  (unwrap! (map-get? vaults { id: id }) (tuple (id u0) (address 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP) (stx-collateral u0) (coins-minted u0) (at-block-height u0)))
 )
 
 (define-read-only (get-vault-entries (user principal))
@@ -128,7 +128,7 @@
           (let ((vault-id (+ (var-get last-vault-id) u1)))
             (let ((entries (get ids (get-vault-entries sender))))
               (map-set vault-entries { user: sender } { ids: (unwrap-panic (as-max-len? (append entries vault-id) u2000)) })
-              (map-set vaults { id: vault-id } { address: sender, stx-collateral: ustx-amount, coins-minted: coins, at-block-height: block-height })
+              (map-set vaults { id: vault-id } { id: vault-id, address: sender, stx-collateral: ustx-amount, coins-minted: coins, at-block-height: block-height })
               (var-set last-vault-id vault-id)
               (ok coins)
             )
