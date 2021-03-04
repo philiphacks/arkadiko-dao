@@ -1,4 +1,4 @@
-;; (impl-trait .vault-trait.vault-trait)
+(impl-trait .vault-trait.vault-trait)
 
 ;; addresses
 (define-constant stx-reserve-address 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP)
@@ -138,15 +138,6 @@
 ;; burn stablecoin to free up STX tokens
 ;; method assumes position has not been liquidated
 ;; and thus collateral to debt ratio > liquidation ratio
-;; (begin
-;;   (print (as-contract tx-sender))
-;;   (print tx-sender)
-;;   (print (stx-get-balance tx-sender))
-;;   (print (stx-get-balance vault-owner))
-;;   (print (stx-get-balance stx-reserve-address))
-;;   (print (stx-get-balance (as-contract tx-sender)))
-;;   (print (as-contract (stx-transfer? u5 (as-contract tx-sender) vault-owner)))
-;; )
 (define-public (burn (vault-id uint) (vault-owner principal))
   (let ((vault (get-vault-by-id vault-id)))
     (match (print (as-contract (contract-call? .arkadiko-token burn (get coins-minted vault) vault-owner)))
@@ -168,24 +159,24 @@
 
 ;; liquidate a vault-address' vault
 ;; should only be callable by the liquidator smart contract address
-;; (define-public (liquidate (vault-id uint))
-;;   (if (is-eq contract-caller 'ST2ZRX0K27GW0SP3GJCEMHD95TQGJMKB7G9Y0X1MH.liquidator)
-;;     (begin
-;;       (let ((vault (get-vault-by-id vault-id)))
-;;         (match (print (as-contract (contract-call? .arkadiko-token burn (get address vault) (get coins-minted vault))))
-;;           success (match (stx-transfer? (get stx-collateral vault) stx-reserve-address stx-liquidation-reserve)
-;;             transferred (begin
-;;               (let ((stx-collateral (get stx-collateral vault)))
-;;                 (map-delete vaults { id: vault-id })
-;;                 (ok stx-collateral)
-;;               )
-;;             )
-;;             error (err err-transfer-failed)
-;;           )
-;;           error (err err-burn-failed)
-;;         )
-;;       )
-;;     )
-;;     (err err-unauthorized)
-;;   )
-;; )
+(define-public (liquidate (vault-id uint))
+  (if (is-eq contract-caller 'ST2ZRX0K27GW0SP3GJCEMHD95TQGJMKB7G9Y0X1MH.liquidator)
+    (begin
+      (let ((vault (get-vault-by-id vault-id)))
+        (match (print (as-contract (contract-call? .arkadiko-token burn (get coins-minted vault) (get address vault))))
+          success (match (stx-transfer? (get stx-collateral vault) stx-reserve-address stx-liquidation-reserve)
+            transferred (begin
+              (let ((stx-collateral (get stx-collateral vault)))
+                (map-delete vaults { id: vault-id })
+                (ok stx-collateral)
+              )
+            )
+            error (err err-transfer-failed)
+          )
+          error (err err-burn-failed)
+        )
+      )
+    )
+    (err err-unauthorized)
+  )
+)

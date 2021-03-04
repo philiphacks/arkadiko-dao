@@ -60,7 +60,7 @@
         (is-eq contract-caller 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP.stx-reserve)
         (is-ok (ft-transfer? arkadiko amount sender mint-owner))
       )
-      ;; burn does not work, so we will transfer for now. Burn tx gets stuck at "pending"
+      ;; TODO: burn does not work, so we will transfer for now. Burn tx gets stuck at "pending"
       ;; (ok (as-contract (ft-burn? arkadiko amount mint-owner)))
       (ok true)
       (err err-burn-failed)
