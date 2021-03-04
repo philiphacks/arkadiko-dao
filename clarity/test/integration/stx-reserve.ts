@@ -9,7 +9,10 @@ import {
   deployContract,
   callContractFunction,
   contractAddress,
+  deployContractAddress,
   network,
+  secretKey,
+  secretDeployKey
 } from "../../../shared/utils";
 
 describe("stacks reserve test suite", () => {
@@ -28,9 +31,10 @@ describe("stacks reserve test suite", () => {
 
     it("should mint 1.925 dollar in stablecoin from 5000000 ustx at 77 cents/STX through collateralize-and-mint", async () => {
       console.log('Calling orcale set-price function to set 1STX = 77 dollarcents');
-      const orcaleResult = await callContractFunction(
+      await callContractFunction(
         'oracle',
         'update-price',
+        secretDeployKey,
         [uintCV(77)]
       );
 
@@ -39,11 +43,12 @@ describe("stacks reserve test suite", () => {
       const result = await callContractFunction(
         'stx-reserve',
         'collateralize-and-mint',
+        secretKey,
         [uintCV(value), standardPrincipalCV(alice)]
       );
       console.log(result);
       const vaultEntries = await callReadOnlyFunction({
-        contractAddress: contractAddress,
+        contractAddress: deployContractAddress,
         contractName: "stx-reserve",
         functionName: "get-vault-entries",
         functionArgs: [standardPrincipalCV(alice)],
@@ -52,7 +57,7 @@ describe("stacks reserve test suite", () => {
       });
       const arr = cvToJSON(vaultEntries).value.ids.value;
       const vault = await callReadOnlyFunction({
-        contractAddress: contractAddress,
+        contractAddress: deployContractAddress,
         contractName: "stx-reserve",
         functionName: "get-vault-by-id",
         functionArgs: [uintCV(arr[arr.length - 1].value)],
@@ -68,6 +73,28 @@ describe("stacks reserve test suite", () => {
         cvToJSON(vault).value['stx-collateral']['value'].toString(),
         "5000000"
       );
+
+      const supply = await callReadOnlyFunction({
+        contractAddress: deployContractAddress,
+        contractName: "arkadiko-token",
+        functionName: "total-supply",
+        functionArgs: [],
+        senderAddress: contractAddress,
+        network: network,
+      });
+      console.log(cvToJSON(supply));
+      console.log(cvToJSON(supply).value);
+    });
+
+    it("should burn vault with ID u1", async () => {
+      console.log('Calling burn function');
+      const result = await callContractFunction(
+        'stx-reserve',
+        'burn',
+        secretKey,
+        [uintCV(1), standardPrincipalCV(alice)]
+      );
+      console.log(result);
     });
   });
 });

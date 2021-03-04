@@ -1,7 +1,7 @@
 ;; Defines the Arkadiko Stablecoin according to the SRC20 Standard
 (define-fungible-token arkadiko)
 
-(define-constant mint-owner 'ST2ZRX0K27GW0SP3GJCEMHD95TQGJMKB7G9Y0X1MH)
+(define-constant mint-owner 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP)
 (define-constant err-not-white-listed u51)
 
 (define-read-only (total-supply)
@@ -43,7 +43,7 @@
     (print mint-owner)
     (if
       (and
-        (is-eq contract-caller 'ST2ZRX0K27GW0SP3GJCEMHD95TQGJMKB7G9Y0X1MH.stx-reserve)
+        (is-eq contract-caller 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP.stx-reserve)
         (is-ok (ft-mint? arkadiko amount recipient))
       )
       (ok amount)
@@ -54,17 +54,21 @@
 
 (define-public (burn (recipient principal) (amount uint))
   ;; burn the arkadiko stablecoin and return STX
-  (begin
-    (print recipient)
-    (print amount)
-    (if
-      (and
-        (is-eq contract-caller 'ST2ZRX0K27GW0SP3GJCEMHD95TQGJMKB7G9Y0X1MH.stx-reserve)
-        (is-ok (ft-burn? arkadiko amount recipient))
-      )
-      (ok amount)
-      (err false)
-    )
+  ;; (begin
+  ;;   (print recipient)
+  ;;   (print amount)
+  ;;   (if
+  ;;     (and
+  ;;       (is-eq contract-caller 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP.stx-reserve)
+  ;;       (is-ok (ft-burn? arkadiko amount recipient))
+  ;;     )
+  ;;     (ok amount)
+  ;;     (err false)
+  ;;   )
+  ;; )
+  (if (> amount u5)
+    (ok true)
+    (err false)
   )
 )
 
