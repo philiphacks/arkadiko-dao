@@ -4,29 +4,29 @@ import { useSTXAddress } from './use-stx-address';
 import { stacksNetwork as network } from '@common/utils';
 import { callReadOnlyFunction, cvToJSON, standardPrincipalCV } from '@stacks/transactions';
 
-export const getVault = () => {
+export const getVaults = () => {
   const stxAddress = useSTXAddress();
   const state = useContext(AppContext);
-  const [vault, setVault] = useState({});
+  const [vaults, setVaults] = useState({});
 
   useEffect(() => {
-    const getVault = async () => {
-      const vault = await callReadOnlyFunction({
+    const getVaults = async () => {
+      const vaults = await callReadOnlyFunction({
         contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
         contractName: "stx-reserve",
-        functionName: "get-vault",
+        functionName: "get-vaults",
         functionArgs: [standardPrincipalCV(stxAddress || '')],
         senderAddress: stxAddress || '',
         network: network,
       });
-      console.log(vault);      
-      const json = cvToJSON(vault);
-      setVault(json);
+      console.log(vaults);      
+      const json = cvToJSON(vaults);
+      setVaults(json);
     };
-    void getVault();
+    void getVaults();
   }, [state.userData]);
 
   return {
-    vault,
+    vaults,
   };
 };

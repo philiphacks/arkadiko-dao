@@ -24,11 +24,17 @@
 
 ;; getters
 (define-read-only (get-vault-by-id (id uint))
-  (unwrap-panic (map-get? vaults { id: id }))
+  (unwrap! (map-get? vaults { id: id }) (tuple (address 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP) (stx-collateral u0) (coins-minted u0) (at-block-height u0)))
 )
 
 (define-read-only (get-vault-entries (user principal))
   (unwrap! (map-get? vault-entries { user: user }) (tuple (ids (list u0) )))
+)
+
+(define-read-only (get-vaults (user principal))
+  (let ((entries (get ids (get-vault-entries user))))
+    (ok (map get-vault-by-id entries))
+  )
 )
 
 (define-read-only (get-liquidation-ratio)
