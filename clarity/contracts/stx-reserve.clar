@@ -117,7 +117,7 @@
 (define-public (collateralize-and-mint (ustx-amount uint) (sender principal))
   (let ((coins (unwrap-panic (calculate-arkadiko-count ustx-amount))))
     (match (print (stx-transfer? ustx-amount sender (as-contract tx-sender)))
-      success (match (print (as-contract (contract-call? .arkadiko-token mint sender coins)))
+      success (match (print (as-contract (contract-call? .arkadiko-token mint coins sender)))
         transferred (begin
           (let ((vault-id (+ (var-get last-vault-id) u1)))
             (let ((entries (get ids (get-vault-entries sender))))
@@ -149,7 +149,7 @@
 ;; )
 (define-public (burn (vault-id uint) (vault-owner principal))
   (let ((vault (get-vault-by-id vault-id)))
-    (match (print (as-contract (contract-call? .arkadiko-token burn vault-owner (get coins-minted vault))))
+    (match (print (as-contract (contract-call? .arkadiko-token burn (get coins-minted vault) vault-owner)))
       success (match (print (as-contract (stx-transfer? (get stx-collateral vault) (as-contract tx-sender) vault-owner)))
         transferred (begin
           (let ((entries (get ids (get-vault-entries vault-owner))))

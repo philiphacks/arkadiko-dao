@@ -2,7 +2,7 @@
 (define-fungible-token arkadiko)
 
 (define-constant mint-owner 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP)
-(define-constant err-not-white-listed u51)
+(define-constant err-burn-failed u1)
 
 (define-read-only (total-supply)
   (ok (ft-get-supply arkadiko))
@@ -34,7 +34,7 @@
   )
 )
 
-(define-public (mint (recipient principal) (amount uint))
+(define-public (mint (amount uint) (recipient principal))
   (begin
     (print recipient)
     (print amount)
@@ -52,23 +52,14 @@
   )
 )
 
-(define-public (burn (recipient principal) (amount uint))
+(define-public (burn (amount uint) (sender principal))
   ;; burn the arkadiko stablecoin and return STX
-  ;; (begin
-  ;;   (print recipient)
-  ;;   (print amount)
-  ;;   (if
-  ;;     (and
-  ;;       (is-eq contract-caller 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP.stx-reserve)
-  ;;       (is-ok (ft-burn? arkadiko amount recipient))
-  ;;     )
-  ;;     (ok amount)
-  ;;     (err false)
-  ;;   )
-  ;; )
-  (if (> amount u5)
-    (ok true)
-    (err false)
+  (begin
+    (if (is-eq contract-caller 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP.stx-reserve)
+      ;; burn does not work, so we will transfer for now. Burn tx gets stuck at "pending"
+      (ok (ft-transfer? arkadiko amount sender mint-owner))
+      (err err-burn-failed)
+    )
   )
 )
 
