@@ -12,7 +12,7 @@ export const getVault = () => {
   useEffect(() => {
     const getVault = async () => {
       const vault = await callReadOnlyFunction({
-        contractAddress: 'ST2ZRX0K27GW0SP3GJCEMHD95TQGJMKB7G9Y0X1MH',
+        contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
         contractName: "stx-reserve",
         functionName: "get-vault",
         functionArgs: [standardPrincipalCV(stxAddress || '')],
