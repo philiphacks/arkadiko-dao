@@ -88,6 +88,18 @@ describe("stacks reserve test suite", () => {
 
     it("should burn vault with ID u1", async () => {
       console.log('Calling burn function');
+
+      const balanceBefore = await callReadOnlyFunction({
+        contractAddress: deployContractAddress,
+        contractName: "arkadiko-token",
+        functionName: "balance-of",
+        functionArgs: [standardPrincipalCV(alice)],
+        senderAddress: contractAddress,
+        network: network,
+      });
+      const balanceValueBefore = cvToJSON(balanceBefore).value.value;
+      console.log(balanceValueBefore);
+
       const result = await callContractFunction(
         'stx-reserve',
         'burn',
@@ -95,6 +107,22 @@ describe("stacks reserve test suite", () => {
         [uintCV(1), standardPrincipalCV(alice)]
       );
       console.log(result);
+
+      const balanceAfter = await callReadOnlyFunction({
+        contractAddress: deployContractAddress,
+        contractName: "arkadiko-token",
+        functionName: "balance-of",
+        functionArgs: [standardPrincipalCV(alice)],
+        senderAddress: contractAddress,
+        network: network,
+      });
+      const balanceValueAfter = cvToJSON(balanceAfter).value.value;
+      console.log(balanceValueAfter);
+
+      assert.equal(
+        balanceValueBefore,
+        balanceValueAfter + 1925000
+      );
     });
   });
 });

@@ -20,7 +20,7 @@
   (ok u6)
 )
 
-(define-public (balance-of (account principal))
+(define-read-only (balance-of (account principal))
   (ok (ft-get-balance arkadiko account))
 )
 
