@@ -152,10 +152,9 @@
           (let ((entries (get ids (get-vault-entries vault-owner))))
             ;; TODO: This returns true but does not actually delete it?
             (print (map-set vaults { id: vault-id } { id: vault-id, address: vault-owner, stx-collateral: u0, coins-minted: u0, at-block-height: (get at-block-height vault) } ))
-            (print (map-delete vaults { id: vault-id }))
             ;; TODO: remove vault ID from vault entries
             ;; (map-set vault-entries { user: tx-sender } { () })
-            (ok true)
+            (ok (map-delete vaults { id: vault-id }))
           )
         )
         error (err err-transfer-failed)

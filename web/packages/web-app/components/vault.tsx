@@ -29,6 +29,7 @@ export const Vault: React.FC<VaultProps> = ({ id, address, stxCollateral, coinsM
       contractName: 'stx-reserve',
       functionName: 'burn',
       functionArgs: [uintCV(2), standardPrincipalCV(senderAddress || '')],
+      postConditionMode: 0x01,
       finished: data => {
         console.log('finished burn!', data);
         console.log(data.stacksTransaction.auth.spendingCondition?.nonce.toNumber());
