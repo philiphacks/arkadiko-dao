@@ -109,9 +109,10 @@
 
 (define-read-only (calculate-current-collateral-to-debt-ratio (vault-id uint))
   (let ((stx-price-in-cents (contract-call? .oracle get-price)))
-    (let ((current-vault (get-vault-by-id vault-id)))
-      (let ((amount (/ (* (get stx-collateral current-vault) (get price stx-price-in-cents)) (get coins-minted current-vault))))
-        (ok amount)
+    (let ((vault (get-vault-by-id vault-id)))
+      (if (> (get coins-minted vault) u0)
+        (ok (/ (* (get stx-collateral vault) (get price stx-price-in-cents)) (get coins-minted vault)))
+        (err u0)
       )
     )
   )
@@ -150,7 +151,6 @@
       success (match (print (as-contract (stx-transfer? (get stx-collateral vault) (as-contract tx-sender) vault-owner)))
         transferred (begin
           (let ((entries (get ids (get-vault-entries vault-owner))))
-            ;; TODO: This returns true but does not actually delete it?
             (print (map-set vaults { id: vault-id } { id: vault-id, address: vault-owner, stx-collateral: u0, coins-minted: u0, at-block-height: (get at-block-height vault) } ))
             ;; TODO: remove vault ID from vault entries
             ;; (map-set vault-entries { user: tx-sender } { () })
