@@ -64,6 +64,11 @@ export const Vault: React.FC<VaultProps> = ({ id, address, stxCollateral, coinsM
         </Text>
       </Flex>
       <Flex mt={2} align="center">
+        <Text ml={3} fontSize="sm">
+          <b>Liquidation Ratio</b>: 150
+        </Text>
+      </Flex>
+      <Flex mt={2} align="center">
         <Button mt={3} onClick={() => callBurn()}>
           Burn Stablecoin in Vault
         </Button>
