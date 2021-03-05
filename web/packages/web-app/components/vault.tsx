@@ -36,7 +36,7 @@ export const Vault: React.FC<VaultProps> = ({ id, address, stxCollateral, coinsM
     });
   };
 
-  console.log(address, stxCollateral, coinsMinted, atBlockHeight);
+  console.log(id, address, stxCollateral, coinsMinted, atBlockHeight);
   return (
     <Box p="5" maxWidth="320px" borderWidth="1px" mr={4}>
       <Text mt={2} fontSize="xl" fontWeight="semibold" lineHeight="short">
