@@ -1,8 +1,8 @@
 import React, { useContext } from 'react';
-import { Text, Flex, Box } from '@blockstack/ui';
-import { StacksLogo } from '@stacks/ui';
+import { Flex, Box, Button } from '@blockstack/ui';
 import { AppContext } from '@common/context';
-import { Link } from '@components/link';
+import { Link, MediumLink } from '@components/link';
+import { Link as RouterLink } from 'react-router-dom'
 
 interface HeaderProps {
   signOut: () => void;
@@ -25,29 +25,41 @@ export const Header: React.FC<HeaderProps> = ({ signOut }) => {
   return (
     <Flex as="nav" justifyContent="space-between" alignItems="center" height="64px" px={6}>
       <Box verticalAlign="center">
-        <StacksLogo color="black" maxHeight="26px" display="inline-block" ml="-10px" mr="15px" />
-        ArkDAO
+        Arkadiko
       </Box>
-      {state.userData ? (
-        <Box>
+      <Box>
+        <Box display="inline-block" color="feedback.success" textStyle="caption.small" mr={5}>using Arkadiko on {env}</Box>
+        {state.userData ? (
+          <Box display="inline-block">
 
-          <Box display="inline-block" color="feedback.info" mr={5}>using ArkDAO on {env}</Box>
-          <Text ml={5} mr={5} fontWeight="300">{shortAddress()}</Text>
-          <Link
-            display="inline-block"
-            ml={5}
-            textStyle="caption.medium"
-            color="blue"
-            onClick={() => {
-              signOut();
-            }}
-          >
-            Sign out
-          </Link>
-        </Box>
-      ) :
-        <Box display="inline-block" color="feedback.info" mr={5}>using ArkDAO on {env}</Box>
-      }
+            <Box display="inline-block" ml={5} mr={5}><RouterLink to="/">Vaults</RouterLink></Box>
+            <Box display="inline-block" ml={5} mr={5}><RouterLink to="/governance">Governance</RouterLink></Box>
+            <Box display="inline-block" ml={5} mr={5}><RouterLink to="/profile">Docs</RouterLink></Box>
+            <Box display="inline-block" ml={5} mr={5}><RouterLink to="/profile">Security</RouterLink></Box>
+            <Box display="inline-block" ml={5} mr={5}><RouterLink to="/profile">{shortAddress()}</RouterLink></Box>
+            <Link
+              display="inline-block"
+              ml={5}
+              textStyle="caption.medium"
+              color="blue"
+              onClick={() => {
+                signOut();
+              }}
+            >
+              Sign out
+            </Link>
+          </Box>
+        ) :
+          <Box display="inline-block">
+            <Box display="inline-block" ml={5} mr={5}><RouterLink to="/profile">Docs</RouterLink></Box>
+            <Box display="inline-block" ml={5} mr={5}><RouterLink to="/profile">Security</RouterLink></Box>
+
+            <Button mode="secondary">
+              Connect Wallet
+            </Button>
+          </Box>
+        }
+      </Box>
     </Flex>
   );
 };

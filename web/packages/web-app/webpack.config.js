@@ -177,7 +177,7 @@ module.exports = {
       template: path.join(sourceRootPath, '../', 'public', 'html', 'index.html'),
       inject: 'body',
       filename: 'index.html',
-      title: 'ArkDAO',
+      title: 'Arkadiko',
       chunks: ['main', 'common'],
       ...hmtlProdOpts,
     }),
