@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { Flex, Box, Button } from '@blockstack/ui';
 import { AppContext } from '@common/context';
 import { Link } from '@components/link';
-import { Link as RouterLink } from 'react-router-dom'
+import { NavLink as RouterLink } from 'react-router-dom'
 import { useConnect } from '@stacks/connect-react';
 
 interface HeaderProps {
@@ -34,15 +34,23 @@ export const Header: React.FC<HeaderProps> = ({ signOut }) => {
         {state.userData ? (
           <Box display="inline-block">
 
-            <Box display="inline-block" ml={5} mr={5} className="text-base font-medium text-gray-900 hover:text-gray-700"><RouterLink to="/">Vaults</RouterLink></Box>
-            <Box display="inline-block" ml={5} mr={5} className="text-base font-medium text-gray-900 hover:text-gray-700"><RouterLink to="/governance">Governance</RouterLink></Box>
             <Box display="inline-block" ml={5} mr={5} className="text-base font-medium text-gray-900 hover:text-gray-700">
-              <RouterLink to="/profile">
+              <RouterLink to="/" exact activeClassName="border-b-2 border-indigo-500 pt-6">Vaults</RouterLink>
+            </Box>
+            <Box display="inline-block" ml={5} mr={5} className="text-base font-medium text-gray-900 hover:text-gray-700">
+              <RouterLink to="/governance" exact activeClassName="border-b-2 border-indigo-500 pt-6">Governance</RouterLink>
+            </Box>
+            <Box display="inline-block" ml={5} mr={5} className="text-base font-medium text-gray-900 hover:text-gray-700">
+              <RouterLink to="/profile" exact activeClassName="border-b-2 border-indigo-500 pt-6">
                 Docs
               </RouterLink>
             </Box>
-            <Box display="inline-block" ml={5} mr={5} className="text-base font-medium text-gray-900 hover:text-gray-700"><RouterLink to="/profile">Security</RouterLink></Box>
-            <Box display="inline-block" ml={5} mr={5} className="text-base font-medium text-gray-900 hover:text-gray-700"><RouterLink to="/profile">{shortAddress()}</RouterLink></Box>
+            <Box display="inline-block" ml={5} mr={5} className="text-base font-medium text-gray-900 hover:text-gray-700">
+              <RouterLink to="/profile">Security</RouterLink>
+            </Box>
+            <Box display="inline-block" ml={5} mr={5} className="text-base font-medium text-gray-900 hover:text-gray-700">
+              <RouterLink to="/profile">{shortAddress()}</RouterLink>
+            </Box>
             <Link
               display="inline-block"
               ml={5}
