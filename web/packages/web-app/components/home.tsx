@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import { AppContext } from '@common/context';
 import { Box, Text, Flex, space, BoxProps } from '@blockstack/ui';
 import { Auth } from './auth';
+import { Landing } from './landing';
 import { Mint } from './mint';
 import { getBalance } from '@common/get-balance';
 import { getStxPrice } from '@common/get-stx-price';
@@ -93,18 +94,13 @@ export const Home: React.FC = () => {
   };
   return (
     <Flex flexWrap="wrap">
-      <Container mt={10}>
-        {state.userData ? (
+      {state.userData ? (
+        <Container mt={15}>
           <Page />
-        ) : (
-          <Container>
-             <Text as="h1" textStyle="display.large" fontSize={7} mb={space('loose')} display="block">
-               The Stacks-Native Liquidity Protocol
-             </Text>
-            <Auth />
-          </Container>
-        )}
-      </Container>
-    </Flex>
+        </Container>
+      ) : (
+        <Landing />
+      )}
+    </Flex>  
   );
 };

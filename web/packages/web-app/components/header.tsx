@@ -32,7 +32,7 @@ export const Header: React.FC<HeaderProps> = ({ signOut }) => {
       <Box>
         <Box display="inline-block" color="feedback.success" textStyle="caption.small" mr={5}>using Arkadiko on {env}</Box>
         {state.userData ? (
-          <Box display="inline-block">
+          <Box display="inline-block" alignItems="right">
 
             <Box display="inline-block" ml={5} mr={5} className="text-base font-medium text-gray-900 hover:text-gray-700">
               <RouterLink to="/" exact activeClassName="border-b-2 border-indigo-500 pt-6">Vaults</RouterLink>
