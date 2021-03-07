@@ -178,11 +178,15 @@ the Clarity Contract must do the following, atomically:
 - Register the proposal in the registry
 - Flag the proposal as open to vote
 
+---
+
 12. As a user, I can vote on proposals (FOR or AGAINST)
 
 #### Acceptance Criteria
 the Clarity Contract must do the following, atomically:
 - It registers the user's vote(s) proportional the amount of governance tokens they voted with 
+
+---
 
 13. As a user, I am eligible for stacked bitcoin yield relative to the amount of governance tokens I hold
 
@@ -192,6 +196,8 @@ the Clarity Contract must do the following, atomically:
 - Where possible, the STX will be stacked on the Stacks protocol
 - The rewards in bitcoin will be paid every cycle, or periodically decided upon by the protocol governance
 
+---
+
 14. As a stacker, I can buy up liquidated STX tokens in an auction
 
 #### Acceptance Criteria
@@ -199,10 +205,13 @@ the Clarity Contract must do the following, atomically:
 - When a vault gets liquidated, the STX collateral is transferred to a STX liquidation reserve address
 - A simple bidding mechanism allows Stackers to buy up STX collateral at a discount, first come first serve 
 
+---
+
 15. As a guest, I can browse the main page and documentation
 
 Up until now, we have always talked about a few personas (user, stacker, automated liquidator), but not about an initial guest user yet. The guest can browse the web page and read documentation freely without authenticating with the Stacks Wallet browser extension.
 
+---
 
 ## Budget & Milestones
 **What grant amount are you seeking? How long will the project take in hours? If more than 20, please break down the project into milestones, with a clear output (e.g., low-fi mockup, MVP with two features) and include the estimated work hours for each milestone.**
