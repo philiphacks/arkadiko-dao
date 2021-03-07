@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Flex, Box, Button } from '@blockstack/ui';
+import { Text, Flex, Box, Button } from '@blockstack/ui';
 import { AppContext } from '@common/context';
 import { Link } from '@components/link';
 import { NavLink as RouterLink } from 'react-router-dom'
@@ -26,8 +26,13 @@ export const Header: React.FC<HeaderProps> = ({ signOut }) => {
 
   return (
     <Flex as="nav" justifyContent="space-between" alignItems="center" height="64px" px={6} className="border-b-2 border-gray-100">
-      <Box verticalAlign="center" className={`block px-4 py-2 rounded-md bg-amber-100 text-amber-700`}>
-        Arkadiko
+      <Box verticalAlign="center" display="inline-block" className={`px-4 py-2 rounded-md bg-amber-100 text-amber-700`}>
+        <div className="flex items-center">
+          <Box display="inline-block" mr={3}>
+            <img className="h-8 w-auto sm:h-10" src="assets/logo.png" alt="Arkadiko"></img>
+          </Box>
+          <span className="inline-block align-middle font-semibold">Arkadiko</span>
+        </div>
       </Box>
       <Box>
         <Box display="inline-block" color="feedback.success" textStyle="caption.small" mr={5}>using Arkadiko on {env}</Box>

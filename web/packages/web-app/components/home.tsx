@@ -93,14 +93,16 @@ export const Home: React.FC = () => {
     );
   };
   return (
-    <Flex flexWrap="wrap">
+    <Box>
       {state.userData ? (
-        <Container mt={15}>
-          <Page />
-        </Container>
+        <Flex flexWrap="wrap">
+          <Container mt={15}>
+            <Page />
+          </Container>
+        </Flex>
       ) : (
         <Landing />
       )}
-    </Flex>  
+    </Box>  
   );
 };
