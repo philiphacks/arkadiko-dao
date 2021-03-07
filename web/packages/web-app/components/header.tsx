@@ -41,9 +41,7 @@ export const Header: React.FC<HeaderProps> = ({ signOut }) => {
               <RouterLink to="/governance" exact activeClassName="border-b-2 border-indigo-500 pt-6">Governance</RouterLink>
             </Box>
             <Box display="inline-block" ml={5} mr={5} className="text-base font-medium text-gray-900 hover:text-gray-700">
-              <RouterLink to="/profile" exact activeClassName="border-b-2 border-indigo-500 pt-6">
-                Docs
-              </RouterLink>
+              <RouterLink to="/profile" exact>Docs</RouterLink>
             </Box>
             <Box display="inline-block" ml={5} mr={5} className="text-base font-medium text-gray-900 hover:text-gray-700">
               <RouterLink to="/profile">Security</RouterLink>
@@ -68,10 +66,14 @@ export const Header: React.FC<HeaderProps> = ({ signOut }) => {
           </Box>
         ) :
           <Box display="inline-block">
-            <Box display="inline-block" ml={5} mr={5}><RouterLink to="/profile">Docs</RouterLink></Box>
-            <Box display="inline-block" ml={5} mr={5}><RouterLink to="/profile">Security</RouterLink></Box>
+            <Box display="inline-block" ml={5} mr={5} className="text-base font-medium text-gray-900 hover:text-gray-700">
+              <RouterLink to="/profile" exact>Docs</RouterLink>
+            </Box>
+            <Box display="inline-block" ml={5} mr={5} className="text-base font-medium text-gray-900 hover:text-gray-700">
+              <RouterLink to="/profile">Security</RouterLink>
+            </Box>
 
-            <Button mode="secondary" onClick={() => doOpenAuth()}>
+            <Button ml={5} mode="secondary" onClick={() => doOpenAuth()}>
               Connect Wallet
             </Button>
           </Box>
