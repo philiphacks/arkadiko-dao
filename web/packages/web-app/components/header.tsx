@@ -49,7 +49,10 @@ export const Header: React.FC<HeaderProps> = ({ signOut }) => {
               <RouterLink to="/profile">Security</RouterLink>
             </Box>
             <Box display="inline-block" ml={5} mr={5} className="text-base font-medium text-gray-900 hover:text-gray-700">
-              <RouterLink to="/profile">{shortAddress()}</RouterLink>
+              <RouterLink to="/profile">
+                <span className="inline-block w-3 h-3 bg-green-400 border-2 border-white rounded-full mr-2 pt-2"></span>
+                {shortAddress()}
+              </RouterLink>
             </Box>
             <Link
               display="inline-block"

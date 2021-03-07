@@ -94,17 +94,17 @@ export const Home: React.FC = () => {
   return (
     <Flex flexWrap="wrap">
       <Container mt={10}>
-        <Text as="h1" textStyle="display.large" fontSize={7} mb={space('loose')} display="block">
-          Arkadiko Stablecoin Liquidity
-        </Text>
+        {state.userData ? (
+          <Page />
+        ) : (
+          <Container>
+             <Text as="h1" textStyle="display.large" fontSize={7} mb={space('loose')} display="block">
+               The Stacks-Native Liquidity Protocol
+             </Text>
+            <Auth />
+          </Container>
+        )}
       </Container>
-      {state.userData ? (
-        <Page />
-      ) : (
-        <Container>
-          <Auth />
-        </Container>
-      )}
     </Flex>
   );
 };
