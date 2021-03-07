@@ -26,7 +26,7 @@ export const Header: React.FC<HeaderProps> = ({ signOut }) => {
 
   return (
     <Flex as="nav" justifyContent="space-between" alignItems="center" height="64px" px={6}>
-      <Box verticalAlign="center">
+      <Box verticalAlign="center" className={`block px-4 py-2 rounded-md bg-amber-100 text-amber-700`}>
         Arkadiko
       </Box>
       <Box>
