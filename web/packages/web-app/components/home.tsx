@@ -2,14 +2,9 @@ import React, { useContext, useState } from 'react';
 import { AppContext } from '@common/context';
 import { Box, Text, Flex, space, BoxProps } from '@blockstack/ui';
 import { Auth } from './auth';
-import { Tab } from './tab';
-import { Borrow } from './borrow';
-import { Governance } from './governance';
 import { Mint } from './mint';
 import { getBalance } from '@common/get-balance';
 import { getStxPrice } from '@common/get-stx-price';
-
-type Tabs = 'borrow' | 'governance' | 'mint';
 
 const Container: React.FC<BoxProps> = ({ children, ...props }) => {
   return (
@@ -31,7 +26,7 @@ export const Home: React.FC = () => {
 
     return (
       <>
-        <Container borderColor="#F0F0F5" borderWidth={0} borderBottomWidth="1px">
+        <Container>
           {state.userData ? (
             <Box>
               <Text textStyle="body.large" display="block">
@@ -45,29 +40,16 @@ export const Home: React.FC = () => {
               </Text>
             </Box>
           ) : null }
-          <Flex>
-            <Tab active={tab === 'mint'}>
-              <Text onClick={() => setTab('mint')}>Mint & Burn</Text>
-            </Tab>
-            <Tab active={tab === 'borrow'}>
-              <Text onClick={() => setTab('borrow')}>Borrow & Lend</Text>
-            </Tab>
-            <Tab active={tab === 'governance'}>
-              <Text onClick={() => setTab('governance')}>Governance</Text>
-            </Tab>
-          </Flex>
         </Container>
         <Container>
-          {tab === 'borrow' && <Borrow />}
-          {tab === 'governance' && <Governance />}
-          {tab === 'mint' && <Mint />}
+          <Mint />
         </Container>
       </>
     );
   };
   return (
     <Flex flexWrap="wrap">
-      <Container mt={space('base-loose')}>
+      <Container mt={10}>
         <Text as="h1" textStyle="display.large" fontSize={7} mb={space('loose')} display="block">
           Arkadiko Stablecoin Liquidity
         </Text>
