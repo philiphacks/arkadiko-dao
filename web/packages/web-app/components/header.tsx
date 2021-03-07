@@ -1,8 +1,9 @@
 import React, { useContext } from 'react';
 import { Flex, Box, Button } from '@blockstack/ui';
 import { AppContext } from '@common/context';
-import { Link, MediumLink } from '@components/link';
+import { Link } from '@components/link';
 import { Link as RouterLink } from 'react-router-dom'
+import { useConnect } from '@stacks/connect-react';
 
 interface HeaderProps {
   signOut: () => void;
@@ -21,6 +22,7 @@ const shortAddress = () => {
 export const Header: React.FC<HeaderProps> = ({ signOut }) => {
   const state = useContext(AppContext);
   const env = process.env.REACT_APP_NETWORK_ENV;
+  const { doOpenAuth } = useConnect();
 
   return (
     <Flex as="nav" justifyContent="space-between" alignItems="center" height="64px" px={6}>
@@ -54,7 +56,7 @@ export const Header: React.FC<HeaderProps> = ({ signOut }) => {
             <Box display="inline-block" ml={5} mr={5}><RouterLink to="/profile">Docs</RouterLink></Box>
             <Box display="inline-block" ml={5} mr={5}><RouterLink to="/profile">Security</RouterLink></Box>
 
-            <Button mode="secondary">
+            <Button mode="secondary" onClick={() => doOpenAuth()}>
               Connect Wallet
             </Button>
           </Box>
