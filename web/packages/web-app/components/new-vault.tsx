@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Text } from '@blockstack/ui';
+import { space, Box, Text } from '@blockstack/ui';
 import { ExplorerLink } from './explorer-link';
 import { Container } from './home';
 import { useConnect } from '@stacks/connect-react';
@@ -55,13 +55,9 @@ export const NewVault = () => {
         <main className="flex-1 relative pb-8 z-0 overflow-y-auto">
           <div className="mt-8">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-              <h2 className="text-lg leading-6 font-medium text-gray-900">Overview</h2>
-
-              <ExplorerLink
-                txId="ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP.stx-reserve"
-                text="View contract in explorer"
-                skipConfirmCheck
-              />
+              <h2 className="text-2xl font-bold text-gray-900 text-center">
+                Deposit Stacks and generate sUSD
+              </h2>
               {txId && (
                 <Text textStyle="body.large" display="block" my={space('base')}>
                   <Text color="green" fontSize={1}>
@@ -71,9 +67,26 @@ export const NewVault = () => {
                 </Text>
               )}
 
-              <h2 className="text-3xl font-extrabold text-gray-900 text-center">
-                TBD
-              </h2>
+              <div className="bg-white shadow sm:rounded-lg mt-5">
+                <div className="px-4 py-5 sm:p-6">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900">
+                    Manage subscription
+                  </h3>
+                  <div className="mt-2 sm:flex sm:items-start sm:justify-between">
+                    <div className="max-w-xl text-sm text-gray-500">
+                      <p>
+                        Lorem ipsum dolor sit amet consectetur adipisicing elit. Recusandae voluptatibus corrupti atque repudiandae nam.
+                      </p>
+                    </div>
+                    <div className="mt-5 sm:mt-0 sm:ml-6 sm:flex-shrink-0 sm:flex sm:items-center">
+                      <button type="button" className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm">
+                        Change plan
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
         </main>

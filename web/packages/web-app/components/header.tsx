@@ -29,7 +29,7 @@ export const Header: React.FC<HeaderProps> = ({ signOut }) => {
       <Box verticalAlign="center" display="inline-block" className={`px-4 py-2 rounded-md bg-amber-100 text-amber-700`}>
         <div className="flex items-center">
           <Box display="inline-block" mr={3}>
-            <img className="h-8 w-auto sm:h-10" src="assets/logo.png" alt="Arkadiko"></img>
+            <img className="h-8 w-auto sm:h-10" src="/assets/logo.png" alt="Arkadiko"></img>
           </Box>
           <span className="inline-block align-middle font-semibold">Arkadiko</span>
         </div>
