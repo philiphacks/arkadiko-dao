@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { Text, Flex, Box, Button } from '@blockstack/ui';
+import { Flex, Box, Button } from '@blockstack/ui';
 import { AppContext } from '@common/context';
 import { Link } from '@components/link';
 import { NavLink as RouterLink } from 'react-router-dom'
@@ -46,10 +46,14 @@ export const Header: React.FC<HeaderProps> = ({ signOut }) => {
               <RouterLink to="/governance" exact activeClassName="border-b-2 border-indigo-500 pt-6">Governance</RouterLink>
             </Box>
             <Box display="inline-block" ml={5} mr={5} className="text-base font-medium text-gray-900 hover:text-gray-700">
-              <RouterLink to="/" exact>Docs</RouterLink>
+              <a href="https://gitbook.io" target="_blank">
+                Docs
+              </a>
             </Box>
             <Box display="inline-block" ml={5} mr={5} className="text-base font-medium text-gray-900 hover:text-gray-700">
-              <RouterLink to="/">Security</RouterLink>
+              <a href="https://github.com" target="_blank">
+                Security
+              </a>
             </Box>
             <Box display="inline-block" ml={5} mr={5} className="text-base font-medium text-gray-900 hover:text-gray-700">
               <RouterLink to="/">
@@ -72,10 +76,14 @@ export const Header: React.FC<HeaderProps> = ({ signOut }) => {
         ) :
           <Box display="inline-block">
             <Box display="inline-block" ml={5} mr={5} className="text-base font-medium text-gray-900 hover:text-gray-700">
-              <RouterLink to="/" exact>Docs</RouterLink>
+              <a href="https://gitbook.io" target="_blank">
+                Docs
+              </a>
             </Box>
             <Box display="inline-block" ml={5} mr={5} className="text-base font-medium text-gray-900 hover:text-gray-700">
-              <RouterLink to="/">Security</RouterLink>
+              <a href="https://github.com" target="_blank">
+                Security
+              </a>
             </Box>
 
             <Button ml={5} mode="secondary" onClick={() => doOpenAuth()}>

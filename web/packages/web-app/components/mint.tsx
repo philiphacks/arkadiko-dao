@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
-import { space, Box, Text, Button, ButtonGroup } from '@blockstack/ui';
-import { getAuthOrigin, stacksNetwork as network } from '@common/utils';
+import { space, Box, Text, ButtonGroup } from '@blockstack/ui';
+import { stacksNetwork as network } from '@common/utils';
 import { useSTXAddress } from '@common/use-stx-address';
-import { useConnect } from '@stacks/connect-react';
 import BN from 'bn.js';
 import {
-  uintCV,
   broadcastTransaction,
   createStacksPrivateKey,
   standardPrincipalCV,
@@ -17,9 +15,9 @@ import { VaultGroup } from './vault-group';
 import { getBalance } from '@common/get-balance';
 import { getStxPrice } from '@common/get-stx-price';
 import { Link } from '@components/link';
+import { NavLink as RouterLink } from 'react-router-dom'
 
 export const Mint = () => {
-  const { doContractCall } = useConnect();
   const address = useSTXAddress();
   const [txId, setTxId] = useState<string>('');
   const [txType, setTxType] = useState<string>('');
@@ -35,29 +33,6 @@ export const Mint = () => {
   const setState = (type: string, id: string) => {
     setTxId(id);
     setTxType(type);
-  };
-
-  const callCollateralizeAndMint = async () => {
-    clearState();
-    const authOrigin = getAuthOrigin();
-    const args = [
-      uintCV(10 * 1000000),
-      standardPrincipalCV(address || '')
-    ];
-    await doContractCall({
-      network,
-      authOrigin,
-      contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
-      contractName: 'stx-reserve',
-      functionName: 'collateralize-and-mint',
-      functionArgs: args,
-      postConditionMode: 0x01,
-      finished: data => {
-        console.log('finished collateralizing!', data);
-        console.log(data.stacksTransaction.auth.spendingCondition?.nonce.toNumber());
-        setState('Contract Call', data.txId);
-      },
-    });
   };
 
   const addMocknetStx = async () => {
@@ -82,13 +57,8 @@ export const Mint = () => {
       <main className="flex-1 relative pb-8 z-0 overflow-y-auto">
         <div className="mt-8">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-lg leading-6 font-medium text-gray-900">Overview</h2>
+            <h2 className="text-lg leading-6 font-medium text-gray-900 mb-4">Overview</h2>
 
-            <ExplorerLink
-              txId="ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP.stx-reserve"
-              text="View contract in explorer"
-              skipConfirmCheck
-            />
             {txId && (
               <Text textStyle="body.large" display="block" my={space('base')}>
                 <Text color="green" fontSize={1}>
@@ -257,9 +227,9 @@ export const Mint = () => {
                 <div className="align-middle min-w-full overflow-x-auto shadow overflow-hidden sm:rounded-lg"></div>
                 <Box>
                   <ButtonGroup spacing={4} my="base">
-                    <Button onClick={callCollateralizeAndMint}>
+                    <RouterLink to="/vaults/new" exact className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mr-5">
                       New Vault
-                    </Button>
+                    </RouterLink>
                     {env == 'mocknet' ? (
                       <Link onClick={() => addMocknetStx()} color="blue" display="inline-block" my={3}>
                         Get 50 STX tokens from mocknet
