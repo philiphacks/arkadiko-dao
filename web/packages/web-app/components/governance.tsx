@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Text } from '@blockstack/ui';
+import { Box } from '@blockstack/ui';
 import { ExplorerLink } from './explorer-link';
 import { Container } from './home';
 
