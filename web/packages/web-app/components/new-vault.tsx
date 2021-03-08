@@ -56,7 +56,7 @@ export const NewVault = () => {
           <div className="mt-8">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
               <h2 className="text-2xl font-bold text-gray-900 text-center">
-                Deposit Stacks and generate xUSD
+                Deposit STX and generate xUSD
               </h2>
               {txId && (
                 <Text textStyle="body.large" display="block" my={space('base')}>
@@ -67,8 +67,8 @@ export const NewVault = () => {
                 </Text>
               )}
 
-              <ul className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 xl:grid-cols-3 mt-3">
-                <li className="relative col-span-2 flex shadow-sm rounded-md">
+              <ul className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 xl:grid-cols-4 mt-3">
+                <li className="relative col-span-3 flex shadow-sm rounded-md">
                   <div className="bg-white shadow sm:rounded-lg mt-5 w-full">
                     <div className="px-4 py-5 sm:p-6">
                       <h3 className="text-lg leading-6 font-medium text-gray-900">
@@ -100,7 +100,7 @@ export const NewVault = () => {
                       </div>
                       <div className="sm:flex sm:items-start sm:justify-between">
                         <div className="max-w-xl text-sm text-gray-500">
-                          <p>
+                          <p className="text-xs font-medium text-gray-500 uppercase">
                             Your balance: 5 STX
                           </p>
                         </div>
@@ -135,7 +135,7 @@ export const NewVault = () => {
                       </div>
                       <div className="sm:flex sm:items-start sm:justify-between">
                         <div className="max-w-xl text-sm text-gray-500">
-                          <p>
+                          <p className="text-xs font-medium text-gray-500 uppercase">
                             Your balance: 0 xUSD
                           </p>
                         </div>
