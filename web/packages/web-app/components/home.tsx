@@ -4,7 +4,7 @@ import { Box, BoxProps } from '@blockstack/ui';
 import { Landing } from './landing';
 import { Mint } from './mint';
 
-const Container: React.FC<BoxProps> = ({ children, ...props }) => {
+export const Container: React.FC<BoxProps> = ({ children, ...props }) => {
   return (
     <Box className="bg-gray-100 h-screen" width="100%" px={6} {...props}>
       <Box maxWidth="1200px" mx="auto">

@@ -16,6 +16,7 @@ import { ExplorerLink } from './explorer-link';
 import { VaultGroup } from './vault-group';
 import { getBalance } from '@common/get-balance';
 import { getStxPrice } from '@common/get-stx-price';
+import { Link } from '@components/link';
 
 export const Mint = () => {
   const { doContractCall } = useConnect();
@@ -103,7 +104,7 @@ export const Mint = () => {
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
                       <svg className="h-6 w-6 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
                       </svg>
                     </div>
                     <div className="ml-5 w-0 flex-1">
@@ -127,7 +128,7 @@ export const Mint = () => {
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
                       <svg className="h-6 w-6 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
                       </svg>
                     </div>
                     <div className="ml-5 w-0 flex-1">
@@ -151,7 +152,7 @@ export const Mint = () => {
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
                       <svg className="h-6 w-6 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
                       </svg>
                     </div>
                     <div className="ml-5 w-0 flex-1">
@@ -172,7 +173,7 @@ export const Mint = () => {
             </div>
           </div>
 
-          <h2 className="max-w-6xl mx-auto mt-8 px-4 text-lg leading-6 font-medium text-gray-900 sm:px-6 lg:px-8">
+          <h2 className="max-w-6xl mx-auto mt-8 mb-5 px-4 text-lg leading-6 font-medium text-gray-900 sm:px-6 lg:px-8">
             Collateral Types
           </h2>
 
@@ -212,7 +213,7 @@ export const Mint = () => {
                           <div className="flex">
                             <a href="#" className="group inline-flex space-x-2 truncate text-sm">
                               <svg className="flex-shrink-0 h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                                <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                               </svg>
                               <p className="text-gray-500 truncate group-hover:text-gray-900">
                                 Stacks (STX)
@@ -252,21 +253,21 @@ export const Mint = () => {
 
           <div className="hidden sm:block">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex flex-col mt-2">
+              <div className="flex flex-col">
                 <div className="align-middle min-w-full overflow-x-auto shadow overflow-hidden sm:rounded-lg"></div>
                 <Box>
                   <ButtonGroup spacing={4} my="base">
                     <Button onClick={callCollateralizeAndMint}>
-                      Create Vault with 10 STX collateral
+                      New Vault
                     </Button>
                     {env == 'mocknet' ? (
-                      <Button onClick={() => addMocknetStx()}>
+                      <Link onClick={() => addMocknetStx()} color="blue" display="inline-block" my={3}>
                         Get 50 STX tokens from mocknet
-                      </Button>
+                      </Link>
                     ) : (
-                      <Button onClick={() => addMocknetStx()}>
+                      <Link onClick={() => addMocknetStx()} color="blue" display="inline-block" my={3}>
                         Drain the faucet on testnet
-                      </Button>
+                      </Link>
                     )}
                   </ButtonGroup>
                 </Box>
