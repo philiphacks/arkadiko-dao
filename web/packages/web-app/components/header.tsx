@@ -46,13 +46,13 @@ export const Header: React.FC<HeaderProps> = ({ signOut }) => {
               <RouterLink to="/governance" exact activeClassName="border-b-2 border-indigo-500 pt-6">Governance</RouterLink>
             </Box>
             <Box display="inline-block" ml={5} mr={5} className="text-base font-medium text-gray-900 hover:text-gray-700">
-              <RouterLink to="/profile" exact>Docs</RouterLink>
+              <RouterLink to="/" exact>Docs</RouterLink>
             </Box>
             <Box display="inline-block" ml={5} mr={5} className="text-base font-medium text-gray-900 hover:text-gray-700">
-              <RouterLink to="/profile">Security</RouterLink>
+              <RouterLink to="/">Security</RouterLink>
             </Box>
             <Box display="inline-block" ml={5} mr={5} className="text-base font-medium text-gray-900 hover:text-gray-700">
-              <RouterLink to="/profile">
+              <RouterLink to="/">
                 <span className="inline-block w-3 h-3 bg-green-400 border-2 border-white rounded-full mr-2 pt-2"></span>
                 {shortAddress()}
               </RouterLink>
@@ -72,10 +72,10 @@ export const Header: React.FC<HeaderProps> = ({ signOut }) => {
         ) :
           <Box display="inline-block">
             <Box display="inline-block" ml={5} mr={5} className="text-base font-medium text-gray-900 hover:text-gray-700">
-              <RouterLink to="/profile" exact>Docs</RouterLink>
+              <RouterLink to="/" exact>Docs</RouterLink>
             </Box>
             <Box display="inline-block" ml={5} mr={5} className="text-base font-medium text-gray-900 hover:text-gray-700">
-              <RouterLink to="/profile">Security</RouterLink>
+              <RouterLink to="/">Security</RouterLink>
             </Box>
 
             <Button ml={5} mode="secondary" onClick={() => doOpenAuth()}>
