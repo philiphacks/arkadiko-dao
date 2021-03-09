@@ -46,7 +46,11 @@ export const Vault: React.FC<VaultProps> = ({ id, address, stxCollateral, coinsM
   return (
     <tr className="bg-white">
       <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
-        <span className="text-gray-900 font-medium">{id}</span>
+        <span className="text-gray-900 font-medium">
+          <RouterLink to={`vaults/${id}`} exact className="px-2.5 py-1.5">
+            {id}
+          </RouterLink>
+        </span>
       </td>
       <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
         <span className="text-gray-900 font-medium">0.0%</span>
