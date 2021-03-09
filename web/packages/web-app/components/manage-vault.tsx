@@ -2,8 +2,34 @@ import React from 'react';
 import { Box } from '@blockstack/ui';
 import { Container } from './home';
 import { NavLink as RouterLink } from 'react-router-dom'
+import { getAuthOrigin, stacksNetwork as network } from '@common/utils';
+import { useSTXAddress } from '@common/use-stx-address';
+import { useConnect } from '@stacks/connect-react';
+import {
+  uintCV,
+  standardPrincipalCV
+} from '@stacks/transactions';
 
 export const ManageVault = ({ match }) => {
+  const { doContractCall } = useConnect();
+  const senderAddress = useSTXAddress();
+  const callBurn = async () => {
+    const authOrigin = getAuthOrigin();
+    await doContractCall({
+      network,
+      authOrigin,
+      contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
+      contractName: 'stx-reserve',
+      functionName: 'burn',
+      functionArgs: [uintCV(2), standardPrincipalCV(senderAddress || '')],
+      postConditionMode: 0x01,
+      finished: data => {
+        console.log('finished burn!', data);
+        console.log(data.stacksTransaction.auth.spendingCondition?.nonce.toNumber());
+      },
+    });
+  };
+
   return (
     <Container>
       <Box py={6}>
