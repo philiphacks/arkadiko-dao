@@ -38,6 +38,17 @@
   )
 )
 
+(define-read-only (get-risk-parameters)
+  (ok ((tuple
+    (id u0)
+    (address 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP)
+    (stx-collateral u0)
+    (coins-minted u0)
+    (at-block-height u0)
+    ))
+  )
+)
+
 (define-read-only (get-liquidation-ratio)
   (ok (var-get liquidation-ratio))
 )

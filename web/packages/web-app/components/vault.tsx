@@ -11,13 +11,11 @@ import { NavLink as RouterLink } from 'react-router-dom'
 
 interface VaultProps {
   id: string;
-  address: string;
   stxCollateral: number;
   coinsMinted: number;
-  atBlockHeight: number;
 }
 
-export const Vault: React.FC<VaultProps> = ({ id, address, stxCollateral, coinsMinted, atBlockHeight }) => {
+export const Vault: React.FC<VaultProps> = ({ id, stxCollateral, coinsMinted }) => {
   const { doContractCall } = useConnect();
   const senderAddress = useSTXAddress();
   let debtRatio = {};
