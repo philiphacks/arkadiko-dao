@@ -23,7 +23,7 @@ export const App: React.FC = () => {
 
   const signOut = () => {
     userSession.signUserOut();
-    setState({ userData: null, balance: null, vaults: [] });
+    setState({ userData: null, balance: null, vaults: [], riskParameters: {} });
   };
 
   const authOrigin = getAuthOrigin();
@@ -38,6 +38,7 @@ export const App: React.FC = () => {
       const getData = async () => {
         try {
           const account = await client.fetchBalances(userData?.profile?.stxAddress?.testnet);
+
           const vaults = await callReadOnlyFunction({
             contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
             contractName: "stx-reserve",
@@ -59,6 +60,16 @@ export const App: React.FC = () => {
               });
             }
           });
+
+          const riskParameters = await callReadOnlyFunction({
+            contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
+            contractName: "stx-reserve",
+            functionName: "get-risk-parameters",
+            functionArgs: [],
+            senderAddress: userData?.profile?.stxAddress?.testnet || '',
+            network: network,
+          });
+          const params = cvToJSON(riskParameters).value.value;
           if (mounted) {
             setState({
               userData,
@@ -66,7 +77,14 @@ export const App: React.FC = () => {
                 arkadiko: account.arkadiko.toString(),
                 stx: account.stx.toString()
               },
-              vaults: arr
+              vaults: arr,
+              riskParameters: {
+                'collateral-to-debt-ratio': params['collateral-to-debt-ratio'].value,
+                'liquidation-penalty': params['liquidation-penalty'].value,
+                'liquidation-ratio': params['liquidation-ratio'].value,
+                'maximum-debt': params['maximum-debt'].value,
+                'stability-fee': params['stability-fee'].value
+              }
             });
           }
         } catch (error) {

@@ -206,9 +206,6 @@ export const Mint = () => {
                           Liq. Ratio
                         </th>
                         <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Coll./Debt Ratio
-                        </th>
-                        <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Liq. Fee
                         </th>
                         <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -223,7 +220,7 @@ export const Mint = () => {
                       <tr className="bg-white">
                         <td className="max-w-0 px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           <div className="flex">
-                            <a href="#" className="group inline-flex space-x-2 truncate text-sm">
+                            <a href="https://www.stacks.co/" target="_blank" className="group inline-flex space-x-2 truncate text-sm">
                               <svg className="flex-shrink-0 h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                 <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                               </svg>
@@ -234,19 +231,16 @@ export const Mint = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
-                          <span className="text-gray-900 font-medium">0.0%</span>
+                          <span className="text-gray-900 font-medium">{state.riskParameters['stability-fee']}%</span>
                         </td>
                         <td className="hidden px-6 py-4 whitespace-nowrap text-sm text-gray-500 md:block">
-                          <span className="text-gray-900 font-medium">150</span>
+                          <span className="text-gray-900 font-medium">{state.riskParameters['liquidation-ratio']}</span>
                         </td>
                         <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
-                          <span className="text-gray-900 font-medium">200</span>
+                          <span className="text-gray-900 font-medium">{state.riskParameters['liquidation-fee']}%</span>
                         </td>
                         <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
-                          <span className="text-gray-900 font-medium">13.0%</span>
-                        </td>
-                        <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
-                          <span className="text-gray-900 font-medium">$100 million</span>
+                          <span className="text-gray-900 font-medium">${parseInt(state.riskParameters['maximum-debt'], 10)/1000000} million</span>
                         </td>
                         <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
                           <span className="text-gray-900 font-medium">$0 million</span>
