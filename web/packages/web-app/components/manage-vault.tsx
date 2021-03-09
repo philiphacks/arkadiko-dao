@@ -1,5 +1,5 @@
-import React, { useContext } from 'react';
-import { Box } from '@blockstack/ui';
+import React, { useContext, useState } from 'react';
+import { Box, Modal } from '@blockstack/ui';
 import { Container } from './home';
 import { NavLink as RouterLink } from 'react-router-dom'
 import { Link } from '@components/link';
@@ -20,17 +20,16 @@ export const ManageVault = ({ match }) => {
   const senderAddress = useSTXAddress();
   const state = useContext(AppContext);
   const price = parseFloat(getStxPrice().price);
+  const [showDepositModal, setShowDepositModal] = useState(false);
 
   const searchVault = (id: string) => {
     for (let i = 0; i < state.vaults.length; i++) {
       let vault = state.vaults[i];
-      console.log(vault);
       if (vault.id === parseInt(id, 10)) {
         return vault;
       }
     }
   }
-  console.log('Go', match.params.id);
   const vault = searchVault(match.params.id);
 
   const callBurn = async () => {
@@ -54,6 +53,23 @@ export const ManageVault = ({ match }) => {
   if (match.params.id) {
     debtRatio = getCollateralToDebtRatio(match.params.id)?.collateralToDebt;
   }
+
+  const addDeposit = async () => {
+    const authOrigin = getAuthOrigin();
+    await doContractCall({
+      network,
+      authOrigin,
+      contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
+      contractName: 'stx-reserve',
+      functionName: 'deposit',
+      functionArgs: [uintCV(3), uintCV(10000000)],
+      postConditionMode: 0x01,
+      finished: data => {
+        console.log('finished burn!', data);
+        console.log(data.stacksTransaction.auth.spendingCondition?.nonce.toNumber());
+      },
+    });
+  };
 
   const liquidationPrice = () => {
     if (vault) {
@@ -82,6 +98,40 @@ export const ManageVault = ({ match }) => {
 
   return (
     <Container>
+      <Modal isOpen={showDepositModal}>
+        <div className="flex pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+          <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-sm sm:w-full sm:p-6" role="dialog" aria-modal="true" aria-labelledby="modal-headline">
+            <div>
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                <svg className="h-6 w-6 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <div className="mt-3 text-center sm:mt-5">
+                <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-headline">
+                  Deposit Extra Collateral
+                </h3>
+                <div className="mt-2">
+                  <p className="text-sm text-gray-500">
+                    Choose how much extra collateral you want to post. You have a balance of {state.balance['stx'] / 1000000} STX.
+                  </p>
+                  <input type="text" name="price" id="price" className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md" placeholder="0.00" aria-describedby="price-currency" />
+                </div>
+              </div>
+            </div>
+            <div className="mt-5 sm:mt-6">
+              <button type="button" onClick={() => addDeposit()} className="mb-5 inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm">
+                Add deposit
+              </button>
+
+              <button type="button" onClick={() => setShowDepositModal(false)} className="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-gray-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
       <Box py={6}>
         <main className="flex-1 relative pb-8 z-0 overflow-y-auto">
           <div className="mt-8">
@@ -220,9 +270,9 @@ export const ManageVault = ({ match }) => {
 
                     <div className="max-w-xl text-sm text-gray-500">
                       <p>
-                        <RouterLink to={`vaults/2`} exact className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <Link onClick={() => setShowDepositModal(true)} className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                           Deposit
-                        </RouterLink>
+                        </Link>
                       </p>
                     </div>
                   </div>
@@ -272,7 +322,7 @@ export const ManageVault = ({ match }) => {
 
                     <div className="max-w-xl text-sm text-gray-500">
                       <p>
-                        <Link onClick={() => callBurn()} exact className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <Link onClick={() => callBurn()} className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                           Pay back
                         </Link>
                       </p>

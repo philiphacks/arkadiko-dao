@@ -9,6 +9,7 @@
 (define-constant err-transfer-failed u2)
 (define-constant err-minter-failed u3)
 (define-constant err-burn-failed u4)
+(define-constant err-deposit-failed u5)
 
 ;; risk parameters
 (define-data-var liquidation-ratio uint u150)
@@ -150,6 +151,26 @@
         error (err err-transfer-failed)
       )
       error (err err-minter-failed)
+    )
+  )
+)
+
+;; deposit extra collateral in vault
+;; TODO: assert that tx-sender == vault owner
+(define-public (deposit (vault-id uint) (ustx-amount uint))
+  (let ((vault (get-vault-by-id vault-id)))
+    (match (print (stx-transfer? ustx-amount tx-sender (as-contract tx-sender)))
+      success (begin
+        (let ((new-stx-collateral (+ ustx-amount (get stx-collateral vault))))
+          (map-set vaults { id: vault-id } {
+            id: vault-id, address: tx-sender,
+            stx-collateral: ustx-amount, coins-minted: (get coins-minted vault),
+            at-block-height: block-height }
+          )
+          (ok true)
+        )
+      )
+      error (err err-deposit-failed)
     )
   )
 )
