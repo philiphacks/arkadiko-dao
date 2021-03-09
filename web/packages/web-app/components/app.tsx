@@ -48,13 +48,14 @@ export const App: React.FC = () => {
             network: network,
           });
           const json = cvToJSON(vaults);
-          let arr:Array<{ id: string, 'stx-collateral': string, 'coins-minted': string }> = [];
+          let arr:Array<{ id: string, owner: string, 'stx-collateral': string, 'coins-minted': string }> = [];
           json.value.value.forEach((e: object) => {
             const vault = tupleCV(e);
             const data = vault.data.value;
             if (data['stx-collateral'].value !== 0) {
               arr.push({
                 id: data['id'].value,
+                owner: data['address'].value,
                 'stx-collateral': data['stx-collateral'].value,
                 'coins-minted': data['coins-minted'].value
               });

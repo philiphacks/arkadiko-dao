@@ -9,24 +9,24 @@ interface VaultProps {
   coinsMinted: number;
 }
 
+export const debtClass = (ratio: number) => {
+  if (ratio >= 200) {
+    return 'text-green-400';
+  } else if (ratio >= 180) {
+    return 'text-orange-400';
+  } else if (ratio > 160) {
+    return 'text-red-400';
+  }
+
+  return 'text-red-400';
+};
+
 export const Vault: React.FC<VaultProps> = ({ id, stxCollateral, coinsMinted }) => {
   const state = useContext(AppContext);
   let debtRatio = 0;
   if (id) {
     debtRatio = getCollateralToDebtRatio(id)?.collateralToDebt;
   }
-
-  const debtClass = () => {
-    if (debtRatio >= 200) {
-      return 'text-green-400';
-    } else if (debtRatio >= 180) {
-      return 'text-orange-400';
-    } else if (debtRatio > 160) {
-      return 'text-red-400';
-    }
-
-    return 'text-red-400';
-  };
 
   return (
     <tr className="bg-white">
@@ -44,7 +44,7 @@ export const Vault: React.FC<VaultProps> = ({ id, stxCollateral, coinsMinted }) 
         <span className="text-gray-900 font-medium">{state.riskParameters['liquidation-ratio']}%</span>
       </td>
       <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
-        <span className={`${debtClass()} font-medium`}>{debtRatio}%</span>
+        <span className={`${debtClass(debtRatio)} font-medium`}>{debtRatio}%</span>
       </td>
       <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
         <span className="text-gray-900 font-medium">{coinsMinted / 1000000}</span>

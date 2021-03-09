@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Box } from '@blockstack/ui';
 import { Container } from './home';
 import { NavLink as RouterLink } from 'react-router-dom'
+import { Link } from '@components/link';
 import { getAuthOrigin, stacksNetwork as network } from '@common/utils';
 import { useSTXAddress } from '@common/use-stx-address';
 import { useConnect } from '@stacks/connect-react';
@@ -9,10 +10,29 @@ import {
   uintCV,
   standardPrincipalCV
 } from '@stacks/transactions';
+import { AppContext } from '@common/context';
+import { getCollateralToDebtRatio } from '@common/get-collateral-to-debt-ratio';
+import { debtClass } from './vault';
+import { getStxPrice } from '@common/get-stx-price';
 
 export const ManageVault = ({ match }) => {
   const { doContractCall } = useConnect();
   const senderAddress = useSTXAddress();
+  const state = useContext(AppContext);
+  const price = parseFloat(getStxPrice().price);
+
+  const searchVault = (id: string) => {
+    for (let i = 0; i < state.vaults.length; i++) {
+      let vault = state.vaults[i];
+      console.log(vault);
+      if (vault.id === parseInt(id, 10)) {
+        return vault;
+      }
+    }
+  }
+  console.log('Go', match.params.id);
+  const vault = searchVault(match.params.id);
+
   const callBurn = async () => {
     const authOrigin = getAuthOrigin();
     await doContractCall({
@@ -26,9 +46,39 @@ export const ManageVault = ({ match }) => {
       finished: data => {
         console.log('finished burn!', data);
         console.log(data.stacksTransaction.auth.spendingCondition?.nonce.toNumber());
+        window.location.href = '/';
       },
     });
   };
+  let debtRatio = 0;
+  if (match.params.id) {
+    debtRatio = getCollateralToDebtRatio(match.params.id)?.collateralToDebt;
+  }
+
+  const liquidationPrice = () => {
+    if (vault) {
+      const liquidationRatio = parseInt(state.riskParameters['liquidation-ratio'], 10);
+      return (liquidationRatio * vault['coins-minted'] / 1000000000);
+    }
+
+    return 0;
+  }
+
+  const stxLocked = () => {
+    if (vault) {
+      return parseInt(vault['stx-collateral'], 10) / 1000000;
+    }
+
+    return 0;
+  }
+
+  const outstandingDebt = () => {
+    if (vault) {
+      return parseInt(vault['coins-minted'], 10) / 1000000;
+    }
+
+    return 0;
+  }
 
   return (
     <Container>
@@ -59,7 +109,7 @@ export const ManageVault = ({ match }) => {
               <div className="bg-white shadow sm:rounded-lg w-full">
                 <div className="px-4 py-5 sm:p-6">
                   <h2 className="text-lg leading-6 font-medium text-gray-900">
-                    $0.7 USD (STX/USD)
+                    ${liquidationPrice()} USD (STX/USD)
                   </h2>
                   <div className="mt-2 sm:flex sm:items-start sm:justify-between">
                     <div className="max-w-xl text-sm text-gray-500">
@@ -70,7 +120,7 @@ export const ManageVault = ({ match }) => {
 
                     <div className="max-w-xl text-sm text-gray-500">
                       <p>
-                        1.1 USD
+                        ${parseFloat(price / 100)} USD
                       </p>
                     </div>
                   </div>
@@ -84,7 +134,7 @@ export const ManageVault = ({ match }) => {
 
                     <div className="max-w-xl text-sm text-gray-500">
                       <p>
-                        13%
+                        {state.riskParameters['liquidation-penalty']}%
                       </p>
                     </div>
                   </div>
@@ -96,8 +146,8 @@ export const ManageVault = ({ match }) => {
             <li className="relative col-span-2 flex shadow-sm rounded-md">
               <div className="bg-white shadow sm:rounded-lg w-full">
                 <div className="px-4 py-5 sm:p-6">
-                  <h2 className="text-lg leading-6 font-medium text-gray-900">
-                    200%
+                  <h2 className={`text-lg leading-6 font-medium ${debtClass(debtRatio)}`}>
+                    {debtRatio}%
                   </h2>
                   <div className="mt-2 sm:flex sm:items-start sm:justify-between">
                     <div className="max-w-xl text-sm text-gray-500">
@@ -108,7 +158,7 @@ export const ManageVault = ({ match }) => {
 
                     <div className="max-w-xl text-sm text-gray-500">
                       <p>
-                        150%
+                        {state.riskParameters['liquidation-ratio']}%
                       </p>
                     </div>
                   </div>
@@ -164,7 +214,7 @@ export const ManageVault = ({ match }) => {
 
                     <div className="text-sm text-gray-500">
                       <p>
-                        5 STX
+                        {stxLocked()} STX
                       </p>
                     </div>
 
@@ -216,15 +266,15 @@ export const ManageVault = ({ match }) => {
 
                     <div className="max-w-xl text-sm text-gray-500">
                       <p>
-                        5 xUSD
+                        {outstandingDebt()} xUSD
                       </p>
                     </div>
 
                     <div className="max-w-xl text-sm text-gray-500">
                       <p>
-                        <RouterLink to={`vaults/2`} exact className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                          Payback
-                        </RouterLink>
+                        <Link onClick={() => callBurn()} exact className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                          Pay back
+                        </Link>
                       </p>
                     </div>
                   </div>
@@ -245,9 +295,9 @@ export const ManageVault = ({ match }) => {
 
                     <div className="max-w-xl text-sm text-gray-500">
                       <p>
-                        <RouterLink to={`vaults/2`} exact className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <Link onClick={() => callBurn()} className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                           Mint
-                        </RouterLink>
+                        </Link>
                       </p>
                     </div>
                   </div>

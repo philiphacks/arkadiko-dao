@@ -234,7 +234,7 @@ export const Mint = () => {
                           <span className="text-gray-900 font-medium">{state.riskParameters['stability-fee']}%</span>
                         </td>
                         <td className="hidden px-6 py-4 whitespace-nowrap text-sm text-gray-500 md:block">
-                          <span className="text-gray-900 font-medium">{state.riskParameters['liquidation-ratio']}</span>
+                          <span className="text-gray-900 font-medium">{state.riskParameters['liquidation-ratio']}%</span>
                         </td>
                         <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
                           <span className="text-gray-900 font-medium">{state.riskParameters['liquidation-fee']}%</span>
