@@ -96,6 +96,10 @@ export const ManageVault = ({ match }) => {
     return 0;
   }
 
+  const availableToMint = () => {
+    return 5;
+  }
+
   return (
     <Container>
       <Modal isOpen={showDepositModal}>
@@ -339,7 +343,7 @@ export const ManageVault = ({ match }) => {
 
                     <div className="max-w-xl text-sm text-gray-500">
                       <p>
-                        0 xUSD
+                        {availableToMint()} xUSD
                       </p>
                     </div>
 
