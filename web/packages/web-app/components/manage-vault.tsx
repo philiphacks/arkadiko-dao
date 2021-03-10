@@ -79,7 +79,6 @@ export const ManageVault = ({ match }) => {
   }
 
   const stxLocked = () => {
-    console.log(state);
     if (vault) {
       return parseInt(vault['stx-collateral'], 10) / 1000000;
     }

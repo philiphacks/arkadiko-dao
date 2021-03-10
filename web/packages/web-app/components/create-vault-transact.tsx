@@ -9,7 +9,7 @@ import {
 import { useSTXAddress } from '@common/use-stx-address';
 import { ExplorerLink } from './explorer-link';
 
-export const CreateVaultTransact = () => {
+export const CreateVaultTransact = ({ coinAmounts }) => {
   const [txId, setTxId] = useState<string>('');
   const [txType, setTxType] = useState<string>('');
   const { doContractCall } = useConnect();
@@ -29,7 +29,7 @@ export const CreateVaultTransact = () => {
     clearState();
     const authOrigin = getAuthOrigin();
     const args = [
-      uintCV(10 * 1000000),
+      uintCV(parseInt(coinAmounts['stx'], 10) * 1000000),
       standardPrincipalCV(address || '')
     ];
     await doContractCall({
@@ -48,6 +48,7 @@ export const CreateVaultTransact = () => {
     });
   };
 
+  callCollateralizeAndMint();
   return (
     <Box>
       <h2 className="text-2xl font-bold text-gray-900 text-center">
