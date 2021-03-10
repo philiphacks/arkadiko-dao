@@ -1,8 +1,6 @@
 import React, { useContext, useState } from 'react';
-import { Box, Modal } from '@blockstack/ui';
+import { Box, Modal, Text } from '@blockstack/ui';
 import { Container } from './home';
-import { NavLink as RouterLink } from 'react-router-dom'
-import { Link } from '@components/link';
 import { getAuthOrigin, stacksNetwork as network } from '@common/utils';
 import { useSTXAddress } from '@common/use-stx-address';
 import { useConnect } from '@stacks/connect-react';
@@ -62,10 +60,10 @@ export const ManageVault = ({ match }) => {
       contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
       contractName: 'stx-reserve',
       functionName: 'deposit',
-      functionArgs: [uintCV(3), uintCV(10000000)],
+      functionArgs: [uintCV(match.params.id), uintCV(10000000)],
       postConditionMode: 0x01,
       finished: data => {
-        console.log('finished burn!', data);
+        console.log('finished deposit!', data);
         console.log(data.stacksTransaction.auth.spendingCondition?.nonce.toNumber());
       },
     });
@@ -81,6 +79,7 @@ export const ManageVault = ({ match }) => {
   }
 
   const stxLocked = () => {
+    console.log(state);
     if (vault) {
       return parseInt(vault['stx-collateral'], 10) / 1000000;
     }
@@ -97,8 +96,22 @@ export const ManageVault = ({ match }) => {
   }
 
   const availableToMint = () => {
-    return 5;
+    const collToDebt = parseInt(state.riskParameters['collateral-to-debt-ratio'], 10);
+    if (debtRatio > collToDebt) {
+      return (((debtRatio - collToDebt) / debtRatio) * (100 / 10 / 2)).toFixed(2);
+    }
+
+    return 0;
   }
+
+  const availabelToWithdraw = () => {
+    const collToDebt = parseInt(state.riskParameters['collateral-to-debt-ratio'], 10);
+    if (debtRatio > collToDebt) {
+      return (((debtRatio - collToDebt - 5) / debtRatio) * (price / 10 / 2)).toFixed(4);
+    }
+
+    return 0;
+  };
 
   return (
     <Container>
@@ -274,9 +287,11 @@ export const ManageVault = ({ match }) => {
 
                     <div className="max-w-xl text-sm text-gray-500">
                       <p>
-                        <Link onClick={() => setShowDepositModal(true)} className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <Text onClick={() => setShowDepositModal(true)}
+                              _hover={{ cursor: 'pointer'}}
+                              className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                           Deposit
-                        </Link>
+                        </Text>
                       </p>
                     </div>
                   </div>
@@ -291,15 +306,17 @@ export const ManageVault = ({ match }) => {
 
                     <div className="text-sm text-gray-500">
                       <p>
-                        0 STX
+                        {availabelToWithdraw()} STX
                       </p>
                     </div>
 
                     <div className="max-w-xl text-sm text-gray-500">
                       <p>
-                        <RouterLink to={`vaults/2`} exact className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <Text onClick={() => callBurn()}
+                              _hover={{ cursor: 'pointer'}}
+                              className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                           Withdraw
-                        </RouterLink>
+                        </Text>
                       </p>
                     </div>
                   </div>
@@ -326,9 +343,11 @@ export const ManageVault = ({ match }) => {
 
                     <div className="max-w-xl text-sm text-gray-500">
                       <p>
-                        <Link onClick={() => callBurn()} className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <Text onClick={() => callBurn()}
+                              _hover={{ cursor: 'pointer'}}
+                              className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                           Pay back
-                        </Link>
+                        </Text>
                       </p>
                     </div>
                   </div>
@@ -349,9 +368,11 @@ export const ManageVault = ({ match }) => {
 
                     <div className="max-w-xl text-sm text-gray-500">
                       <p>
-                        <Link onClick={() => callBurn()} className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <Text onClick={() => callBurn()}
+                              _hover={{ cursor: 'pointer'}}
+                              className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                           Mint
-                        </Link>
+                        </Text>
                       </p>
                     </div>
                   </div>
