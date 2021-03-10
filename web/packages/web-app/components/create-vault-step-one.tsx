@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Box } from '@blockstack/ui';
 import { AppContext } from '@common/context';
 import { getStxPrice } from '@common/get-stx-price';
@@ -12,12 +12,18 @@ interface VaultProps {
 export const CreateVaultStepOne: React.FC<VaultProps> = ({ setStep, setCoinAmounts }) => {
   const state = useContext(AppContext);
   const continueVault = () => {
-    setCoinAmounts({ stx: stxAmount, xusd: coinAmount });
+    setCoinAmounts({
+      amounts: { stx: stxAmount, xusd: coinAmount },
+      'liquidation-price': liquidationPrice,
+      'collateral-to-debt-ratio': collateralToDebt
+    });
     setStep(1);
   };
   const [stxAmount, setStxAmount] = useState('');
   const [coinAmount, setCoinAmount] = useState('');
   const [maximumToMint, setMaximumToMint] = useState(0);
+  const [liquidationPrice, setLiquidationPrice] = useState(0);
+  const [collateralToDebt, setCollateralToDebt] = useState(0);
   const price = parseFloat(getStxPrice().price);
 
   const maximumCoinsToMint = (value: string) => {
@@ -38,22 +44,13 @@ export const CreateVaultStepOne: React.FC<VaultProps> = ({ setStep, setCoinAmoun
     }
   };
 
-  const liquidationPrice = () => {
+  useEffect(() => {
     if (stxAmount && coinAmount) {
       const liquidationRatio = parseInt(state.riskParameters['liquidation-ratio'], 10);
-      return getLiquidationPrice(liquidationRatio, parseInt(coinAmount, 10), parseInt(stxAmount, 10));
+      setLiquidationPrice(getLiquidationPrice(liquidationRatio, parseInt(coinAmount, 10), parseInt(stxAmount, 10)));
+      setCollateralToDebt(getCollateralToDebtRatio(price, parseInt(coinAmount, 10), parseInt(stxAmount, 10)));
     }
-
-    return 'N/A';
-  }
-
-  const collateralToDebt = () => {
-    if (stxAmount && coinAmount) {
-      return getCollateralToDebtRatio(price, parseInt(coinAmount, 10), parseInt(stxAmount, 10));
-    }
-
-    return 'N/A';
-  }
+  }, [stxAmount, coinAmount]);
 
   return (
     <Box>
@@ -138,13 +135,6 @@ export const CreateVaultStepOne: React.FC<VaultProps> = ({ setStep, setCoinAmoun
               <div className="sm:flex sm:items-start sm:justify-between">
                 <div className="max-w-xl text-sm text-gray-500">
                   <p className="text-xs font-medium text-gray-500 uppercase">
-                    Your balance: {state.balance['arkadiko'] / 1000000} xUSD
-                  </p>
-                </div>
-              </div>
-              <div className="sm:flex sm:items-start sm:justify-between">
-                <div className="max-w-xl text-sm text-gray-500">
-                  <p className="text-xs font-medium text-gray-500">
                     Maximum to mint: {maximumToMint / 1000000} xUSD
                   </p>
                 </div>
@@ -160,14 +150,14 @@ export const CreateVaultStepOne: React.FC<VaultProps> = ({ setStep, setCoinAmoun
                 Collateral to Debt Ratio
               </h3>
               <p className="max-w-xl text-sm text-gray-500 mb-3">
-                {collateralToDebt()}
+                {collateralToDebt}
               </p>
 
               <h3 className="text-md leading-6 font-medium text-gray-900">
                 Liquidation Price
               </h3>
               <p className="max-w-xl text-sm text-gray-500 mb-3">
-                ${liquidationPrice()}
+                ${liquidationPrice}
               </p>
 
               <h3 className="text-md leading-6 font-medium text-gray-900">
