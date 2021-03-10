@@ -43,7 +43,7 @@ export const CreateVaultTransact = ({ coinAmounts }) => {
       finished: data => {
         console.log('finished collateralizing!', data);
         console.log(data.stacksTransaction.auth.spendingCondition?.nonce.toNumber());
-        setState('Contract Call', data.txId);
+        setState('Collateralize and Mint', data.txId);
       },
     });
   };
@@ -70,7 +70,7 @@ export const CreateVaultTransact = ({ coinAmounts }) => {
                 {txId && (
                   <Text textStyle="body.large" display="block" my={space('base')}>
                     <Text color="green" fontSize={1}>
-                      Successfully broadcasted &quot;{txType}&quot;
+                      Successfully broadcasted &quot;{txType}&quot;. This can take a few minutes.
                     </Text>
                     <ExplorerLink txId={txId} />
                   </Text>
