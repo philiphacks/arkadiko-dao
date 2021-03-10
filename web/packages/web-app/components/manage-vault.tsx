@@ -12,6 +12,7 @@ import { AppContext } from '@common/context';
 import { getCollateralToDebtRatio } from '@common/get-collateral-to-debt-ratio';
 import { debtClass } from './vault';
 import { getStxPrice } from '@common/get-stx-price';
+import { getLiquidationPrice } from '@common/vault-utils';
 
 export const ManageVault = ({ match }) => {
   const { doContractCall } = useConnect();
@@ -71,8 +72,9 @@ export const ManageVault = ({ match }) => {
 
   const liquidationPrice = () => {
     if (vault) {
+      // (liquidationRatio * coinsMinted) / stxCollateral = rekt
       const liquidationRatio = parseInt(state.riskParameters['liquidation-ratio'], 10);
-      return (liquidationRatio * vault['coins-minted'] / 1000000000);
+      return getLiquidationPrice(liquidationRatio, vault['coins-minted'], vault['stx-collateral']);
     }
 
     return 0;

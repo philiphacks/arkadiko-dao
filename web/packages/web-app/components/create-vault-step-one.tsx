@@ -2,10 +2,11 @@ import React, { useContext, useState } from 'react';
 import { Box } from '@blockstack/ui';
 import { AppContext } from '@common/context';
 import { getStxPrice } from '@common/get-stx-price';
+import { getLiquidationPrice, getCollateralToDebtRatio } from '@common/vault-utils';
 
 interface VaultProps {
-  setStep: () => void;
-  setCoinAmounts: () => void;
+  setStep: (arg: number) => void;
+  setCoinAmounts: (arg: object) => void;
 }
 
 export const CreateVaultStepOne: React.FC<VaultProps> = ({ setStep, setCoinAmounts }) => {
@@ -37,6 +38,23 @@ export const CreateVaultStepOne: React.FC<VaultProps> = ({ setStep, setCoinAmoun
     }
   };
 
+  const liquidationPrice = () => {
+    if (stxAmount && coinAmount) {
+      const liquidationRatio = parseInt(state.riskParameters['liquidation-ratio'], 10);
+      return getLiquidationPrice(liquidationRatio, parseInt(coinAmount, 10), parseInt(stxAmount, 10));
+    }
+
+    return 'N/A';
+  }
+
+  const collateralToDebt = () => {
+    if (stxAmount && coinAmount) {
+      return getCollateralToDebtRatio(price, parseInt(coinAmount, 10), parseInt(stxAmount, 10));
+    }
+
+    return 'N/A';
+  }
+
   return (
     <Box>
       <h2 className="text-2xl font-bold text-gray-900 text-center">
@@ -62,7 +80,7 @@ export const CreateVaultStepOne: React.FC<VaultProps> = ({ setStep, setCoinAmoun
                   <div className="mt-1 relative rounded-md shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <span className="text-gray-500 sm:text-sm">
-                        $
+                        
                       </span>
                     </div>
                     <input type="text" name="stx" id="stxAmount"
@@ -142,14 +160,14 @@ export const CreateVaultStepOne: React.FC<VaultProps> = ({ setStep, setCoinAmoun
                 Collateral to Debt Ratio
               </h3>
               <p className="max-w-xl text-sm text-gray-500 mb-3">
-                200
+                {collateralToDebt()}
               </p>
 
               <h3 className="text-md leading-6 font-medium text-gray-900">
                 Liquidation Price
               </h3>
               <p className="max-w-xl text-sm text-gray-500 mb-3">
-                $0
+                ${liquidationPrice()}
               </p>
 
               <h3 className="text-md leading-6 font-medium text-gray-900">
