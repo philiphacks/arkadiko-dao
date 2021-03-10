@@ -40,7 +40,7 @@ export const ManageVault = ({ match }) => {
       contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
       contractName: 'stx-reserve',
       functionName: 'burn',
-      functionArgs: [uintCV(2), standardPrincipalCV(senderAddress || '')],
+      functionArgs: [uintCV(match.params.id), standardPrincipalCV(senderAddress || '')],
       postConditionMode: 0x01,
       finished: data => {
         console.log('finished burn!', data);
