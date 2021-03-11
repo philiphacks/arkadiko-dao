@@ -10,6 +10,7 @@ import { getCollateralToDebtRatio } from '@common/get-collateral-to-debt-ratio';
 import { debtClass } from './vault';
 import { getStxPrice } from '@common/get-stx-price';
 import { getLiquidationPrice, availableStxToWithdraw, availableCoinsToMint } from '@common/vault-utils';
+import { Link } from '@components/link';
 
 export const ManageVault = ({ match }) => {
   const { doContractCall } = useConnect();
@@ -140,6 +141,22 @@ export const ManageVault = ({ match }) => {
     });
   };
 
+  const callNotifyRisky = async () => {
+    const authOrigin = getAuthOrigin();
+    await doContractCall({
+      network,
+      authOrigin,
+      contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
+      contractName: 'liquidator',
+      functionName: 'notify-risky-reserve',
+      functionArgs: [uintCV(match.params.id)],
+      postConditionMode: 0x01,
+      finished: data => {
+        console.log('finished notify risky reserve!', data);
+      },
+    });
+  };
+
   return (
     <Container>
       <Modal isOpen={showDepositModal}>
@@ -210,6 +227,9 @@ export const ManageVault = ({ match }) => {
               <h2 className="text-lg leading-6 font-medium text-gray-900 mt-8 mb-4">
                 Collateral to Debt Ratio
               </h2>
+              <Link onClick={() => callNotifyRisky()} color="blue" display="inline-block" mt={8} ml={5}>
+                (Notify Vault as Risky)
+              </Link>
             </li>
           </ul>
 

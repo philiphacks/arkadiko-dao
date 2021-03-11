@@ -6,9 +6,9 @@ export async function deploy() {
   await deployContract('arkadiko-token');
   await deployContract('stx-reserve');
 
+  await deployContract('auction-engine');
   await deployContract('liquidator');
   await deployContract('stacker-registry');
-  await deployContract('auction-engine');
 };
 
 deploy();
@@ -31,3 +31,5 @@ deploy();
 // curl "http://localhost:3999/extended/v1/tx/0xd621939d935614ada2a4cb7aacca5e933030763d53f5625b03b1c49d3919a5d6"
 
 // 5. Use app
+
+// Notify risky vault
