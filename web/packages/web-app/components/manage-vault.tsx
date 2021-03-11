@@ -4,15 +4,12 @@ import { Container } from './home';
 import { getAuthOrigin, stacksNetwork as network } from '@common/utils';
 import { useSTXAddress } from '@common/use-stx-address';
 import { useConnect } from '@stacks/connect-react';
-import {
-  uintCV,
-  standardPrincipalCV
-} from '@stacks/transactions';
+import { uintCV, standardPrincipalCV } from '@stacks/transactions';
 import { AppContext } from '@common/context';
 import { getCollateralToDebtRatio } from '@common/get-collateral-to-debt-ratio';
 import { debtClass } from './vault';
 import { getStxPrice } from '@common/get-stx-price';
-import { getLiquidationPrice } from '@common/vault-utils';
+import { getLiquidationPrice, availableStxToWithdraw, availableCoinsToMint } from '@common/vault-utils';
 
 export const ManageVault = ({ match }) => {
   const { doContractCall } = useConnect();
@@ -100,24 +97,6 @@ export const ManageVault = ({ match }) => {
 
     return 0;
   }
-
-  const availableToMint = () => {
-    const collToDebt = parseInt(state.riskParameters['collateral-to-debt-ratio'], 10);
-    if (debtRatio > collToDebt) {
-      return (((debtRatio - collToDebt) / debtRatio) * (100 / 10 / 2)).toFixed(2);
-    }
-
-    return 0;
-  }
-
-  const availableToWithdraw = () => {
-    const collToDebt = parseInt(state.riskParameters['collateral-to-debt-ratio'], 10);
-    if (debtRatio > collToDebt) {
-      return (((debtRatio - collToDebt - 5) / debtRatio) * (price / 10 / 2)).toFixed(4);
-    }
-
-    return 0;
-  };
 
   const onInputChange = (event) => {
     const value = event.target.value;
@@ -332,7 +311,7 @@ export const ManageVault = ({ match }) => {
 
                     <div className="text-sm text-gray-500">
                       <p>
-                        {availableToWithdraw()} STX
+                        {availableStxToWithdraw(price, stxLocked(), outstandingDebt(), state.riskParameters['collateral-to-debt-ratio'])} STX
                       </p>
                     </div>
 
@@ -388,7 +367,7 @@ export const ManageVault = ({ match }) => {
 
                     <div className="max-w-xl text-sm text-gray-500">
                       <p>
-                        {availableToMint()} xUSD
+                        {availableCoinsToMint(price, stxLocked(), outstandingDebt(), state.riskParameters['collateral-to-debt-ratio'])} xUSD
                       </p>
                     </div>
 
