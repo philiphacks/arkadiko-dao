@@ -202,7 +202,7 @@
 ;; mint new tokens when collateral to debt allows it (i.e. > collateral-to-debt-ratio)
 (define-public (mint (vault-id uint) (coins-amount uint))
   (let ((vault (get-vault-by-id vault-id)))
-    (let ((coins (- (get coins-minted vault) (unwrap-panic (calculate-arkadiko-count (get stx-collateral vault))))))
+    (let ((coins (- (unwrap-panic (calculate-arkadiko-count (get stx-collateral vault))) (get coins-minted vault))))
       (if (>= coins coins-amount)
         (match (print (as-contract (contract-call? .arkadiko-token mint coins-amount (get address vault))))
           success (begin
