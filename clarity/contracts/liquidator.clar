@@ -9,11 +9,7 @@
         (begin
           (print "Vault is in danger. Time to liquidate.")
           (let ((stx-collateral (unwrap-panic (as-contract (contract-call? .stx-reserve liquidate vault-id)))))
-            (if
-              (and
-                (is-some stx-collateral)
-                (unwrap-panic (start-auction (unwrap-panic stx-collateral)))
-              )
+            (if (unwrap-panic (start-auction stx-collateral))
               (ok true)
               (err err-liquidation-failed)
             )

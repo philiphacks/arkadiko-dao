@@ -103,12 +103,41 @@ export const ManageVault = ({ match }) => {
     setExtraStxDeposit(value);
   };
 
-  const callMint = () => {
-    console.log('minting...');
+  const callMint = async () => {
+    const value = availableCoinsToMint(price, stxLocked(), outstandingDebt(), state.riskParameters['collateral-to-debt-ratio'])
+
+    const authOrigin = getAuthOrigin();
+    await doContractCall({
+      network,
+      authOrigin,
+      contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
+      contractName: 'stx-reserve',
+      functionName: 'mint',
+      functionArgs: [uintCV(match.params.id), uintCV(parseFloat(value) * 1000000)],
+      postConditionMode: 0x01,
+      finished: data => {
+        console.log('finished mint!', data);
+        console.log(data.stacksTransaction.auth.spendingCondition?.nonce.toNumber());
+      },
+    });
   };
 
-  const callWithdraw = () => {
-    console.log('withdrawing...');
+  const callWithdraw = async () => {
+    const value = availableStxToWithdraw(price, stxLocked(), outstandingDebt(), state.riskParameters['collateral-to-debt-ratio']);
+
+    const authOrigin = getAuthOrigin();
+    await doContractCall({
+      network,
+      authOrigin,
+      contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
+      contractName: 'stx-reserve',
+      functionName: 'withdraw',
+      functionArgs: [uintCV(match.params.id), uintCV(parseFloat(value) * 1000000)],
+      postConditionMode: 0x01,
+      finished: data => {
+        console.log('finished withdraw!', data);
+      },
+    });
   };
 
   return (
@@ -325,7 +354,7 @@ export const ManageVault = ({ match }) => {
 
                     <div className="max-w-xl text-sm text-gray-500">
                       <p>
-                        <Text onClick={() => callBurn()}
+                        <Text onClick={() => callWithdraw()}
                               _hover={{ cursor: 'pointer'}}
                               className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                           Withdraw

@@ -185,7 +185,7 @@
   (let ((vault (get-vault-by-id vault-id)))
     (match (print (as-contract (stx-transfer? ustx-amount (as-contract tx-sender) (get address vault))))
       success (begin
-        (let ((new-stx-collateral (- ustx-amount (get stx-collateral vault))))
+        (let ((new-stx-collateral (- (get stx-collateral vault) ustx-amount)))
           (map-set vaults { id: vault-id } {
             id: vault-id, address: tx-sender,
             stx-collateral: new-stx-collateral, coins-minted: (get coins-minted vault),
