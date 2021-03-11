@@ -103,6 +103,14 @@ export const ManageVault = ({ match }) => {
     setExtraStxDeposit(value);
   };
 
+  const callMint = () => {
+    console.log('minting...');
+  };
+
+  const callWithdraw = () => {
+    console.log('withdrawing...');
+  };
+
   return (
     <Container>
       <Modal isOpen={showDepositModal}>
@@ -373,7 +381,7 @@ export const ManageVault = ({ match }) => {
 
                     <div className="max-w-xl text-sm text-gray-500">
                       <p>
-                        <Text onClick={() => callBurn()}
+                        <Text onClick={() => callMint()}
                               _hover={{ cursor: 'pointer'}}
                               className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                           Mint

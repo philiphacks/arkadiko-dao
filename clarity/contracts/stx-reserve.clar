@@ -206,7 +206,7 @@
       (if (>= coins coins-amount)
         (match (print (as-contract (contract-call? .arkadiko-token mint coins-amount (get address vault))))
           success (begin
-            (let ((new-coins-amount (+ coins-amount (get coins-amount vault))))
+            (let ((new-coins-amount (+ coins-amount (get coins-minted vault))))
               (map-set vaults { id: vault-id } {
                 id: vault-id, address: (get address vault),
                 stx-collateral: (get stx-collateral vault), coins-minted: new-coins-amount,
@@ -217,8 +217,8 @@
           )
           error (err err-mint-failed)
         )
+        (err err-mint-failed)
       )
-      error (err err-mint-failed)
     )
   )
 )

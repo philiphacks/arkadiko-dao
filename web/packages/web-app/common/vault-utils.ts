@@ -18,7 +18,6 @@ export const availableStxToWithdraw = (price:number, currentStxCollateral:number
 
 export const availableCoinsToMint = (price:number, stxCollateral:number, currentCoinsMinted:number, collateralToDebt:number) => {
   const maximumCoinsToMint = (stxCollateral * price) / collateralToDebt;
-  console.log(maximumCoinsToMint);
   if (currentCoinsMinted < maximumCoinsToMint) {
     return maximumCoinsToMint - currentCoinsMinted;
   }

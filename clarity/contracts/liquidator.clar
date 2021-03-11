@@ -1,14 +1,14 @@
 ;; errors
 (define-constant err-liquidation-failed u1)
 
-;; only callable by a registered stacker
-(define-public (notify-risky-reserve (vault-address principal))
-  (let ((collateral-to-debt-ratio (unwrap-panic (contract-call? .stx-reserve calculate-current-collateral-to-debt-ratio vault-address))))
+;; TODO: only callable by a registered stacker
+(define-public (notify-risky-reserve (vault-id uint))
+  (let ((collateral-to-debt-ratio (unwrap-panic (contract-call? .stx-reserve calculate-current-collateral-to-debt-ratio vault-id))))
     (let ((liquidation-ratio (unwrap-panic (contract-call? .stx-reserve get-liquidation-ratio))))
-      (if (> collateral-to-debt-ratio liquidation-ratio)
+      (if (>= collateral-to-debt-ratio liquidation-ratio)
         (begin
           (print "Vault is in danger. Time to liquidate.")
-          (let ((stx-collateral (unwrap-panic (as-contract (contract-call? .stx-reserve liquidate vault-address)))))
+          (let ((stx-collateral (unwrap-panic (as-contract (contract-call? .stx-reserve liquidate vault-id)))))
             (if
               (and
                 (is-some stx-collateral)
