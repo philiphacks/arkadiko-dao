@@ -32,4 +32,5 @@ deploy();
 
 // 5. Use app
 
-// Notify risky vault
+// Get auctions after Notify risky vault
+// stx call_read_only_contract_func -t -H "http://localhost:20443" -I "http://localhost:3999" ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP auction-engine get-auctions ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP

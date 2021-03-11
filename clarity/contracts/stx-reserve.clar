@@ -264,7 +264,7 @@
 ;; 1. Mark vault as liquidated?
 ;; 2. Send collateral into the liquidator's liquidation reserve
 (define-public (liquidate (vault-id uint))
-  (if (is-eq contract-caller 'ST2ZRX0K27GW0SP3GJCEMHD95TQGJMKB7G9Y0X1MH.liquidator)
+  (if (is-eq contract-caller 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP.liquidator)
     (begin
       (let ((vault (get-vault-by-id vault-id)))
         (match (stx-transfer? (get stx-collateral vault) stx-reserve-address stx-liquidation-reserve)
