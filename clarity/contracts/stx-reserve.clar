@@ -1,4 +1,4 @@
-(impl-trait .vault-trait.vault-trait)
+;; (impl-trait .vault-trait.vault-trait)
 
 ;; addresses
 (define-constant stx-reserve-address 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP)
@@ -267,7 +267,7 @@
   (if (is-eq contract-caller 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP.liquidator)
     (begin
       (let ((vault (get-vault-by-id vault-id)))
-        (match (stx-transfer? (get stx-collateral vault) stx-reserve-address stx-liquidation-reserve)
+        (match (as-contract (stx-transfer? (get stx-collateral vault) (as-contract tx-sender) stx-liquidation-reserve))
           success (begin
             (let ((stx-collateral (get stx-collateral vault)))
               (print (map-set vaults { id: vault-id } {

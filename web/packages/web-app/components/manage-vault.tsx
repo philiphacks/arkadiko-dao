@@ -148,7 +148,7 @@ export const ManageVault = ({ match }) => {
       authOrigin,
       contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
       contractName: 'liquidator',
-      functionName: 'notify-risky-reserve',
+      functionName: 'notify-risky-vault',
       functionArgs: [uintCV(match.params.id)],
       postConditionMode: 0x01,
       finished: data => {
