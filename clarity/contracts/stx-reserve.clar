@@ -22,7 +22,13 @@
 
 ;; Map of vault entries
 ;; The entry consists of a user principal with their STX balance collateralized
-(define-map vaults { id: uint } { id: uint, address: principal, stx-collateral: uint, coins-minted: uint, at-block-height: uint, is-liquidated: bool })
+(define-map vaults { id: uint } {
+  id: uint, address: principal,
+  stx-collateral: uint, coins-minted: uint,
+  created-at-block-height: uint,
+  updated-at-block-height: uint,
+  is-liquidated: bool
+})
 (define-map vault-entries { user: principal } { ids: (list 2000 uint) })
 (define-data-var last-vault-id uint u0)
 
@@ -30,7 +36,15 @@
 (define-read-only (get-vault-by-id (id uint))
   (unwrap!
     (map-get? vaults { id: id })
-    (tuple (id u0) (address 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP) (stx-collateral u0) (coins-minted u0) (at-block-height u0) (is-liquidated false))
+    (tuple
+      (id u0)
+      (address 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP)
+      (stx-collateral u0)
+      (coins-minted u0)
+      (created-at-block-height u0)
+      (updated-at-block-height u0)
+      (is-liquidated false)
+    )
   )
 )
 
@@ -149,7 +163,13 @@
               (map-set vault-entries { user: sender } { ids: (unwrap-panic (as-max-len? (append entries vault-id) u2000)) })
               (map-set vaults
                 { id: vault-id }
-                { id: vault-id, address: sender, stx-collateral: ustx-amount, coins-minted: coins, at-block-height: block-height, is-liquidated: false }
+                {
+                  id: vault-id, address: sender,
+                  stx-collateral: ustx-amount, coins-minted: coins,
+                  created-at-block-height: block-height,
+                  updated-at-block-height: block-height,
+                  is-liquidated: false
+                }
               )
               (var-set last-vault-id vault-id)
               (ok coins)
@@ -173,7 +193,9 @@
           (map-set vaults { id: vault-id } {
             id: vault-id, address: tx-sender,
             stx-collateral: new-stx-collateral, coins-minted: (get coins-minted vault),
-            at-block-height: block-height, is-liquidated: false }
+            created-at-block-height: (get created-at-block-height vault),
+            updated-at-block-height: block-height,
+            is-liquidated: false }
           )
           (ok true)
         )
@@ -195,7 +217,9 @@
           (map-set vaults { id: vault-id } {
             id: vault-id, address: tx-sender,
             stx-collateral: new-stx-collateral, coins-minted: (get coins-minted vault),
-            at-block-height: block-height, is-liquidated: false }
+            created-at-block-height: (get created-at-block-height vault),
+            updated-at-block-height: block-height,
+            is-liquidated: false }
           )
           (ok true)
         )
@@ -216,7 +240,9 @@
               (map-set vaults { id: vault-id } {
                 id: vault-id, address: (get address vault),
                 stx-collateral: (get stx-collateral vault), coins-minted: new-coins-amount,
-                at-block-height: block-height, is-liquidated: false }
+                created-at-block-height: (get created-at-block-height vault),
+                updated-at-block-height: block-height,
+                is-liquidated: false }
               )
               (ok true)
             )
@@ -242,7 +268,8 @@
             (print (map-set vaults { id: vault-id } {
               id: vault-id, address: vault-owner,
               stx-collateral: u0, coins-minted: u0,
-              at-block-height: (get at-block-height vault),
+              created-at-block-height: (get created-at-block-height vault),
+              updated-at-block-height: block-height,
               is-liquidated: false
             } ))
             ;; TODO: remove vault ID from vault entries
@@ -273,7 +300,8 @@
               (print (map-set vaults { id: vault-id } {
                 id: vault-id, address: (get address vault),
                 stx-collateral: u0, coins-minted: (get coins-minted vault),
-                at-block-height: (get at-block-height vault),
+                created-at-block-height: (get created-at-block-height vault),
+                updated-at-block-height: block-height,
                 is-liquidated: true
               } ))
               (ok stx-collateral)

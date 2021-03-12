@@ -75,7 +75,12 @@ describe("stacks reserve test suite", () => {
         senderAddress: contractAddress,
         network: network,
       });
-      console.log(cvToJSON(auctions).value.value);
+      const auction = cvToJSON(auctions).value.value[1];
+
+      assert.equal(
+        auction.value['ustx-amount']['value'].toString(),
+        "5000000"
+      );
     });
 
   });
