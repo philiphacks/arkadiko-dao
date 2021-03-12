@@ -17,11 +17,9 @@
 (define-map votes-by-member { proposal-index: uint, member: principal } { has-voted: (optional bool) })
 
 ;; (define-read-only (get-proposal-by-id? (proposal-id uint))
-;;   ;; proposal-id is >= proposal-index because some proposal might not be processed
 ;;   (map-get? proposals {id: proposal-id})
 ;; )
 
 ;; (define-read-only (get-proposal-by-index? (proposal-index uint))
-;;   ;; only processed proposals have a proposal index
 ;;   (map-get? proposals {id: (id-queued-proposal proposal-index)})
 ;; )
