@@ -131,7 +131,7 @@
 ;; calculate the amount of stablecoins to mint, based on posted STX amount
 ;; ustx-amount * stx-price-in-cents == dollar-collateral-posted-in-cents
 ;; (dollar-collateral-posted-in-cents / collateral-to-debt-ratio) == stablecoins to mint
-(define-read-only (calculate-arkadiko-count (ustx-amount uint))
+(define-read-only (calculate-xusd-count (ustx-amount uint))
   (let ((stx-price-in-cents (contract-call? .oracle get-price)))
     (let ((amount (/ (* ustx-amount (get price stx-price-in-cents)) (var-get collateral-to-debt-ratio))))
       (ok amount)
@@ -154,7 +154,7 @@
 ;; save STX in stx-reserve-address
 ;; calculate price and collateralisation ratio
 (define-public (collateralize-and-mint (ustx-amount uint) (sender principal))
-  (let ((coins (unwrap-panic (calculate-arkadiko-count ustx-amount))))
+  (let ((coins (unwrap-panic (calculate-xusd-count ustx-amount))))
     (match (print (stx-transfer? ustx-amount sender (as-contract tx-sender)))
       success (match (print (as-contract (contract-call? .xusd-token mint coins sender)))
         transferred (begin
@@ -232,7 +232,7 @@
 ;; mint new tokens when collateral to debt allows it (i.e. > collateral-to-debt-ratio)
 (define-public (mint (vault-id uint) (coins-amount uint))
   (let ((vault (get-vault-by-id vault-id)))
-    (let ((coins (- (unwrap-panic (calculate-arkadiko-count (get stx-collateral vault))) (get coins-minted vault))))
+    (let ((coins (- (unwrap-panic (calculate-xusd-count (get stx-collateral vault))) (get coins-minted vault))))
       (if (>= coins coins-amount)
         (match (print (as-contract (contract-call? .xusd-token mint coins-amount (get address vault))))
           success (begin
