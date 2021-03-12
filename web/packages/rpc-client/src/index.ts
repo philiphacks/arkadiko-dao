@@ -69,7 +69,7 @@ export class RPCClient {
     const response = await fetch(url, { credentials: 'omit' });
     const data = await response.json();
     //console.log(data);
-    const arkBalance = data.fungible_tokens['ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP.arkadiko-token::arkadiko'];
+    const arkBalance = data.fungible_tokens['ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP.xusd-token::xusd'];
     return {
       stx: data.stx.balance,
       arkadiko: arkBalance ? arkBalance.balance : 0,
