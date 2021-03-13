@@ -38,9 +38,7 @@ export const Auction: React.FC<AuctionProps> = ({ id, ustx, price, debt, endsAt,
       });
 
       const json = cvToJSON(currentBid);
-      console.log(json);
-      // setCurrentBid(json.value.value || 0);
-      setCurrentBid(0);
+      setCurrentBid(json.value.xusd.value);
     };
 
     if (mounted) {
@@ -70,7 +68,7 @@ export const Auction: React.FC<AuctionProps> = ({ id, ustx, price, debt, endsAt,
         <span className="text-gray-900 font-medium">${minimumBidAmount()}</span>
       </td>
       <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
-        <span className="text-gray-900 font-medium">${currentBid}</span>
+        <span className="text-gray-900 font-medium">${currentBid / 1000000}</span>
       </td>
       <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
         <span className="text-gray-900 font-medium">{endsAt}</span>
