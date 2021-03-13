@@ -41,23 +41,23 @@ export const App: React.FC = () => {
 
           const vaults = await callReadOnlyFunction({
             contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
-            contractName: "stx-reserve",
+            contractName: "freddie",
             functionName: "get-vaults",
             functionArgs: [standardPrincipalCV(userData?.profile?.stxAddress?.testnet || '')],
             senderAddress: userData?.profile?.stxAddress?.testnet || '',
             network: network,
           });
           const json = cvToJSON(vaults);
-          let arr:Array<{ id: string, owner: string, 'stx-collateral': string, 'coins-minted': string }> = [];
+          let arr:Array<{ id: string, owner: string, collateral: string, debt: string }> = [];
           json.value.value.forEach((e: object) => {
             const vault = tupleCV(e);
             const data = vault.data.value;
-            if (data['stx-collateral'].value !== 0) {
+            if (data['collateral'].value !== 0) {
               arr.push({
                 id: data['id'].value,
-                owner: data['address'].value,
-                'stx-collateral': data['stx-collateral'].value,
-                'coins-minted': data['coins-minted'].value
+                owner: data['owner'].value,
+                collateral: data['collateral'].value,
+                debt: data['debt'].value
               });
             }
           });
@@ -89,7 +89,7 @@ export const App: React.FC = () => {
             });
           }
         } catch (error) {
-          console.error('Unable to connect to Stacks Blockchain');
+          console.error(error);
         }
       };
       void getData();
