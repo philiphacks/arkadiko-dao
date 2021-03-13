@@ -7,9 +7,6 @@ import { useSTXAddress } from '@common/use-stx-address';
 export const Auction: React.FC<AuctionProps> = ({ id, ustx, price, debt, endsAt, setShowBidModal }) => {
   const [minimumCollateralAmount, setMinimumCollateralAmount] = useState(0);
   const [currentBid, setCurrentBid] = useState(0);
-  const minimumBidAmount = () => {
-    return ((ustx / 1000000) * (price / 100)).toFixed(2);
-  }
   const stxAddress = useSTXAddress();
 
   useEffect(() => {
@@ -63,9 +60,6 @@ export const Auction: React.FC<AuctionProps> = ({ id, ustx, price, debt, endsAt,
       </td>
       <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
         <span className="text-gray-900 font-medium">${(debt / 1000000).toFixed(2)}</span>
-      </td>
-      <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
-        <span className="text-gray-900 font-medium">${minimumBidAmount()}</span>
       </td>
       <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
         <span className="text-gray-900 font-medium">${currentBid / 1000000}</span>

@@ -52,7 +52,7 @@ export const App: React.FC = () => {
           json.value.value.forEach((e: object) => {
             const vault = tupleCV(e);
             const data = vault.data.value;
-            if (data['collateral'].value !== 0) {
+            if (data['id'].value !== 0) {
               arr.push({
                 id: data['id'].value,
                 owner: data['owner'].value,

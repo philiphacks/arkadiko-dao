@@ -15,10 +15,18 @@ export const debtClass = (ratio: number) => {
   } else if (ratio >= 180) {
     return 'text-orange-400';
   } else if (ratio > 160) {
-    return 'text-red-400';
+    return 'text-red-900';
   }
 
-  return 'text-red-400';
+  return 'text-red-900';
+};
+
+export const debtBackgroundClass = (ratio: number) => {
+  if (ratio < 150) {
+    return 'bg-red-300';
+  }
+
+  return 'bg-white';
 };
 
 export const Vault: React.FC<VaultProps> = ({ id, collateral, debt }) => {
@@ -29,7 +37,7 @@ export const Vault: React.FC<VaultProps> = ({ id, collateral, debt }) => {
   }
 
   return (
-    <tr className="bg-white">
+    <tr className={`${debtBackgroundClass(debtRatio)}`}>
       <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
         <span className="text-gray-900 font-medium">
           <RouterLink to={`vaults/${id}`} exact className="px-2.5 py-1.5">
@@ -52,11 +60,13 @@ export const Vault: React.FC<VaultProps> = ({ id, collateral, debt }) => {
       <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
         <span className="text-gray-900 font-medium">{collateral / 1000000}</span>
       </td>
-      <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
+      <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-900">
         <span className="text-gray-900 font-medium">
-          <RouterLink to={`vaults/${id}`} exact className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            Manage
-          </RouterLink>
+          {debtRatio > 150 ? (
+              <RouterLink to={`vaults/${id}`} exact className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Manage
+              </RouterLink>
+          ) : <span>Auctioning Collateral...</span> }
         </span>
       </td>
     </tr>
