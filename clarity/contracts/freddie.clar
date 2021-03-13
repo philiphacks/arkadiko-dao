@@ -52,6 +52,12 @@
   )
 )
 
+(define-read-only (calculate-current-collateral-to-debt-ratio (vault-id uint))
+  (let ((vault (get-vault-by-id vault-id)))
+    (ok (unwrap-panic (contract-call? .stx-reserve calculate-current-collateral-to-debt-ratio (get debt vault) (get collateral vault))))
+  )
+)
+
 (define-public (collateralize-and-mint (uamount uint) (sender principal) (collateral-type (string-ascii 10)))
   (let ((debt (contract-call? .stx-reserve collateralize-and-mint uamount sender)))
     (let ((vault-id (+ (var-get last-vault-id) u1)))

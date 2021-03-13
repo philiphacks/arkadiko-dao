@@ -94,7 +94,7 @@
 ;; ustx-amount * stx-price-in-cents == dollar-collateral-posted-in-cents
 ;; (dollar-collateral-posted-in-cents / collateral-to-debt-ratio) == stablecoins to mint
 (define-read-only (calculate-xusd-count (ustx-amount uint))
-  (let ((stx-price-in-cents (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.oracle get-price)))
+  (let ((stx-price-in-cents (contract-call? .oracle get-price)))
     (let ((amount (/ (* ustx-amount (get price stx-price-in-cents)) (var-get collateral-to-debt-ratio))))
       (ok amount)
     )
@@ -102,7 +102,7 @@
 )
 
 (define-read-only (calculate-current-collateral-to-debt-ratio (debt uint) (ustx uint))
-  (let ((stx-price-in-cents (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.oracle get-price)))
+  (let ((stx-price-in-cents (contract-call? .oracle get-price)))
     (if (> debt u0)
       (ok (/ (* ustx (get price stx-price-in-cents)) debt))
       (err u0)
@@ -116,7 +116,7 @@
 (define-public (collateralize-and-mint (ustx-amount uint) (sender principal))
   (let ((debt (unwrap-panic (calculate-xusd-count ustx-amount))))
     (match (print (stx-transfer? ustx-amount sender (as-contract tx-sender)))
-      success (match (print (as-contract (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.xusd-token mint debt sender)))
+      success (match (print (as-contract (contract-call? .xusd-token mint debt sender)))
         transferred (ok debt)
         error (err err-transfer-failed)
       )
@@ -149,7 +149,7 @@
 (define-public (mint (vault-owner principal) (ustx-amount uint) (current-debt uint) (extra-debt uint))
   (let ((max-new-debt (- (unwrap-panic (calculate-xusd-count ustx-amount)) current-debt)))
     (if (>= max-new-debt extra-debt)
-      (match (print (as-contract (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.xusd-token mint extra-debt vault-owner)))
+      (match (print (as-contract (contract-call? .xusd-token mint extra-debt vault-owner)))
         success (ok true)
         error (err err-mint-failed)
       )
@@ -163,7 +163,7 @@
 ;; and thus collateral to debt ratio > liquidation ratio
 ;; TODO: assert that tx-sender owns the vault
 (define-public (burn (vault-owner principal) (debt-to-burn uint) (collateral-to-return uint))
-  (match (print (as-contract (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.xusd-token burn debt-to-burn vault-owner)))
+  (match (print (as-contract (contract-call? .xusd-token burn debt-to-burn vault-owner)))
     success (match (print (as-contract (stx-transfer? collateral-to-return (as-contract tx-sender) vault-owner)))
       transferred (ok true)
       error (err err-transfer-failed)

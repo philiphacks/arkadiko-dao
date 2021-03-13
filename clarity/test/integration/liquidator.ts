@@ -27,6 +27,7 @@ describe("stacks reserve test suite", () => {
       await deployContract('oracle');
       await deployContract('xusd-token');
       await deployContract('stx-reserve');
+      await deployContract('freddie');
 
       await deployContract('stacker-registry');
       await deployContract('auction-engine');
