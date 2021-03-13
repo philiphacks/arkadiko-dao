@@ -7,17 +7,20 @@ export interface AuctionProps {
   ustx: string;
   price: string;
   debt: string;
+  endsAt: string;
 }
 
-export const AuctionGroup: React.FC<AuctionProps[]> = ({ auctions }) => {
+export const AuctionGroup: React.FC<AuctionProps[]> = ({ auctions, setBidAuctionId, setShowBidModal }) => {
   const price = parseFloat(getStxPrice().price);
   const auctionItems = auctions.map((auction: object) =>
     <Auction
       key={auction.id}
       id={auction.id}
-      ustx={auction['ustx-amount']}
+      ustx={auction['collateral-amount']}
       debt={auction['debt']}
+      endsAt={auction['ends-at']}
       price={price}
+      setShowBidModal={setShowBidModal}
     />
   );
   return (
