@@ -38,7 +38,9 @@ export const Auction: React.FC<AuctionProps> = ({ id, ustx, price, debt, endsAt,
       });
 
       const json = cvToJSON(currentBid);
-      setCurrentBid(json.value.value || 0);
+      console.log(json);
+      // setCurrentBid(json.value.value || 0);
+      setCurrentBid(0);
     };
 
     if (mounted) {

@@ -79,7 +79,13 @@
 )
 
 (define-read-only (get-last-bid (auction-id uint))
-  (ok (map-get? bids { auction-id: auction-id }))
+  (unwrap!
+    (map-get? bids { auction-id: auction-id })
+    (tuple
+      (xusd u0)
+      (collateral-amount u0)
+    )
+  )
 )
 
 ;; TODO - check if bid is better than last bid, for simplicity we only save the last (best) bid

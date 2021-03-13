@@ -87,9 +87,9 @@ export const Auctions: React.FC = () => {
       network,
       authOrigin,
       contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
-      contractName: 'freddie',
-      functionName: 'deposit',
-      functionArgs: [uintCV(bidAuctionId), uintCV(3955000), uintCV(218)],
+      contractName: 'auction-engine',
+      functionName: 'bid',
+      functionArgs: [uintCV(1), uintCV(2180000), uintCV(3955000)],
       postConditionMode: 0x01,
       finished: data => {
         console.log('finished deposit!', data);
@@ -118,11 +118,12 @@ export const Auctions: React.FC = () => {
                     </h3>
                     <div className="mt-2">
                       <p className="text-sm text-gray-500">
-                        Choose how much extra collateral you want to post. You have a balance of {state.balance['stx'] / 1000000} STX.
+                        Bidding $2.2 will close the auction and assign you the collateral.
                       </p>
 
                       <div className="mt-4 relative rounded-md shadow-sm">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          $
                         </div>
                         <input type="text" name="stx" id="stxAmount"
                               value={bidAmount}
@@ -131,7 +132,7 @@ export const Auctions: React.FC = () => {
                               placeholder="0.00" aria-describedby="stx-currency" />
                         <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                           <span className="text-gray-500 sm:text-sm" id="stx-currency">
-                            STX
+                            xUSD
                           </span>
                         </div>
                       </div>
