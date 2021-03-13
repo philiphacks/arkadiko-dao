@@ -71,6 +71,16 @@ export const App: React.FC = () => {
             network: network,
           });
           const params = cvToJSON(riskParameters).value.value;
+
+          const isStacker = await callReadOnlyFunction({
+            contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
+            contractName: "stacker-registry",
+            functionName: "is-stacker",
+            functionArgs: [standardPrincipalCV(userData?.profile?.stxAddress?.testnet || '')],
+            senderAddress: userData?.profile?.stxAddress?.testnet || '',
+            network: network,
+          });
+
           if (mounted) {
             setState({
               userData,
@@ -85,7 +95,8 @@ export const App: React.FC = () => {
                 'liquidation-ratio': params['liquidation-ratio'].value,
                 'maximum-debt': params['maximum-debt'].value,
                 'stability-fee': params['stability-fee'].value
-              }
+              },
+              isStacker: cvToJSON(isStacker).value.value
             });
           }
         } catch (error) {
