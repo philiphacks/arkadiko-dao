@@ -196,7 +196,7 @@
               (if
                 (or
                   (>= block-height (get ends-at auction))
-                  (is-eq (get lots auction) (get lots-sold auction))
+                  (>= (+ u1 (get lots-sold auction)) (get lots auction))
                 )
                 ;; auction is over - close all bids
                 ;; send collateral to winning bidders
