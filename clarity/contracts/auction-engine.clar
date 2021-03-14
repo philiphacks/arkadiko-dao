@@ -11,7 +11,6 @@
   { id: uint }
   {
     id: uint,
-    collateral-type: (string-ascii 10),
     collateral-amount: uint,
     debt-to-raise: uint,
     vault-id: uint,
@@ -43,7 +42,6 @@
     (map-get? auctions { id: id })
     (tuple
       (id u0)
-      (collateral-type "")
       (collateral-amount u0)
       (debt-to-raise u0)
       (vault-id u0)
@@ -82,7 +80,6 @@
           { id: auction-id }
           {
             id: auction-id,
-            collateral-type: "stx",
             collateral-amount: ustx-amount,
             debt-to-raise: debt-to-raise,
             vault-id: vault-id,
@@ -182,7 +179,6 @@
               { id: auction-id }
               {
                 id: auction-id,
-                collateral-type: "stx",
                 collateral-amount: (get collateral-amount auction),
                 debt-to-raise: (get debt-to-raise auction),
                 vault-id: (get vault-id auction),
@@ -251,7 +247,6 @@
       { id: auction-id }
       {
         id: auction-id,
-        collateral-type: "stx",
         collateral-amount: (get collateral-amount auction),
         debt-to-raise: (get debt-to-raise auction),
         vault-id: (get vault-id auction),
