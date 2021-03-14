@@ -22,10 +22,12 @@ export const AuctionGroup: React.FC<AuctionProps[]> = ({ auctions }) => {
   const [bidAmount, setBidAmount] = useState('');
   const [bidAuctionId, setBidAuctionId] = useState(0);
   const [bidLotId, setBidLotId] = useState(0);
+  const [preferredBid, setPreferredBid] = useState(0);
+  const [collateralAmount, setCollateralAmount] = useState(0);
 
   const auctionItems = auctions.map((auction: object) =>
     <Auction
-      key={auction.id}
+      key={`${auction.id}-${auction['lot-id']}`}
       id={auction.id}
       lotId={auction['lot-id']}
       ustx={auction['collateral-amount']}
@@ -35,6 +37,8 @@ export const AuctionGroup: React.FC<AuctionProps[]> = ({ auctions }) => {
       setShowBidModal={setShowBidModal}
       setBidAuctionId={setBidAuctionId}
       setBidLotId={setBidLotId}
+      setPreferredBid={setPreferredBid}
+      setCollateralAmount={setCollateralAmount}
     />
   );
 
@@ -48,6 +52,7 @@ export const AuctionGroup: React.FC<AuctionProps[]> = ({ auctions }) => {
     if (!bidAmount) {
       return;
     }
+    console.log('ADding with bid amount', bidAmount);
 
     const authOrigin = getAuthOrigin();
     await doContractCall({
@@ -56,7 +61,7 @@ export const AuctionGroup: React.FC<AuctionProps[]> = ({ auctions }) => {
       contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
       contractName: 'auction-engine',
       functionName: 'bid',
-      functionArgs: [uintCV(bidAuctionId), uintCV(bidLotId), uintCV(bidAmount), uintCV(3955000)],
+      functionArgs: [uintCV(bidAuctionId), uintCV(bidLotId), uintCV(bidAmount * 1000000), uintCV(collateralAmount * 100)],
       postConditionMode: 0x01,
       finished: data => {
         console.log('finished deposit!', data);
@@ -82,7 +87,7 @@ export const AuctionGroup: React.FC<AuctionProps[]> = ({ auctions }) => {
                 </h3>
                 <div className="mt-2">
                   <p className="text-sm text-gray-500">
-                    Bidding $2.2 will close the lot and assign you the collateral.
+                    Bidding ${preferredBid} will close the lot and assign you the collateral.
                   </p>
 
                   <div className="mt-4 relative rounded-md shadow-sm">

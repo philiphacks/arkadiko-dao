@@ -4,7 +4,7 @@ import { callReadOnlyFunction, cvToJSON, uintCV } from '@stacks/transactions';
 import { stacksNetwork as network } from '@common/utils';
 import { useSTXAddress } from '@common/use-stx-address';
 
-export const Auction: React.FC<AuctionProps> = ({ id, lotId, ustx, price, debt, endsAt, setShowBidModal, setBidAuctionId, setBidLotId }) => {
+export const Auction: React.FC<AuctionProps> = ({ id, lotId, ustx, price, debt, endsAt, setShowBidModal, setBidAuctionId, setBidLotId, setPreferredBid, setCollateralAmount }) => {
   const [minimumCollateralAmount, setMinimumCollateralAmount] = useState(0);
   const [currentBid, setCurrentBid] = useState(0);
   const stxAddress = useSTXAddress();
@@ -48,7 +48,9 @@ export const Auction: React.FC<AuctionProps> = ({ id, lotId, ustx, price, debt, 
   const setBidParams = () => {
     setBidAuctionId(id);
     setBidLotId(lotId);
+    setPreferredBid(debt / 1000000);
     setShowBidModal(true);
+    setCollateralAmount(minimumCollateralAmount);
   };
 
   return (
