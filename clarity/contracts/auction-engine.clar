@@ -137,50 +137,49 @@
 (define-private (accept-bid (auction-id uint) (lot-index uint) (xusd uint) (collateral-amount uint))
   (let ((auction (get-auction-by-id auction-id)))
     (let ((last-bid (get-last-bid auction-id lot-index)))
-      (if
-        (and
-          (get is-accepted last-bid)
-          (> xusd (get xusd last-bid))
-        ) ;; we have a better bid and the previous one was not accepted!
-        (begin
-          (if (>= xusd (/ (get debt-to-raise auction) (get lot-size auction)))
-            ;; if this bid is at least (total debt to raise / lot-size) amount, accept it as final - we don't need to be greedy
-            (begin
-              (map-set bids
-                { auction-id: auction-id, lot-index: lot-index }
-                {
-                  xusd: xusd,
-                  collateral-amount: collateral-amount,
-                  owner: tx-sender,
-                  is-accepted: true
-                }
-              )
-              (if
-                (and
-                  (>= block-height (get ends-at auction))
-                  (is-eq (get lots auction) (get lots-sold auction))
+      (if (not (get is-accepted last-bid))
+        (if (> xusd (get xusd last-bid)) ;; we have a better bid and the previous one was not accepted!
+          (begin
+            (if (>= xusd (/ (get debt-to-raise auction) (get lot-size auction)))
+              ;; if this bid is at least (total debt to raise / lot-size) amount, accept it as final - we don't need to be greedy
+              (begin
+                (map-set bids
+                  { auction-id: auction-id, lot-index: lot-index }
+                  {
+                    xusd: xusd,
+                    collateral-amount: collateral-amount,
+                    owner: tx-sender,
+                    is-accepted: true
+                  }
                 )
-                ;; auction is over - close all bids
-                ;; send collateral to winning bidders
-                (ok (unwrap-panic (close-auction auction-id)))
+                (if
+                  (and
+                    (>= block-height (get ends-at auction))
+                    (is-eq (get lots auction) (get lots-sold auction))
+                  )
+                  ;; auction is over - close all bids
+                  ;; send collateral to winning bidders
+                  (ok (unwrap-panic (close-auction auction-id)))
+                  (ok true)
+                )
+              )
+              (begin
+                (map-set bids
+                  { auction-id: auction-id, lot-index: lot-index }
+                  {
+                    xusd: xusd,
+                    collateral-amount: collateral-amount,
+                    owner: tx-sender,
+                    is-accepted: false
+                  }
+                )
                 (ok true)
               )
             )
-            (begin
-              (map-set bids
-                { auction-id: auction-id, lot-index: lot-index }
-                {
-                  xusd: xusd,
-                  collateral-amount: collateral-amount,
-                  owner: tx-sender,
-                  is-accepted: false
-                }
-              )
-              (ok true)
-            )
           )
+          (ok true) ;; don't care cause either the bid is already over or it was a poor bid
         )
-        (ok true) ;; don't care cause either the bid is already over or it was a poor bid
+        (ok true) ;; lot is already sold
       )
     )
   )
