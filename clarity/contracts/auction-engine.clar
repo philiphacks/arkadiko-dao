@@ -28,7 +28,7 @@
 )
 (define-data-var last-auction-id uint u0)
 (define-data-var auction-ids (list 2000 uint) (list u0))
-(define-data-var lot-size uint u100)
+(define-data-var lot-size uint u100000000) ;; 100 STX
 
 (define-read-only (get-auction-by-id (id uint))
   (unwrap!
@@ -127,6 +127,7 @@
       (and
         (< lot-index (get lots auction))
         (is-eq (get is-open auction) true)
+        (<= collateral-amount (/ (get collateral-amount auction) (get lot-size auction)))
       )
       (ok (unwrap-panic (accept-bid auction-id lot-index xusd collateral-amount)))
       (ok true) ;; just silently exit
