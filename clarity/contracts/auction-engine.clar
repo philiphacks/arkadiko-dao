@@ -160,67 +160,52 @@
 
 (define-private (accept-bid (auction-id uint) (lot-index uint) (xusd uint) (collateral-amount uint))
   (let ((auction (get-auction-by-id auction-id)))
-    (if (>= xusd (/ (get debt-to-raise auction) (get lots auction)))
-      ;; if this bid is at least (total debt to raise / lot-size) amount, accept it as final - we don't need to be greedy
-      (begin
-        ;; (return-collateral (get owner last-bid) (get xusd last-bid))
-        (if (unwrap-panic (contract-call? .xusd-token transfer auction-reserve xusd))
-          (begin
-            (map-set bids
-              { auction-id: auction-id, lot-index: lot-index }
-              {
-                xusd: xusd,
-                collateral-amount: collateral-amount,
-                owner: tx-sender,
-                is-accepted: true
-              }
-            )
-            (map-set auctions
-              { id: auction-id }
-              {
-                id: auction-id,
-                collateral-amount: (get collateral-amount auction),
-                debt-to-raise: (get debt-to-raise auction),
-                vault-id: (get vault-id auction),
-                lot-size: (get lot-size auction),
-                lots: (get lots auction),
-                last-lot-size: (get last-lot-size auction),
-                lots-sold: (+ u1 (get lots-sold auction)),
-                ends-at: (get ends-at auction),
-                total-collateral-auctioned: (+ collateral-amount (get total-collateral-auctioned auction)), ;; TODO: subtract last bid amount from this
-                total-debt-raised: (+ xusd (get total-debt-raised auction)), ;; TODO: subtract last bid amount from this
-                is-open: true
-              }
-            )
-            (if
-              (or
-                (>= block-height (get ends-at auction))
-                (is-eq (get lots auction) (get lots-sold auction))
+    (let ((last-bid (get-last-bid auction-id lot-index)))
+      (let ((accepted-bid (>= xusd (/ (get debt-to-raise auction) (get lots auction)))))
+        ;; if this bid is at least (total debt to raise / lot-size) amount, accept it as final - we don't need to be greedy
+        (begin
+          ;; (return-collateral (get owner last-bid) (get xusd last-bid))
+          (if (unwrap-panic (contract-call? .xusd-token transfer auction-reserve xusd))
+            (begin
+              (map-set auctions
+                { id: auction-id }
+                {
+                  id: auction-id,
+                  collateral-amount: (get collateral-amount auction),
+                  debt-to-raise: (get debt-to-raise auction),
+                  vault-id: (get vault-id auction),
+                  lot-size: (get lot-size auction),
+                  lots: (get lots auction),
+                  last-lot-size: (get last-lot-size auction),
+                  lots-sold: (+ u1 (get lots-sold auction)),
+                  ends-at: (get ends-at auction),
+                  total-collateral-auctioned: (- (+ collateral-amount (get total-collateral-auctioned auction)) (get collateral-amount last-bid)),
+                  total-debt-raised: (- (+ xusd (get total-debt-raised auction)) (get xusd last-bid)),
+                  is-open: true
+                }
               )
-              ;; auction is over - close all bids
-              ;; send collateral to winning bidders
-              (ok (unwrap-panic (close-auction auction-id)))
-              (err false)
+              (map-set bids
+                { auction-id: auction-id, lot-index: lot-index }
+                {
+                  xusd: xusd,
+                  collateral-amount: collateral-amount,
+                  owner: tx-sender,
+                  is-accepted: accepted-bid
+                }
+              )
+              (if
+                (or
+                  (>= block-height (get ends-at auction))
+                  (is-eq (get lots auction) (get lots-sold auction))
+                )
+                ;; auction is over - close all bids
+                ;; send collateral to winning bidders
+                (ok (unwrap-panic (close-auction auction-id)))
+                (err u0)
+              )
             )
+            (err err-xusd-transfer-failed)
           )
-          (err false)
-        )
-      )
-      (begin
-        (if (unwrap-panic (contract-call? .xusd-token transfer auction-reserve xusd))
-          (begin
-            (map-set bids
-              { auction-id: auction-id, lot-index: lot-index }
-              {
-                xusd: xusd,
-                collateral-amount: collateral-amount,
-                owner: tx-sender,
-                is-accepted: false
-              }
-            )
-            (ok true)
-          )
-          (err false)
         )
       )
     )
