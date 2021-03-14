@@ -88,7 +88,7 @@
             lots: amount-of-lots,
             last-lot-size: last-lot,
             lots-sold: u0,
-            ends-at: (+ block-height u200),
+            ends-at: (+ block-height u10000),
             total-collateral-auctioned: u0,
             is-open: true
           }
@@ -160,7 +160,7 @@
 
 (define-private (accept-bid (auction-id uint) (lot-index uint) (xusd uint) (collateral-amount uint))
   (let ((auction (get-auction-by-id auction-id)))
-    (if (>= xusd (/ (get debt-to-raise auction) (get lot-size auction)))
+    (if (>= xusd (/ (get debt-to-raise auction) (get lots auction)))
       ;; if this bid is at least (total debt to raise / lot-size) amount, accept it as final - we don't need to be greedy
       (begin
         ;; (return-collateral (get owner last-bid) (get xusd last-bid))
