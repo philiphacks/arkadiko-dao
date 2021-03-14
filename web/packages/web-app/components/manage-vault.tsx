@@ -11,6 +11,7 @@ import { debtClass } from './vault';
 import { getStxPrice } from '@common/get-stx-price';
 import { getLiquidationPrice, availableStxToWithdraw, availableCoinsToMint } from '@common/vault-utils';
 import { Link } from '@components/link';
+import { Redirect } from 'react-router-dom';
 
 export const ManageVault = ({ match }) => {
   const { doContractCall } = useConnect();
@@ -171,6 +172,8 @@ export const ManageVault = ({ match }) => {
 
   return (
     <Container>
+      {auctionEnded && <Redirect to="/vaults" />}
+
       <Modal isOpen={showDepositModal}>
         <div className="flex pt-4 px-4 pb-20 text-center sm:block sm:p-0">
           <div className="inline-block align-bottom bg-white rounded-lg px-2 pt-5 pb-4 text-left overflow-hidden sm:my-8 sm:align-middle sm:max-w-sm sm:w-full sm:p-6" role="dialog" aria-modal="true" aria-labelledby="modal-headline">
@@ -328,9 +331,35 @@ export const ManageVault = ({ match }) => {
 
 
           {isLiquidated ? auctionEnded ? (
-            <span>LIQUIDATED AND AUCTION ENDED! WITHDRAW COLLATERAL!</span>
+            <>
+              <ul className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-1 xl:grid-cols-1 mt-8">
+                <li className="relative col-span-1 flex shadow-sm rounded-md">
+                  <h2 className="text-lg text-center leading-6 font-medium text-gray-900 mt-8 mb-4">
+                    Your vault got liquidated. An auction ran and there is some leftover collateral
+                  </h2>
+
+                  <div className="max-w-xl text-sm text-gray-500">
+                    <p>
+                      <Text onClick={() => callWithdraw()}
+                            _hover={{ cursor: 'pointer'}}
+                            className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Withdraw Leftover Collateral
+                      </Text>
+                    </p>
+                  </div>
+                </li>
+              </ul>
+            </>
           ) : (
-            <span>VAULT GOT LIQUIDATED! RUNNING AUCTION...</span>
+            <>
+              <ul className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 xl:grid-cols-4 mt-8">
+                <li className="relative col-span-2 flex shadow-sm rounded-md">
+                  <h2 className="text-lg leading-6 font-medium text-gray-900 mt-8 mb-4">
+                    Vault got liquidated. Running auction...
+                  </h2>
+                </li>
+              </ul>
+            </>
           ) : (
             <>
             <ul className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 xl:grid-cols-4 mt-8">

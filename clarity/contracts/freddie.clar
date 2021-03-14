@@ -40,6 +40,7 @@
       (created-at-block-height u0)
       (updated-at-block-height u0)
       (is-liquidated false)
+      (leftover-collateral u0)
     )
   )
 )
@@ -230,6 +231,7 @@
   )
 )
 
+;; TODO: do not allow anyone to call this
 (define-public (finalize-liquidation (vault-id uint) (leftover-collateral uint))
   (let ((vault (get-vault-by-id vault-id)))
     (map-set vaults
@@ -247,5 +249,31 @@
       }
     )
     (ok true)
+  )
+)
+
+(define-public (withdraw-leftover-collateral (vault-id uint))
+  (let ((vault (get-vault-by-id vault-id)))
+    (asserts! (is-eq tx-sender (get owner vault)) (err err-unauthorized))
+    (if (unwrap-panic (contract-call? .stx-reserve withdraw (get owner vault) (get leftover-collateral vault)))
+      (begin
+        (map-set vaults
+          { id: vault-id }
+          {
+            id: vault-id,
+            owner: tx-sender,
+            collateral: (get collateral vault),
+            debt: (get debt vault),
+            created-at-block-height: (get created-at-block-height vault),
+            updated-at-block-height: block-height,
+            is-liquidated: true,
+            auction-ended: true,
+            leftover-collateral: u0
+          }
+        )
+        (ok true)
+      )
+      (err err-withdraw-failed)
+    )
   )
 )
