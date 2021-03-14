@@ -229,3 +229,23 @@
     (err err-unauthorized)
   )
 )
+
+(define-public (finalize-liquidation (vault-id uint) (leftover-collateral uint))
+  (let ((vault (get-vault-by-id vault-id)))
+    (map-set vaults
+      { id: vault-id }
+      {
+        id: vault-id,
+        owner: (get owner vault),
+        collateral: u0,
+        debt: (get debt vault),
+        created-at-block-height: (get created-at-block-height vault),
+        updated-at-block-height: block-height,
+        is-liquidated: true,
+        auction-ended: true,
+        leftover-collateral: leftover-collateral
+      }
+    )
+    (ok true)
+  )
+)
