@@ -87,7 +87,7 @@ export const AuctionGroup: React.FC<AuctionProps[]> = ({ auctions }) => {
                 </h3>
                 <div className="mt-2">
                   <p className="text-sm text-gray-500">
-                    Bidding ${preferredBid} will close the lot and assign you the collateral.
+                    Bidding ${preferredBid.toFixed(2)} will close the lot and assign you the collateral.
                   </p>
 
                   <div className="mt-4 relative rounded-md shadow-sm">
