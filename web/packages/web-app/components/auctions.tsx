@@ -45,7 +45,6 @@ export const Auctions: React.FC = () => {
         network: network,
       });
       const json = cvToJSON(auctions);
-      console.log(json);
       let serializedAuctions:Array<{ id: string, 'lot-id':string, 'collateral-amount': string, 'debt': string, 'ends-at': string }> = [];
       json.value.value.forEach((e: object) => {
         const vault = tupleCV(e);

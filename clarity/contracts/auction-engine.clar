@@ -1,6 +1,11 @@
 ;; addresses
 (define-constant stx-liquidation-reserve 'S02J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKPVKG2CE)
 
+;; errors
+(define-constant err-bid-declined u1)
+(define-constant err-lot-sold u2)
+(define-constant err-poor-bid u3)
+
 (define-map auctions
   { id: uint }
   {
@@ -127,10 +132,10 @@
       (and
         (< lot-index (get lots auction))
         (is-eq (get is-open auction) true)
-        (<= collateral-amount (/ (get collateral-amount auction) (get lot-size auction)))
+        (<= collateral-amount (/ (get collateral-amount auction) (get lots auction)))
       )
       (ok (unwrap-panic (accept-bid auction-id lot-index xusd collateral-amount)))
-      (ok true) ;; just silently exit
+      (err err-bid-declined) ;; just silently exit
     )
   )
 )
@@ -153,6 +158,7 @@
                     is-accepted: true
                   }
                 )
+                ;; TODO: bid is accepted, so update lots-sold integer in auction map
                 (if
                   (and
                     (>= block-height (get ends-at auction))
@@ -178,9 +184,9 @@
               )
             )
           )
-          (ok true) ;; don't care cause either the bid is already over or it was a poor bid
+          (err err-poor-bid) ;; don't care cause either the bid is already over or it was a poor bid
         )
-        (ok true) ;; lot is already sold
+        (err err-lot-sold) ;; lot is already sold
       )
     )
   )
