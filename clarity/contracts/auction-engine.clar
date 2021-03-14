@@ -66,7 +66,7 @@
 (define-public (start-auction (vault-id uint) (ustx-amount uint) (debt-to-raise uint))
   (let ((auction-id (+ (var-get last-auction-id) u1)))
     ;; 500 collateral => 500 / 100 = 5 lots
-    (let ((amount-of-lots (+ 1 (/ ustx-amount (var-get lot-size)))))
+    (let ((amount-of-lots (+ u1 (/ ustx-amount (var-get lot-size)))))
       (let ((last-lot (mod ustx-amount (var-get lot-size))))
         (map-set auctions
           { id: auction-id }
@@ -100,7 +100,7 @@
   (let ((stx-price-in-cents (contract-call? .oracle get-price)))
     (let ((auction (get-auction-by-id auction-id)))
       (let ((amount (/ (/ (get debt-to-raise auction) (get price stx-price-in-cents)) (get lots auction))))
-        (if (> amount (get collateral-amount auction))
+        (if (> (get collateral-amount auction) amount)
           (ok amount)
           (ok (get collateral-amount auction))
         )
@@ -126,17 +126,26 @@
     (if
       (and
         (< lot-index (get lots auction))
-        (get is-open auction)
+        (is-eq (get is-open auction) true)
       )
-      (begin
-        (let ((last-bid (get-last-bid auction-id lot-index)))
-          (if
-            (and
-              (> (* xusd collateral-amount) (* (get xusd last-bid) (get collateral-amount last-bid)))
-              (is-eq (get is-accepted last-bid) false)
-            ) ;; we have a better bid and the previous one was not accepted!
-            (if (> (* xusd collateral-amount) (/ ((get debt-to-raise auction) (get lot-size auction))))
-              ;; if this bid is at least (total debt to raise / lot-size) amount, accept it as final - we don't need to be greedy
+      (ok (unwrap-panic (accept-bid auction-id lot-index xusd collateral-amount)))
+      (ok true) ;; just silently exit
+    )
+  )
+)
+
+(define-private (accept-bid (auction-id uint) (lot-index uint) (xusd uint) (collateral-amount uint))
+  (let ((auction (get-auction-by-id auction-id)))
+    (let ((last-bid (get-last-bid auction-id lot-index)))
+      (if
+        (and
+          (get is-accepted last-bid)
+          (> xusd (get xusd last-bid))
+        ) ;; we have a better bid and the previous one was not accepted!
+        (begin
+          (if (>= xusd (/ (get debt-to-raise auction) (get lot-size auction)))
+            ;; if this bid is at least (total debt to raise / lot-size) amount, accept it as final - we don't need to be greedy
+            (begin
               (map-set bids
                 { auction-id: auction-id, lot-index: lot-index }
                 {
@@ -146,6 +155,18 @@
                   is-accepted: true
                 }
               )
+              (if
+                (and
+                  (>= block-height (get ends-at auction))
+                  (is-eq (get lots auction) (get lots-sold auction))
+                )
+                ;; auction is over - close all bids
+                ;; send collateral to winning bidders
+                (ok (unwrap-panic (close-auction auction-id)))
+                (ok true)
+              )
+            )
+            (begin
               (map-set bids
                 { auction-id: auction-id, lot-index: lot-index }
                 {
@@ -155,19 +176,12 @@
                   is-accepted: false
                 }
               )
-            )
-            (if (>= block-height (get ends-at auction))
-              ;; auction is over - close all bids
-              ;; send collateral to winning bidders
-              (begin
-                (ok (close-auction auction-id))
-              )
               (ok true)
             )
           )
         )
+        (ok true) ;; don't care cause either the bid is already over or it was a poor bid
       )
-      (ok true) ;; just silently exit
     )
   )
 )
