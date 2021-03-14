@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Box, Modal, Text } from '@blockstack/ui';
 import { Container } from './home';
 import { getAuthOrigin, stacksNetwork as network } from '@common/utils';
@@ -19,6 +19,8 @@ export const ManageVault = ({ match }) => {
   const price = parseFloat(getStxPrice().price);
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [extraStxDeposit, setExtraStxDeposit] = useState('');
+  const [isLiquidated, setIsLiquidated] = useState(false);
+  const [auctionEnded, setAuctionEnded] = useState(false);
 
   const searchVault = (id: string) => {
     for (let i = 0; i < state.vaults.length; i++) {
@@ -29,6 +31,16 @@ export const ManageVault = ({ match }) => {
     }
   }
   const vault = searchVault(match.params.id);
+
+  useEffect(() => {
+    let mounted = true;
+
+    if (mounted && vault) {
+      setIsLiquidated(vault['is-liquidated']);
+      setAuctionEnded(vault['auction-ended']);
+    }
+    return () => { mounted = false; }
+  }, [vault]);
 
   const callBurn = async () => {
     const authOrigin = getAuthOrigin();
@@ -315,135 +327,141 @@ export const ManageVault = ({ match }) => {
 
 
 
+          {isLiquidated ? auctionEnded ? (
+            <span>LIQUIDATED AND AUCTION ENDED! WITHDRAW COLLATERAL!</span>
+          ) : (
+            <span>VAULT GOT LIQUIDATED! RUNNING AUCTION...</span>
+          ) : (
+            <>
+            <ul className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 xl:grid-cols-4 mt-8">
+              <li className="relative col-span-2 flex shadow-sm rounded-md">
+                <h2 className="text-lg leading-6 font-medium text-gray-900 mt-8 mb-4">
+                  STX Locked
+                </h2>
+              </li>
 
-          <ul className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 xl:grid-cols-4 mt-8">
-            <li className="relative col-span-2 flex shadow-sm rounded-md">
-              <h2 className="text-lg leading-6 font-medium text-gray-900 mt-8 mb-4">
-                STX Locked
-              </h2>
-            </li>
+              <li className="relative col-span-2 flex shadow-sm rounded-md">
+                <h2 className="text-lg leading-6 font-medium text-gray-900 mt-8 mb-4">
+                  Outstanding xUSD debt
+                </h2>
+              </li>
+            </ul>
 
-            <li className="relative col-span-2 flex shadow-sm rounded-md">
-              <h2 className="text-lg leading-6 font-medium text-gray-900 mt-8 mb-4">
-                Outstanding xUSD debt
-              </h2>
-            </li>
-          </ul>
+            <ul className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 xl:grid-cols-4">
+              <li className="relative col-span-2 flex shadow-sm rounded-md">
+                <div className="bg-white shadow sm:rounded-lg w-full">
+                  <div className="px-4 py-5 sm:p-6">
+                    <div className="mt-2 sm:flex sm:items-start sm:justify-between mb-5">
+                      <div className="max-w-xl text-sm text-gray-500">
+                        <p>
+                          STX Locked
+                        </p>
+                      </div>
 
-          <ul className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 xl:grid-cols-4">
-            <li className="relative col-span-2 flex shadow-sm rounded-md">
-              <div className="bg-white shadow sm:rounded-lg w-full">
-                <div className="px-4 py-5 sm:p-6">
-                  <div className="mt-2 sm:flex sm:items-start sm:justify-between mb-5">
-                    <div className="max-w-xl text-sm text-gray-500">
-                      <p>
-                        STX Locked
-                      </p>
+                      <div className="text-sm text-gray-500">
+                        <p>
+                          {stxLocked()} STX
+                        </p>
+                      </div>
+
+                      <div className="max-w-xl text-sm text-gray-500">
+                        <p>
+                          <Text onClick={() => setShowDepositModal(true)}
+                                _hover={{ cursor: 'pointer'}}
+                                className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Deposit
+                          </Text>
+                        </p>
+                      </div>
+                    </div>
+                    <hr/>
+
+                    <div className="mt-5 sm:flex sm:items-start sm:justify-between">
+                      <div className="max-w-xl text-sm text-gray-500">
+                        <p>
+                          Able to withdraw
+                        </p>
+                      </div>
+
+                      <div className="text-sm text-gray-500">
+                        <p>
+                          {availableStxToWithdraw(price, stxLocked(), outstandingDebt(), state.riskParameters['collateral-to-debt-ratio'])} STX
+                        </p>
+                      </div>
+
+                      <div className="max-w-xl text-sm text-gray-500">
+                        <p>
+                          <Text onClick={() => callWithdraw()}
+                                _hover={{ cursor: 'pointer'}}
+                                className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Withdraw
+                          </Text>
+                        </p>
+                      </div>
                     </div>
 
-                    <div className="text-sm text-gray-500">
-                      <p>
-                        {stxLocked()} STX
-                      </p>
-                    </div>
-
-                    <div className="max-w-xl text-sm text-gray-500">
-                      <p>
-                        <Text onClick={() => setShowDepositModal(true)}
-                              _hover={{ cursor: 'pointer'}}
-                              className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                          Deposit
-                        </Text>
-                      </p>
-                    </div>
                   </div>
-                  <hr/>
-
-                  <div className="mt-5 sm:flex sm:items-start sm:justify-between">
-                    <div className="max-w-xl text-sm text-gray-500">
-                      <p>
-                        Able to withdraw
-                      </p>
-                    </div>
-
-                    <div className="text-sm text-gray-500">
-                      <p>
-                        {availableStxToWithdraw(price, stxLocked(), outstandingDebt(), state.riskParameters['collateral-to-debt-ratio'])} STX
-                      </p>
-                    </div>
-
-                    <div className="max-w-xl text-sm text-gray-500">
-                      <p>
-                        <Text onClick={() => callWithdraw()}
-                              _hover={{ cursor: 'pointer'}}
-                              className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                          Withdraw
-                        </Text>
-                      </p>
-                    </div>
-                  </div>
-
                 </div>
-              </div>
-            </li>
+              </li>
 
-            <li className="relative col-span-2 flex shadow-sm rounded-md">
-              <div className="bg-white shadow sm:rounded-lg w-full">
-                <div className="px-4 py-5 sm:p-6">
-                  <div className="mt-2 sm:flex sm:items-start sm:justify-between mb-5">
-                    <div className="max-w-xl text-sm text-gray-500">
-                      <p>
-                        Outstanding xUSD debt
-                      </p>
+              <li className="relative col-span-2 flex shadow-sm rounded-md">
+                <div className="bg-white shadow sm:rounded-lg w-full">
+                  <div className="px-4 py-5 sm:p-6">
+                    <div className="mt-2 sm:flex sm:items-start sm:justify-between mb-5">
+                      <div className="max-w-xl text-sm text-gray-500">
+                        <p>
+                          Outstanding xUSD debt
+                        </p>
+                      </div>
+
+                      <div className="max-w-xl text-sm text-gray-500">
+                        <p>
+                          {outstandingDebt()} xUSD
+                        </p>
+                      </div>
+
+                      <div className="max-w-xl text-sm text-gray-500">
+                        <p>
+                          <Text onClick={() => callBurn()}
+                                _hover={{ cursor: 'pointer'}}
+                                className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Pay back
+                          </Text>
+                        </p>
+                      </div>
+                    </div>
+                    <hr/>
+
+                    <div className="mt-5 sm:flex sm:items-start sm:justify-between">
+                      <div className="max-w-xl text-sm text-gray-500">
+                        <p>
+                          Available to mint
+                        </p>
+                      </div>
+
+                      <div className="max-w-xl text-sm text-gray-500">
+                        <p>
+                          {availableCoinsToMint(price, stxLocked(), outstandingDebt(), state.riskParameters['collateral-to-debt-ratio'])} xUSD
+                        </p>
+                      </div>
+
+                      <div className="max-w-xl text-sm text-gray-500">
+                        <p>
+                          <Text onClick={() => callMint()}
+                                _hover={{ cursor: 'pointer'}}
+                                className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Mint
+                          </Text>
+                        </p>
+                      </div>
                     </div>
 
-                    <div className="max-w-xl text-sm text-gray-500">
-                      <p>
-                        {outstandingDebt()} xUSD
-                      </p>
-                    </div>
-
-                    <div className="max-w-xl text-sm text-gray-500">
-                      <p>
-                        <Text onClick={() => callBurn()}
-                              _hover={{ cursor: 'pointer'}}
-                              className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                          Pay back
-                        </Text>
-                      </p>
-                    </div>
                   </div>
-                  <hr/>
-
-                  <div className="mt-5 sm:flex sm:items-start sm:justify-between">
-                    <div className="max-w-xl text-sm text-gray-500">
-                      <p>
-                        Available to mint
-                      </p>
-                    </div>
-
-                    <div className="max-w-xl text-sm text-gray-500">
-                      <p>
-                        {availableCoinsToMint(price, stxLocked(), outstandingDebt(), state.riskParameters['collateral-to-debt-ratio'])} xUSD
-                      </p>
-                    </div>
-
-                    <div className="max-w-xl text-sm text-gray-500">
-                      <p>
-                        <Text onClick={() => callMint()}
-                              _hover={{ cursor: 'pointer'}}
-                              className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                          Mint
-                        </Text>
-                      </p>
-                    </div>
-                  </div>
-
                 </div>
-              </div>
-            </li>
-          </ul>
-
+              </li>
+            </ul>
+            </>
+          )}
 
         </main>
       </Box>

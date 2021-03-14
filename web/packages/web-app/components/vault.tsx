@@ -7,6 +7,8 @@ interface VaultProps {
   id: string;
   collateral: number;
   debt: number;
+  isLiquidated: boolean;
+  auctionEnded: boolean;
 }
 
 export const debtClass = (ratio: number) => {
@@ -29,7 +31,7 @@ export const debtBackgroundClass = (ratio: number) => {
   return 'bg-white';
 };
 
-export const Vault: React.FC<VaultProps> = ({ id, collateral, debt }) => {
+export const Vault: React.FC<VaultProps> = ({ id, collateral, debt, isLiquidated, auctionEnded }) => {
   const state = useContext(AppContext);
   let debtRatio = 0;
   if (id) {
@@ -62,11 +64,17 @@ export const Vault: React.FC<VaultProps> = ({ id, collateral, debt }) => {
       </td>
       <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-900">
         <span className="text-gray-900 font-medium">
-          {debtRatio > 150 ? (
-              <RouterLink to={`vaults/${id}`} exact className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                Manage
-              </RouterLink>
-          ) : <span>Auctioning Collateral...</span> }
+          {isLiquidated ? auctionEnded ? (
+            <RouterLink to={`vaults/${id}`} exact className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+              Withdraw Leftover Collateral
+            </RouterLink>
+          ) : (
+            <span>Auctioning Collateral...</span>
+          ) : (
+            <RouterLink to={`vaults/${id}`} exact className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+              Manage
+            </RouterLink>
+          )}
         </span>
       </td>
     </tr>
