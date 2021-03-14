@@ -21,6 +21,7 @@
     lots-sold: uint,
     is-open: bool,
     total-collateral-auctioned: uint,
+    total-debt-raised: uint,
     ends-at: uint
   }
 )
@@ -52,6 +53,7 @@
       (lots-sold u0)
       (is-open false)
       (total-collateral-auctioned u0)
+      (total-debt-raised u0)
       (ends-at u0)
     )
   )
@@ -90,6 +92,7 @@
             lots-sold: u0,
             ends-at: (+ block-height u10000),
             total-collateral-auctioned: u0,
+            total-debt-raised: u0,
             is-open: true
           }
         )
@@ -188,12 +191,13 @@
                 last-lot-size: (get last-lot-size auction),
                 lots-sold: (+ u1 (get lots-sold auction)),
                 ends-at: (get ends-at auction),
-                total-collateral-auctioned: (+ collateral-amount (get total-collateral-auctioned auction)),
+                total-collateral-auctioned: (+ collateral-amount (get total-collateral-auctioned auction)), ;; TODO: subtract last bid amount from this
+                total-debt-raised: (+ xusd (get total-debt-raised auction)), ;; TODO: subtract last bid amount from this
                 is-open: true
               }
             )
             (if
-              (and
+              (or
                 (>= block-height (get ends-at auction))
                 (is-eq (get lots auction) (get lots-sold auction))
               )
@@ -234,11 +238,12 @@
   )
 )
 
-;; 1. flag auction on map as closed
-;; 2. go over each lot (0 to lot-size) and send collateral to winning address
+;; DONE 1. flag auction on map as closed
+;; 2a. go over each lot (0 to lot-size) and send collateral to winning address
+;; 2b. OR allow person to collect collateral from reserve manually
 ;; 3. check if vault debt is covered (sum of xUSD in lots >= debt-to-raise)
 ;; 4. update vault to allow vault owner to withdraw leftover collateral (if any)
-;; 5. if not all vault debt is covered: auction off collateral again
+;; 5. if not all vault debt is covered: auction off collateral again (if any left)
 ;; 6. if not all vault debt is covered and no collateral is left: cover xUSD with gov token
 (define-private (close-auction (auction-id uint))
   (let ((auction (get-auction-by-id auction-id)))
@@ -256,6 +261,7 @@
         lots-sold: (get lots-sold auction),
         ends-at: (get ends-at auction),
         total-collateral-auctioned: (get total-collateral-auctioned auction),
+        total-debt-raised: (get total-debt-raised auction),
         is-open: false
       }
     )
