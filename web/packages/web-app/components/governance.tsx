@@ -3,9 +3,33 @@ import { Box } from '@blockstack/ui';
 import { AppContext } from '@common/context';
 import { Redirect } from 'react-router-dom';
 import { Container } from './home';
+import { getAuthOrigin, stacksNetwork as network } from '@common/utils';
+import { useConnect } from '@stacks/connect-react';
+import { uintCV, stringAsciiCV } from '@stacks/transactions';
 
 export const Governance = () => {
   const state = useContext(AppContext);
+  const { doContractCall } = useConnect();
+
+  const callAddProposal = async () => {
+    const authOrigin = getAuthOrigin();
+    const content = "<h2>Proposal</h2><p>Add new stability parameter</p>";
+    await doContractCall({
+      network,
+      authOrigin,
+      contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
+      contractName: 'dao',
+      functionName: 'propose',
+      functionArgs: [uintCV(200), stringAsciiCV(content)],
+      postConditionMode: 0x01,
+      finished: data => {
+        console.log('finished burn!', data);
+        console.log(data.stacksTransaction.auth.spendingCondition?.nonce.toNumber());
+        window.location.href = '/';
+      },
+    });
+  };
+  // callAddProposal();
 
   return (
     <Box>

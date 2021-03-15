@@ -33,6 +33,8 @@ describe("stacks reserve test suite", () => {
       await deployContract('stacker-registry');
       await deployContract('auction-engine');
       await deployContract('liquidator');
+      await deployContract('arkadiko-token');
+      await deployContract('dao');
     });
 
     it("liquidates a risky vault", async () => {
