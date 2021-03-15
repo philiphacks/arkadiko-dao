@@ -100,7 +100,7 @@ export const Auctions: React.FC = () => {
                     </div>
                   </div>
 
-                  {auctions ? (
+                  {auctions.length > 0 ? (
                     <AuctionGroup auctions={auctions} />
                   ) : (
                     <p>There are currently no open auctions</p>
