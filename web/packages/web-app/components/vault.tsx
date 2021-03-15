@@ -13,6 +13,7 @@ interface VaultProps {
   debt: number;
   isLiquidated: boolean;
   auctionEnded: boolean;
+  leftoverCollateral: number;
 }
 
 export const debtClass = (ratio: number) => {
@@ -35,7 +36,7 @@ export const debtBackgroundClass = (ratio: number) => {
   return 'bg-white';
 };
 
-export const Vault: React.FC<VaultProps> = ({ id, collateral, debt, isLiquidated, auctionEnded }) => {
+export const Vault: React.FC<VaultProps> = ({ id, collateral, debt, isLiquidated, auctionEnded, leftoverCollateral }) => {
   const state = useContext(AppContext);
   const { doContractCall } = useConnect();
   let debtRatio = 0;
@@ -85,12 +86,14 @@ export const Vault: React.FC<VaultProps> = ({ id, collateral, debt, isLiquidated
       </td>
       <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-900">
         <span className="text-gray-900 font-medium">
-          {isLiquidated ? auctionEnded ? (
+          {isLiquidated ? auctionEnded ? (leftoverCollateral > 0) ? (
             <Text onClick={() => callWithdrawLeftoverCollateral()}
                   _hover={{ cursor: 'pointer'}}
                   className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
               Withdraw Leftover Collateral
             </Text>
+          ) : (
+            <span>Vault liquidated & closed</span>
           ) : (
             <span>Auctioning Collateral...</span>
           ) : (
