@@ -116,6 +116,8 @@
 
 (define-public (withdraw (vault-id uint) (uamount uint))
   (let ((vault (get-vault-by-id vault-id)))
+    (asserts! (is-eq tx-sender (get owner vault)) (err err-unauthorized))
+
     (if (unwrap-panic (contract-call? .stx-reserve withdraw (get owner vault) uamount))
       (begin
         (let ((new-collateral (- (get collateral vault) uamount)))
@@ -143,6 +145,8 @@
 
 (define-public (mint (vault-id uint) (extra-debt uint))
   (let ((vault (get-vault-by-id vault-id)))
+    (asserts! (is-eq tx-sender (get owner vault)) (err err-unauthorized))
+
     (if (unwrap-panic (contract-call? .stx-reserve mint (get owner vault) (get collateral vault) (get debt vault) extra-debt))
       (begin
         (let ((new-total-debt (+ extra-debt (get debt vault))))
@@ -170,6 +174,8 @@
 
 (define-public (burn (vault-id uint) (vault-owner principal))
   (let ((vault (get-vault-by-id vault-id)))
+    (asserts! (is-eq tx-sender (get owner vault)) (err err-unauthorized))
+
     (if (unwrap-panic (contract-call? .stx-reserve burn (get owner vault) (get debt vault) (get collateral vault)))
       (begin
         (let ((entries (get ids (get-vault-entries vault-owner))))
@@ -231,24 +237,26 @@
   )
 )
 
-;; TODO: do not allow anyone to call this
 (define-public (finalize-liquidation (vault-id uint) (leftover-collateral uint))
-  (let ((vault (get-vault-by-id vault-id)))
-    (map-set vaults
-      { id: vault-id }
-      {
-        id: vault-id,
-        owner: (get owner vault),
-        collateral: u0,
-        debt: (get debt vault),
-        created-at-block-height: (get created-at-block-height vault),
-        updated-at-block-height: block-height,
-        is-liquidated: true,
-        auction-ended: true,
-        leftover-collateral: leftover-collateral
-      }
+  (if (is-eq contract-caller 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP.liquidator)
+    (let ((vault (get-vault-by-id vault-id)))
+      (map-set vaults
+        { id: vault-id }
+        {
+          id: vault-id,
+          owner: (get owner vault),
+          collateral: u0,
+          debt: (get debt vault),
+          created-at-block-height: (get created-at-block-height vault),
+          updated-at-block-height: block-height,
+          is-liquidated: true,
+          auction-ended: true,
+          leftover-collateral: leftover-collateral
+        }
+      )
+      (ok true)
     )
-    (ok true)
+    (err err-unauthorized)
   )
 )
 
