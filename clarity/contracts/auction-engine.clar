@@ -220,10 +220,10 @@
 )
 
 ;; DONE 1. flag auction on map as closed
-;; 2a. go over each lot (0 to lot-size) and send collateral to winning address
-;; 2b. OR allow person to collect collateral from reserve manually
-;; 3. check if vault debt is covered (sum of xUSD in lots >= debt-to-raise)
-;; 4. update vault to allow vault owner to withdraw leftover collateral (if any)
+;; N/A  2a. go over each lot (0 to lot-size) and send collateral to winning address
+;; TODO 2b. OR allow person to collect collateral from reserve manually
+;; TODO 3. check if vault debt is covered (sum of xUSD in lots >= debt-to-raise)
+;; DONE 4. update vault to allow vault owner to withdraw leftover collateral (if any)
 ;; 5. if not all vault debt is covered: auction off collateral again (if any left)
 ;; 6. if not all vault debt is covered and no collateral is left: cover xUSD with gov token
 (define-private (close-auction (auction-id uint))
