@@ -238,7 +238,7 @@
 )
 
 (define-public (finalize-liquidation (vault-id uint) (leftover-collateral uint))
-  (if (is-eq contract-caller 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP.liquidator)
+  (if (is-eq contract-caller 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP.auction-engine)
     (let ((vault (get-vault-by-id vault-id)))
       (map-set vaults
         { id: vault-id }
