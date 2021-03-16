@@ -1,15 +1,19 @@
-import React, { useContext } from 'react';
+import React, { useEffect, useContext, useState } from 'react';
 import { Box, Text } from '@blockstack/ui';
 import { AppContext } from '@common/context';
 import { Redirect } from 'react-router-dom';
 import { Container } from './home';
 import { getAuthOrigin, stacksNetwork as network } from '@common/utils';
 import { useConnect } from '@stacks/connect-react';
-import { uintCV, stringAsciiCV, listCV, tupleCV } from '@stacks/transactions';
+import { callReadOnlyFunction, uintCV, stringAsciiCV, listCV, tupleCV, cvToJSON } from '@stacks/transactions';
+import { useSTXAddress } from '@common/use-stx-address';
+import { ProposalGroup } from '@components/proposal-group';
 
 export const Governance = () => {
   const state = useContext(AppContext);
   const { doContractCall } = useConnect();
+  const stxAddress = useSTXAddress();
+  const [proposals, setProposals] = useState([]);
 
   const callAddProposal = async () => {
     const authOrigin = getAuthOrigin();
@@ -18,6 +22,7 @@ export const Governance = () => {
     const list = listCV([
       tupleCV({
         key: stringAsciiCV("liquidation_penalty"),
+        'old-value': uintCV(13),
         'new-value': uintCV(15)
       })
     ])
@@ -34,6 +39,56 @@ export const Governance = () => {
       },
     });
   };
+
+  useEffect(() => {
+    let mounted = true;
+
+    const getData = async () => {
+      const proposal = await callReadOnlyFunction({
+        contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
+        contractName: "dao",
+        functionName: "get-proposal-by-id",
+        functionArgs: [uintCV(1)],
+        senderAddress: stxAddress || '',
+        network: network,
+      });
+      const json = cvToJSON(proposal);
+      let serializedProposals:Array<{
+        id: string,
+        proposer: string,
+        forVotes: number,
+        against: number,
+        token: string,
+        type: string,
+        changes: object[],
+        'start-block-height': number,
+        'end-block-height': number
+      }> = [];
+      const data = json.value;
+
+      serializedProposals.push({
+        id: data['id'].value,
+        proposer: data['proposer'].value,
+        forVotes: data['yes-votes'].value,
+        against: data['no-votes'].value,
+        token: data['token'].value,
+        type: data['type'].value,
+        changes: [{
+          key: data['changes'].value[0]['key'],
+          'old-value': 0,
+          'new-value': data['changes'].value[0]['new-value']
+        }],
+        'start-block-height': data['start-block-height'].value,
+        'end-block-height': data['end-block-height'].value
+      });
+      setProposals(serializedProposals);
+    };
+    if (mounted) {
+      void getData();
+    }
+
+    return () => { mounted = false; }
+  }, []);
 
   return (
     <Box>
@@ -56,13 +111,17 @@ export const Governance = () => {
                   </div>
 
                   <h2 className="text-lg leading-6 font-medium text-gray-900 mt-8">Proposals</h2>
-                  <p>There are currently no proposals to vote on.</p>
+                  {proposals.length > 0 ? (
+                    <ProposalGroup proposals={proposals} />
+                  ) : (
+                    <p>There are currently no proposals to vote on.</p>
+                    )}
                   <p className="mt-8">
-                  <Text onClick={() => callAddProposal()}
-                        _hover={{ cursor: 'pointer'}}
-                        className="inline-flex items-center mt-8 px-2.5 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mr-5">
-                    Add test proposal
-                  </Text>
+                    <Text onClick={() => callAddProposal()}
+                          _hover={{ cursor: 'pointer'}}
+                          className="inline-flex items-center mt-8 px-2.5 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mr-5">
+                      Add test proposal
+                    </Text>
                   </p>
                 </div>
               </div>
