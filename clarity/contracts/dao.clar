@@ -354,5 +354,35 @@
       total-debt: u0
     }
   )
+  (map-set proposal-types
+    { type: "change_risk_parameter" }
+    {
+      changes-keys: (list "token" "liquidation-ratio" "collateral-to-debt-ratio" "maximum-debt" "liquidation-penalty" "stability-fee")
+    }
+  )
+  (map-set proposal-types
+    { type: "add_collateral_type" }
+    {
+      changes-keys: (list "collateral_token" "collateral_name" "liquidation-ratio" "collateral-to-debt-ratio" "maximum-debt" "liquidation-penalty" "stability-fee")
+    }
+  )
+  (map-set proposal-types
+    { type: "stacking_distribution" }
+    {
+      changes-keys: (list "stacker_yield" "governance_token_yield" "governance_reserve_yield")
+    }
+  )
+  (map-set proposal-types
+    { type: "stacking_distribution" }
+    {
+      changes-keys: (list "stacker_yield" "governance_token_yield" "governance_reserve_yield")
+    }
+  )
+  (map-set proposal-types
+    { type: "emergency_shutdown" }
+    {
+      changes-keys: (list "")
+    }
+  )
   (print (get-liquidation-ratio "stx"))
 )
