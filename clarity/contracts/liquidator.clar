@@ -15,11 +15,7 @@
             )
           )
         )
-        (begin
-          (print collateral-to-debt-ratio)
-          (print liquidation-ratio)
-          (ok true) ;; false alarm - vault is not at risk. just return successful response
-        )
+        (ok true) ;; false alarm - vault is not at risk. just return successful response
       )
     )
   )
