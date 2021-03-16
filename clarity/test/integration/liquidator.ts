@@ -27,14 +27,15 @@ describe("stacks reserve test suite", () => {
       await deployContract('vault-trait');
       await deployContract('oracle');
       await deployContract('xusd-token');
+      await deployContract('arkadiko-token');
+      await deployContract('dao');
+
       await deployContract('stx-reserve');
       await deployContract('freddie');
 
       await deployContract('stacker-registry');
       await deployContract('auction-engine');
       await deployContract('liquidator');
-      await deployContract('arkadiko-token');
-      await deployContract('dao');
     });
 
     it("liquidates a risky vault", async () => {

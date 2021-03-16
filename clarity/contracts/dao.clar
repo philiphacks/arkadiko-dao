@@ -7,6 +7,7 @@
 (define-constant err-not-enough-balance u1)
 (define-constant err-transfer-failed u2)
 
+;; proposal variables
 (define-constant proposal-reserve 'S02J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKPVKG2CE)
 (define-map proposals
   { id: uint }
@@ -46,6 +47,157 @@
       (no-votes u0)
       (details (unwrap-panic (as-max-len? "" u256)))
     )
+  )
+)
+
+;; risk parameters
+(define-map risk-parameters
+  { token: (string-ascii 4) }
+  {
+    liquidation-ratio: uint,
+    collateral-to-debt-ratio: uint,
+    maximum-debt: uint,
+    liquidation-penalty: uint,
+    stability-fee: uint
+  }
+)
+
+(define-read-only (get-risk-parameters (token (string-ascii 4)))
+  (unwrap!
+    (map-get? risk-parameters { token: token })
+    (tuple
+      (liquidation-ratio u0)
+      (collateral-to-debt-ratio u0)
+      (maximum-debt u0)
+      (liquidation-penalty u0)
+      (stability-fee u0)
+    )
+  )
+)
+
+(define-read-only (get-liquidation-ratio (token (string-ascii 4)))
+  (ok (get liquidation-ratio (get-risk-parameters token)))
+)
+
+(define-read-only (get-collateral-to-debt-ratio (token (string-ascii 4)))
+  (ok (get collateral-to-debt-ratio (get-risk-parameters token)))
+)
+
+(define-read-only (get-maximum-debt (token (string-ascii 4)))
+  (ok (get maximum-debt (get-risk-parameters token)))
+)
+
+(define-read-only (get-liquidation-penalty (token (string-ascii 4)))
+  (ok (get liquidation-penalty (get-risk-parameters token)))
+)
+
+(define-read-only (get-stability-fee (token (string-ascii 4)))
+  (ok (get stability-fee (get-risk-parameters token)))
+)
+
+;; setters accessible only by DAO contract
+(define-public (set-liquidation-ratio (token (string-ascii 4)) (ratio uint))
+  (if (is-eq contract-caller 'ST2ZRX0K27GW0SP3GJCEMHD95TQGJMKB7G9Y0X1MH.dao)
+    (begin
+      (let ((params (get-risk-parameters token)))
+        (map-set risk-parameters
+          { token: token }
+          {
+            liquidation-ratio: ratio,
+            collateral-to-debt-ratio: (get collateral-to-debt-ratio params),
+            maximum-debt: (get maximum-debt params),
+            liquidation-penalty: (get liquidation-penalty params),
+            stability-fee: (get stability-fee params)
+          }
+        )
+        (ok (get-liquidation-ratio token))
+      )
+    )
+    (ok (get-liquidation-ratio token))
+  )
+)
+
+(define-public (set-collateral-to-debt-ratio (token (string-ascii 4)) (ratio uint))
+  (if (is-eq contract-caller 'ST2ZRX0K27GW0SP3GJCEMHD95TQGJMKB7G9Y0X1MH.dao)
+    (begin
+      (let ((params (get-risk-parameters token)))
+        (map-set risk-parameters
+          { token: token }
+          {
+            liquidation-ratio: (get liquidation-ratio params),
+            collateral-to-debt-ratio: ratio,
+            maximum-debt: (get maximum-debt params),
+            liquidation-penalty: (get liquidation-penalty params),
+            stability-fee: (get stability-fee params)
+          }
+        )
+        (ok (get-liquidation-ratio token))
+      )
+    )
+    (ok (get-liquidation-ratio token))
+  )
+)
+
+(define-public (set-maximum-debt (token (string-ascii 4)) (debt uint))
+  (if (is-eq contract-caller 'ST2ZRX0K27GW0SP3GJCEMHD95TQGJMKB7G9Y0X1MH.dao)
+    (begin
+      (let ((params (get-risk-parameters token)))
+        (map-set risk-parameters
+          { token: token }
+          {
+            liquidation-ratio: (get liquidation-ratio params),
+            collateral-to-debt-ratio: (get collateral-to-debt-ratio params),
+            maximum-debt: debt,
+            liquidation-penalty: (get liquidation-penalty params),
+            stability-fee: (get stability-fee params)
+          }
+        )
+        (ok (get-liquidation-ratio token))
+      )
+    )
+    (ok (get-liquidation-ratio token))
+  )
+)
+
+(define-public (set-liquidation-penalty (token (string-ascii 4)) (penalty uint))
+  (if (is-eq contract-caller 'ST2ZRX0K27GW0SP3GJCEMHD95TQGJMKB7G9Y0X1MH.dao)
+    (begin
+      (let ((params (get-risk-parameters token)))
+        (map-set risk-parameters
+          { token: token }
+          {
+            liquidation-ratio: (get liquidation-ratio params),
+            collateral-to-debt-ratio: (get collateral-to-debt-ratio params),
+            maximum-debt: (get maximum-debt params),
+            liquidation-penalty: penalty,
+            stability-fee: (get stability-fee params)
+          }
+        )
+        (ok (get-liquidation-ratio token))
+      )
+    )
+    (ok (get-liquidation-ratio token))
+  )
+)
+
+(define-public (set-stability-fee (token (string-ascii 4)) (fee uint))
+  (if (is-eq contract-caller 'ST2ZRX0K27GW0SP3GJCEMHD95TQGJMKB7G9Y0X1MH.dao)
+    (begin
+      (let ((params (get-risk-parameters token)))
+        (map-set risk-parameters
+          { token: token }
+          {
+            liquidation-ratio: (get liquidation-ratio params),
+            collateral-to-debt-ratio: (get collateral-to-debt-ratio params),
+            maximum-debt: (get maximum-debt params),
+            liquidation-penalty: (get liquidation-penalty params),
+            stability-fee: fee
+          }
+        )
+        (ok (get-liquidation-ratio token))
+      )
+    )
+    (ok (get-liquidation-ratio token))
   )
 )
 
@@ -139,4 +291,24 @@
       (err err-transfer-failed)
     )
   )
+)
+
+;; Initialize the contract
+(begin
+  (try!
+    (if (map-set risk-parameters
+      { token: "stx" }
+      {
+        liquidation-ratio: u150,
+        collateral-to-debt-ratio: u200,
+        maximum-debt: u10000000,
+        liquidation-penalty: u13,
+        stability-fee: u0
+      }
+    )
+      (ok true)
+      (err false)
+    )
+  )
+  (print (get-liquidation-ratio "stx"))
 )
