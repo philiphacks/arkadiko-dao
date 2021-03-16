@@ -9,6 +9,7 @@
 
 ;; proposal variables
 (define-constant proposal-reserve 'S02J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKPVKG2CE)
+(define-constant emergency-lockup-address 'S02J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKPVKG2CE)
 (define-map proposals
   { id: uint }
   {
@@ -26,15 +27,7 @@
 )
 (define-data-var proposal-count uint u0)
 (define-map votes-by-member { proposal-id: uint, member: principal } { has-voted: bool })
-;; IDEA: create map of default proposals that are templates
-;; (define-map default-proposals
-;;   { id: uint },
-;;   {
-;;     name: (string-ascii 20),
-;;     type: (string-ascii 20),
-;;     changes: (list (list 3 uint)) ;; list of list with 3 values: name of key, old value, new value
-;;   }
-;; )
+(define-data-var emergency-shutdown-activated bool false)
 
 (define-read-only (get-proposal-by-id (proposal-id uint))
   (unwrap!
@@ -63,6 +56,21 @@
     maximum-debt: uint,
     liquidation-penalty: uint,
     stability-fee: uint
+  }
+)
+
+(define-map collateral-types
+  { token: (string-ascii 4) }
+  {
+    name: (string-ascii 256),
+    total-debt: uint
+  }
+)
+
+(define-map proposal-types
+  { type: (string-ascii 200) }
+  {
+    changes-keys: (list 10 (string-ascii 256))
   }
 )
 
@@ -97,6 +105,22 @@
 
 (define-read-only (get-stability-fee (token (string-ascii 4)))
   (ok (get stability-fee (get-risk-parameters token)))
+)
+
+(define-read-only (get-stacker-yield)
+  (ok u80) ;; stacker gets 80% of the yield
+)
+
+(define-read-only (get-governance-token-yield)
+  (ok u10) ;; token holders get 10% of the yield
+)
+
+(define-read-only (get-governance-reserve-yield)
+  (ok u10) ;; reserve gets 10% of the yield
+)
+
+(define-read-only (get-emergency-shutdown-activated)
+  (ok (var-get emergency-shutdown-activated))
 )
 
 ;; setters accessible only by DAO contract
@@ -322,6 +346,13 @@
       (ok true)
       (err false)
     )
+  )
+  (map-set collateral-types
+    { token: "stx" }
+    {
+      name: "Stacks",
+      total-debt: u0
+    }
   )
   (print (get-liquidation-ratio "stx"))
 )
