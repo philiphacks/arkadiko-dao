@@ -19,7 +19,8 @@
     end-block-height: uint,
     yes-votes: uint,
     no-votes: uint,
-    changes: (tuple (key (string-ascii 256)) (new-value uint)),
+    type: (string-ascii 200),
+    changes: (list 10 (tuple (key (string-ascii 256)) (new-value uint))),
     details: (string-ascii 256)
   }
 )
@@ -46,7 +47,8 @@
       (end-block-height u0)
       (yes-votes u0)
       (no-votes u0)
-      (changes (tuple (key "") (new-value u0)))
+      (type "")
+      (changes (list (tuple (key "") (new-value u0))))
       (details (unwrap-panic (as-max-len? "" u256)))
     )
   )
@@ -207,7 +209,12 @@
 ;; Requires 1% of the supply in your wallet
 ;; Default voting period is 10 days (144 * 10 blocks)
 ;; 
-(define-public (propose (start-block-height uint) (details (string-ascii 256)) (changes (tuple (key (string-ascii 256)) (new-value uint))))
+(define-public (propose
+    (start-block-height uint)
+    (details (string-ascii 256))
+    (type (string-ascii 200))
+    (changes (list 10 (tuple (key (string-ascii 256)) (new-value uint))))
+  )
   (let ((proposer-balance (unwrap-panic (contract-call? .arkadiko-token balance-of tx-sender))))
     (let ((supply (unwrap-panic (contract-call? .arkadiko-token total-supply))))
       (let ((proposal-id (+ u1 (var-get proposal-count))))
@@ -223,6 +230,7 @@
                 end-block-height: (+ start-block-height u1440),
                 yes-votes: u0,
                 no-votes: u0,
+                type: type,
                 changes: changes,
                 details: details
               }
@@ -254,6 +262,7 @@
             end-block-height: (get end-block-height proposal),
             yes-votes: (+ amount (get yes-votes proposal)),
             no-votes: (get no-votes proposal),
+            type: (get type proposal),
             changes: (get changes proposal),
             details: (get details proposal)
           }
@@ -284,6 +293,7 @@
             end-block-height: (get end-block-height proposal),
             yes-votes: (get yes-votes proposal),
             no-votes: (+ amount (get no-votes proposal)),
+            type: (get type proposal),
             changes: (get changes proposal),
             details: (get details proposal)
           }
