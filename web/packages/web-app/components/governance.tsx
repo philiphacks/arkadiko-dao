@@ -74,9 +74,9 @@ export const Governance = () => {
         token: data['token'].value,
         type: data['type'].value,
         changes: [{
-          key: data['changes'].value[0]['key'],
+          key: data['changes'].value[0].value['key'].value,
           'old-value': 0,
-          'new-value': data['changes'].value[0]['new-value']
+          'new-value': data['changes'].value[0].value['new-value'].value
         }],
         'start-block-height': data['start-block-height'].value,
         'end-block-height': data['end-block-height'].value
