@@ -224,7 +224,7 @@
                   leftover-collateral: u0
                 }
               )
-              (let ((debt (/ (* u13 (get debt vault)) u100)))
+              (let ((debt (/ (* u13 (get debt vault)) u100))) ;; TODO: change with dynamic value
                 (ok (tuple (ustx-amount collateral) (debt (+ debt (get debt vault)))))
               )
             )

@@ -23,6 +23,15 @@
 )
 (define-data-var proposal-count uint u0)
 (define-map votes-by-member { proposal-id: uint, member: principal } { has-voted: bool })
+;; IDEA: create map of default proposals that are templates
+;; (define-map default-proposals
+;;   { id: uint },
+;;   {
+;;     options: uint
+;;   }
+;; )
+;; (try! (ft-mint? xusd u20 'SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7))
+;; (try! (ft-mint? xusd u10 'S02J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKPVKG2CE))
 
 (define-read-only (get-proposal-by-id (proposal-id uint))
   (unwrap!
