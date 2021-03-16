@@ -19,6 +19,7 @@
     end-block-height: uint,
     yes-votes: uint,
     no-votes: uint,
+    changes: (tuple (key (string-ascii 256)) (new-value uint)),
     details: (string-ascii 256)
   }
 )
@@ -28,11 +29,11 @@
 ;; (define-map default-proposals
 ;;   { id: uint },
 ;;   {
-;;     options: uint
+;;     name: (string-ascii 20),
+;;     type: (string-ascii 20),
+;;     changes: (list (list 3 uint)) ;; list of list with 3 values: name of key, old value, new value
 ;;   }
 ;; )
-;; (try! (ft-mint? xusd u20 'SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7))
-;; (try! (ft-mint? xusd u10 'S02J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKPVKG2CE))
 
 (define-read-only (get-proposal-by-id (proposal-id uint))
   (unwrap!
@@ -45,6 +46,7 @@
       (end-block-height u0)
       (yes-votes u0)
       (no-votes u0)
+      (changes (tuple (key "") (new-value u0)))
       (details (unwrap-panic (as-max-len? "" u256)))
     )
   )
@@ -205,7 +207,7 @@
 ;; Requires 1% of the supply in your wallet
 ;; Default voting period is 10 days (144 * 10 blocks)
 ;; 
-(define-public (propose (start-block-height uint) (details (string-ascii 256)))
+(define-public (propose (start-block-height uint) (details (string-ascii 256)) (changes (tuple (key (string-ascii 256)) (new-value uint))))
   (let ((proposer-balance (unwrap-panic (contract-call? .arkadiko-token balance-of tx-sender))))
     (let ((supply (unwrap-panic (contract-call? .arkadiko-token total-supply))))
       (let ((proposal-id (+ u1 (var-get proposal-count))))
@@ -221,6 +223,7 @@
                 end-block-height: (+ start-block-height u1440),
                 yes-votes: u0,
                 no-votes: u0,
+                changes: changes,
                 details: details
               }
             )
@@ -233,7 +236,6 @@
   )
 )
 
-;; TODO: check if person has already voted or not
 (define-public (vote-for (proposal-id uint) (amount uint))
   (let ((proposal (get-proposal-by-id proposal-id)))
     (if 
@@ -252,6 +254,7 @@
             end-block-height: (get end-block-height proposal),
             yes-votes: (+ amount (get yes-votes proposal)),
             no-votes: (get no-votes proposal),
+            changes: (get changes proposal),
             details: (get details proposal)
           }
         )
@@ -263,7 +266,6 @@
   )
 )
 
-;; TODO: check if person has already voted or not
 (define-public (vote-against (proposal-id uint) (amount uint))
   (let ((proposal (get-proposal-by-id proposal-id)))
     (if 
@@ -282,6 +284,7 @@
             end-block-height: (get end-block-height proposal),
             yes-votes: (get yes-votes proposal),
             no-votes: (+ amount (get no-votes proposal)),
+            changes: (get changes proposal),
             details: (get details proposal)
           }
         )
