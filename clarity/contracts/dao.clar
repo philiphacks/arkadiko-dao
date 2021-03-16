@@ -20,6 +20,7 @@
     end-block-height: uint,
     yes-votes: uint,
     no-votes: uint,
+    token: (string-ascii 4),
     type: (string-ascii 200),
     changes: (list 10 (tuple (key (string-ascii 256)) (new-value uint))),
     details: (string-ascii 256)
@@ -40,6 +41,7 @@
       (end-block-height u0)
       (yes-votes u0)
       (no-votes u0)
+      (token "")
       (type "")
       (changes (list (tuple (key "") (new-value u0))))
       (details (unwrap-panic (as-max-len? "" u256)))
@@ -254,6 +256,7 @@
                 end-block-height: (+ start-block-height u1440),
                 yes-votes: u0,
                 no-votes: u0,
+                token: "stx",
                 type: type,
                 changes: changes,
                 details: details
@@ -286,6 +289,7 @@
             end-block-height: (get end-block-height proposal),
             yes-votes: (+ amount (get yes-votes proposal)),
             no-votes: (get no-votes proposal),
+            token: (get token proposal),
             type: (get type proposal),
             changes: (get changes proposal),
             details: (get details proposal)
@@ -317,6 +321,7 @@
             end-block-height: (get end-block-height proposal),
             yes-votes: (get yes-votes proposal),
             no-votes: (+ amount (get no-votes proposal)),
+            token: (get token proposal),
             type: (get type proposal),
             changes: (get changes proposal),
             details: (get details proposal)

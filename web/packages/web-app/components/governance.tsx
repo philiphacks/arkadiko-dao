@@ -1,11 +1,11 @@
 import React, { useContext } from 'react';
-import { Box } from '@blockstack/ui';
+import { Box, Text } from '@blockstack/ui';
 import { AppContext } from '@common/context';
 import { Redirect } from 'react-router-dom';
 import { Container } from './home';
 import { getAuthOrigin, stacksNetwork as network } from '@common/utils';
 import { useConnect } from '@stacks/connect-react';
-import { uintCV, stringAsciiCV } from '@stacks/transactions';
+import { uintCV, stringAsciiCV, listCV, tupleCV } from '@stacks/transactions';
 
 export const Governance = () => {
   const state = useContext(AppContext);
@@ -13,23 +13,27 @@ export const Governance = () => {
 
   const callAddProposal = async () => {
     const authOrigin = getAuthOrigin();
-    const content = "<h2>Proposal</h2><p>Add new stability parameter</p>";
+    const content = "<h2>Proposal</h2><p>Add new stability parameter details</p>";
+
+    const list = listCV([
+      tupleCV({
+        key: stringAsciiCV("liquidation_penalty"),
+        'new-value': uintCV(15)
+      })
+    ])
     await doContractCall({
       network,
       authOrigin,
       contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
       contractName: 'dao',
       functionName: 'propose',
-      functionArgs: [uintCV(200), stringAsciiCV(content)],
+      functionArgs: [uintCV(200), stringAsciiCV(content), stringAsciiCV("change_risk_parameter"), list],
       postConditionMode: 0x01,
       finished: data => {
-        console.log('finished burn!', data);
-        console.log(data.stacksTransaction.auth.spendingCondition?.nonce.toNumber());
-        window.location.href = '/';
+        console.log('finished add new proposal', data);
       },
     });
   };
-  // callAddProposal();
 
   return (
     <Box>
@@ -53,6 +57,13 @@ export const Governance = () => {
 
                   <h2 className="text-lg leading-6 font-medium text-gray-900 mt-8">Proposals</h2>
                   <p>There are currently no proposals to vote on.</p>
+                  <p className="mt-8">
+                  <Text onClick={() => callAddProposal()}
+                        _hover={{ cursor: 'pointer'}}
+                        className="inline-flex items-center mt-8 px-2.5 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mr-5">
+                    Add test proposal
+                  </Text>
+                  </p>
                 </div>
               </div>
             </main>
