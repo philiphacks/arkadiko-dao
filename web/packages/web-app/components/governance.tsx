@@ -104,7 +104,7 @@ export const Governance = () => {
                         <span className="block">Arkadiko Governance</span>
                       </h2>
                       <p className="mt-4 text-lg leading-6 text-indigo-200">
-                        DIKO tokens represent voting shares in Arkadiko governance. You can vote on each proposal yourself and cannot delegate any votes.
+                        DIKO tokens represent voting shares in Arkadiko governance. You can vote on each proposal and cannot delegate any votes.
                       </p>
                     </div>
                   </div>
