@@ -7,7 +7,7 @@ import { useSTXAddress } from '@common/use-stx-address';
 
 export const ViewProposal = ({ match }) => {
   const stxAddress = useSTXAddress();
-  const [proposal, setProposal] = useState([]);
+  const [proposal, setProposal] = useState({});
 
   useEffect(() => {
     let mounted = true;
@@ -66,7 +66,7 @@ export const ViewProposal = ({ match }) => {
                     <div className="mt-2 sm:flex sm:items-start sm:justify-between">
                       <div className="max-w-xl text-sm text-gray-500">
                         <p>
-                          Voting ends at block height {proposal.id}
+                          Voting ends at block height {proposal.endBlockHeight}
                         </p>
                       </div>
                     </div>
@@ -77,7 +77,7 @@ export const ViewProposal = ({ match }) => {
                           Votes For
                         </dt>
                         <dd className="mt-1 text-3xl font-semibold text-gray-900">
-                          71
+                          {proposal.forVotes}
                         </dd>
                       </div>
 
@@ -86,11 +86,28 @@ export const ViewProposal = ({ match }) => {
                           Votes Against
                         </dt>
                         <dd className="mt-1 text-3xl font-semibold text-gray-900">
-                          58.16%
+                          {proposal.against}
                         </dd>
                       </div>
                     </dl>
 
+                    <h3 className="mt-6 text-lg leading-6 font-medium text-gray-900">
+                      Details
+                    </h3>
+                    <div className="mt-2 sm:flex sm:items-start sm:justify-between">
+                      Proposer: {proposal.proposer}
+                    </div>
+                    <div className="mt-2 sm:flex sm:items-start sm:justify-between">
+                      Token: {proposal.token}
+                    </div>
+                    <div className="mt-2 sm:flex sm:items-start sm:justify-between">
+                      Type: {proposal.type}
+                    </div>
+                    {proposal.changes ? (
+                      <div className="mt-2 sm:flex sm:items-start sm:justify-between">
+                        Changes: Change {proposal.changes[0].key} to {proposal.changes[0]['new-value']}%
+                      </div>
+                    ): `` }
                   </div>
                 </div>
 
