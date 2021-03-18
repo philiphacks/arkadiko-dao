@@ -22,7 +22,6 @@ export const Governance = () => {
     const list = listCV([
       tupleCV({
         key: stringAsciiCV("liquidation_penalty"),
-        'old-value': uintCV(13),
         'new-value': uintCV(15)
       })
     ])
@@ -78,8 +77,8 @@ export const Governance = () => {
           'old-value': 0,
           'new-value': data['changes'].value[0].value['new-value'].value
         }],
-        'start-block-height': data['start-block-height'].value,
-        'end-block-height': data['end-block-height'].value
+        startBlockHeight: data['start-block-height'].value,
+        endBlockHeight: data['end-block-height'].value
       });
       setProposals(serializedProposals);
     };
@@ -110,7 +109,7 @@ export const Governance = () => {
                     </div>
                   </div>
 
-                  <h2 className="text-lg leading-6 font-medium text-gray-900 mt-8">Proposals</h2>
+                  <h2 className="text-lg leading-6 font-medium text-gray-900 mt-8">Current Open Proposals</h2>
                   {proposals.length > 0 ? (
                     <ProposalGroup proposals={proposals} />
                   ) : (

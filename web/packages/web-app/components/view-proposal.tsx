@@ -1,7 +1,13 @@
 import React from 'react';
+import { Box } from '@blockstack/ui';
+import { Container } from './home';
 
 export const ViewProposal = ({ match }) => {
   return (
-    <p>Great proposal {match.params.id}</p>
+    <Box>
+      <Container>
+        Proposal {match.params.id}
+      </Container>
+    </Box>
   );
 };
