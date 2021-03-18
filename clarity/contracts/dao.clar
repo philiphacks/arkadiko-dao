@@ -8,6 +8,7 @@
 (define-constant err-transfer-failed u2)
 
 ;; proposal variables
+(define-constant diko-reserve 'S02J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKPVKG2CE)
 (define-constant proposal-reserve 'S02J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKPVKG2CE)
 (define-constant emergency-lockup-address 'S02J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKPVKG2CE)
 (define-map proposals
@@ -362,7 +363,7 @@
   (map-set proposal-types
     { type: "change_risk_parameter" }
     {
-      changes-keys: (list "token" "liquidation-ratio" "collateral-to-debt-ratio" "maximum-debt" "liquidation-penalty" "stability-fee")
+      changes-keys: (list "liquidation-ratio" "collateral-to-debt-ratio" "maximum-debt" "liquidation-penalty" "stability-fee")
     }
   )
   (map-set proposal-types
