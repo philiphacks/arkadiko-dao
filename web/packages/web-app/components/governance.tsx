@@ -67,21 +67,23 @@ export const Governance = () => {
       }> = [];
       const data = json.value;
 
-      serializedProposals.push({
-        id: data['id'].value,
-        proposer: data['proposer'].value,
-        forVotes: data['yes-votes'].value,
-        against: data['no-votes'].value,
-        token: data['token'].value,
-        type: data['type'].value,
-        changes: [{
-          key: data['changes'].value[0].value['key'].value,
-          'old-value': 0,
-          'new-value': data['changes'].value[0].value['new-value'].value
-        }],
-        startBlockHeight: data['start-block-height'].value,
-        endBlockHeight: data['end-block-height'].value
-      });
+      if (data['id'].value != 0) {
+        serializedProposals.push({
+          id: data['id'].value,
+          proposer: data['proposer'].value,
+          forVotes: data['yes-votes'].value,
+          against: data['no-votes'].value,
+          token: data['token'].value,
+          type: data['type'].value,
+          changes: [{
+            key: data['changes'].value[0].value['key'].value,
+            'old-value': 0,
+            'new-value': data['changes'].value[0].value['new-value'].value
+          }],
+          startBlockHeight: data['start-block-height'].value,
+          endBlockHeight: data['end-block-height'].value
+        });
+      }
       setProposals(serializedProposals);
     };
     if (mounted) {
