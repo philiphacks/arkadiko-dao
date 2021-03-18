@@ -47,6 +47,18 @@ export const ViewProposal = ({ match }) => {
     return () => { mounted = false; }
   }, []);
 
+  const changeKeyToHumanReadable = (keyName: string) => {
+    if (keyName === 'liquidation_penalty') {
+      return 'Liquidation Penalty';
+    }
+
+    return 'unknown';
+  };
+
+  const callVote = () => {
+    console.log('VOTING!!!');
+  };
+
   return (
     <Container>
       <Box py={6}>
@@ -61,7 +73,7 @@ export const ViewProposal = ({ match }) => {
                 <div className="bg-white shadow sm:rounded-lg mt-5 w-full">
                   <div className="px-4 py-5 sm:p-6">
                     <h3 className="text-lg leading-6 font-medium text-gray-900">
-                      Title here
+                      Change Risk Parameter "Liquidation Penalty" for STX collateral
                     </h3>
                     <div className="mt-2 sm:flex sm:items-start sm:justify-between">
                       <div className="max-w-xl text-sm text-gray-500">
@@ -105,9 +117,19 @@ export const ViewProposal = ({ match }) => {
                     </div>
                     {proposal.changes ? (
                       <div className="mt-2 sm:flex sm:items-start sm:justify-between">
-                        Changes: Change {proposal.changes[0].key} to {proposal.changes[0]['new-value']}%
+                        Changes: Change {changeKeyToHumanReadable(proposal.changes[0].key)} to {proposal.changes[0]['new-value']}%
                       </div>
                     ): `` }
+                  </div>
+                </div>
+
+                <div className="mt-5 ml-5 sm:flex sm:items-start sm:justify-between">
+                  <div className="max-w-xl text-sm text-gray-500">
+                    <div className="mt-5 sm:mt-0 sm:flex-shrink-0 sm:flex sm:items-right">
+                      <button type="button" onClick={() => callVote()} className="inline-flex items-right px-4 py-2 border border-transparent shadow-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm">
+                        Vote
+                      </button>
+                    </div>
                   </div>
                 </div>
 
