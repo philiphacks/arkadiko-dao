@@ -67,7 +67,7 @@ export const ViewProposal = ({ match }) => {
       contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
       contractName: 'dao',
       functionName: 'vote-for',
-      functionArgs: [uintCV(match.params.id), uintCV(amountOfVotes)],
+      functionArgs: [uintCV(match.params.id), uintCV(amountOfVotes * 1000000)],
       postConditionMode: 0x01,
       finished: data => {
         console.log('finished adding vote for!', data);
@@ -84,7 +84,7 @@ export const ViewProposal = ({ match }) => {
       contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
       contractName: 'dao',
       functionName: 'vote-against',
-      functionArgs: [uintCV(match.params.id), uintCV(amountOfVotes)],
+      functionArgs: [uintCV(match.params.id), uintCV(amountOfVotes * 1000000)],
       postConditionMode: 0x01,
       finished: data => {
         console.log('finished adding vote for!', data);
@@ -181,7 +181,7 @@ export const ViewProposal = ({ match }) => {
                           Votes For
                         </dt>
                         <dd className="mt-1 text-3xl font-semibold text-gray-900">
-                          {proposal.forVotes}
+                          {proposal.forVotes / 1000000} DIKO
                         </dd>
                       </div>
 
@@ -190,7 +190,7 @@ export const ViewProposal = ({ match }) => {
                           Votes Against
                         </dt>
                         <dd className="mt-1 text-3xl font-semibold text-gray-900">
-                          {proposal.against}
+                          {proposal.against / 1000000} DIKO
                         </dd>
                       </div>
                     </dl>
