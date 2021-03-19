@@ -33,6 +33,11 @@
     is-accepted: bool
   }
 )
+(define-map winning-lots
+  { user: principal }
+  { ids: (list 1500 (tuple (auction-id uint) (lot-index uint))) }
+)
+
 (define-data-var last-auction-id uint u0)
 (define-data-var auction-ids (list 2000 uint) (list u0))
 (define-data-var lot-size uint u100000000) ;; 100 STX
@@ -55,10 +60,6 @@
       (ends-at u0)
     )
   )
-)
-
-(define-read-only (get-auction-id)
-  (ok (var-get auction-ids))
 )
 
 (define-read-only (get-auctions)
@@ -109,8 +110,8 @@
   (let ((stx-price-in-cents (contract-call? .oracle get-price)))
     (let ((auction (get-auction-by-id auction-id)))
       (let ((amount (/ (/ (get debt-to-raise auction) (get price stx-price-in-cents)) (get lots auction))))
-        (if (> (get collateral-amount auction) amount)
-          (ok amount)
+        (if (> (get collateral-amount auction) (* u100 amount))
+          (ok (* u100 amount))
           (ok (get collateral-amount auction))
         )
       )
@@ -126,6 +127,15 @@
       (collateral-amount u0)
       (owner 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP)
       (is-accepted false)
+    )
+  )
+)
+
+(define-read-only (get-winning-lots (owner principal))
+  (unwrap!
+    (map-get? winning-lots { user: owner })
+    (tuple
+      (ids (list (tuple (auction-id u0) (lot-index u0))))
     )
   )
 )
@@ -158,6 +168,13 @@
   )
 )
 
+(define-private (is-lot-sold (accepted-bid bool))
+  (if accepted-bid
+    (ok u1)
+    (ok u0)
+  )
+)
+
 (define-private (accept-bid (auction-id uint) (lot-index uint) (xusd uint) (collateral-amount uint))
   (let ((auction (get-auction-by-id auction-id)))
     (let ((last-bid (get-last-bid auction-id lot-index)))
@@ -177,7 +194,7 @@
                   lot-size: (get lot-size auction),
                   lots: (get lots auction),
                   last-lot-size: (get last-lot-size auction),
-                  lots-sold: (+ u1 (get lots-sold auction)),
+                  lots-sold: (+ (unwrap-panic (is-lot-sold accepted-bid)) (get lots-sold auction)),
                   ends-at: (get ends-at auction),
                   total-collateral-auctioned: (- (+ collateral-amount (get total-collateral-auctioned auction)) (get collateral-amount last-bid)),
                   total-debt-raised: (- (+ xusd (get total-debt-raised auction)) (get xusd last-bid)),
@@ -193,10 +210,23 @@
                   is-accepted: accepted-bid
                 }
               )
+              (if accepted-bid
+                (begin
+                  (let ((winning-lot (get-winning-lots tx-sender)))
+                    (map-set winning-lots
+                      { user: tx-sender }
+                      {
+                        ids: (unwrap-panic (as-max-len? (append (get ids winning-lot) (tuple (auction-id auction-id) (lot-index lot-index))) u1500))
+                      }
+                    )
+                  )
+                )
+                true
+              )
               (if
                 (or
                   (>= block-height (get ends-at auction))
-                  (>= (+ u1 (get lots-sold auction)) (get lots auction))
+                  (>= (+ (unwrap-panic (is-lot-sold accepted-bid)) (get lots-sold auction)) (get lots auction))
                 )
                 ;; auction is over - close all bids
                 ;; send collateral to winning bidders

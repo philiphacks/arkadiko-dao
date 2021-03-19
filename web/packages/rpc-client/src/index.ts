@@ -68,7 +68,7 @@ export class RPCClient {
     const url = `${this.url}/extended/v1/address/${principal}/balances`;
     const response = await fetch(url, { credentials: 'omit' });
     const data = await response.json();
-    console.log(data);
+    // console.log(data);
     const dikoBalance = data.fungible_tokens['ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP.arkadiko-token::diko'];
     const xusdBalance = data.fungible_tokens['ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP.xusd-token::xusd'];
     return {
