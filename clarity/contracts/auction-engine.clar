@@ -35,7 +35,11 @@
 )
 (define-map winning-lots
   { user: principal }
-  { ids: (list 1500 (tuple (auction-id uint) (lot-index uint))) }
+  { ids: (list 100 (tuple (auction-id uint) (lot-index uint))) }
+)
+(define-map redeeming-lot
+  { user: principal }
+  { auction-id: uint, lot-index: uint }
 )
 
 (define-data-var last-auction-id uint u0)
@@ -212,11 +216,11 @@
               )
               (if accepted-bid
                 (begin
-                  (let ((winning-lot (get-winning-lots tx-sender)))
+                  (let ((lots (get-winning-lots tx-sender)))
                     (map-set winning-lots
                       { user: tx-sender }
                       {
-                        ids: (unwrap-panic (as-max-len? (append (get ids winning-lot) (tuple (auction-id auction-id) (lot-index lot-index))) u1500))
+                        ids: (unwrap-panic (as-max-len? (append (get ids lots) (tuple (auction-id auction-id) (lot-index lot-index))) u100))
                       }
                     )
                   )
@@ -238,6 +242,44 @@
           )
         )
       )
+    )
+  )
+)
+
+(define-private (remove-winning-lot (lot (tuple (auction-id uint) (lot-index uint))))
+  (let ((current-lot (unwrap-panic (map-get? redeeming-lot { user: tx-sender }))))
+    (if 
+      (and
+        (is-eq (get auction-id lot) (get auction-id current-lot))
+        (is-eq (get lot-index lot) (get lot-index current-lot))
+      )
+      true
+      false
+    )
+  )
+)
+
+(define-public (redeem-lot-collateral (auction-id uint) (lot-index uint))
+  (let ((last-bid (get-last-bid auction-id lot-index)))
+    (if
+      (and
+        (is-eq tx-sender (get owner last-bid))
+        (get is-accepted last-bid)
+      )
+      (begin
+        (let ((lots (get-winning-lots tx-sender)))
+          (print "Yahoo!")
+          (map-set redeeming-lot { user: tx-sender } { auction-id: auction-id, lot-index: lot-index})
+          (map-set winning-lots
+            { user: tx-sender }
+            {
+              ids: (filter remove-winning-lot (get ids lots))
+            }
+          )
+          (ok true)
+        )
+      )
+      (err false)
     )
   )
 )
