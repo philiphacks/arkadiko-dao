@@ -103,10 +103,10 @@ export const Auctions: React.FC = () => {
               'collateral-amount': winLot.value['collateral-amount'].value,
               'xusd': winLot.value['xusd'].value
             });
+            setLots(serializedLots);
           }
         }
       });
-      setLots(serializedLots);
       setAuctions(serializedAuctions);
     };
     if (mounted) {

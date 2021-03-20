@@ -1,5 +1,5 @@
 ;; addresses
-(define-constant auction-reserve 'S02J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKPVKG2CE)
+(define-constant auction-reserve 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP)
 
 ;; errors
 (define-constant err-bid-declined u1)
@@ -253,8 +253,8 @@
         (is-eq (get auction-id lot) (get auction-id current-lot))
         (is-eq (get lot-index lot) (get lot-index current-lot))
       )
-      true
       false
+      true
     )
   )
 )
@@ -269,14 +269,15 @@
       (begin
         (let ((lots (get-winning-lots tx-sender)))
           (print "Yahoo!")
+          (print (as-contract tx-sender))
           (map-set redeeming-lot { user: tx-sender } { auction-id: auction-id, lot-index: lot-index})
-          (map-set winning-lots
-            { user: tx-sender }
-            {
-              ids: (filter remove-winning-lot (get ids lots))
-            }
+          (if (map-set winning-lots { user: tx-sender } { ids: (filter remove-winning-lot (get ids lots)) })
+            (begin
+              ;; send collateral to tx-sender
+              (ok (contract-call? .stx-reserve redeem-collateral (get collateral-amount last-bid) tx-sender))
+            )
+            (err false)
           )
-          (ok true)
         )
       )
       (err false)
@@ -291,13 +292,13 @@
   )
 )
 
-;; DONE 1. flag auction on map as closed
-;; N/A  2a. go over each lot (0 to lot-size) and send collateral to winning address
-;; TODO 2b. OR allow person to collect collateral from reserve manually
-;; TODO 3. check if vault debt is covered (sum of xUSD in lots >= debt-to-raise)
-;; DONE 4. update vault to allow vault owner to withdraw leftover collateral (if any)
-;; 5. if not all vault debt is covered: auction off collateral again (if any left)
-;; 6. if not all vault debt is covered and no collateral is left: cover xUSD with gov token
+;; DONE     1. flag auction on map as closed
+;; SCRIPT   2a. go over each lot (0 to lot-size) and send collateral to winning address
+;; DONE     2b. OR allow person to collect collateral from reserve manually
+;; TODO     3. check if vault debt is covered (sum of xUSD in lots >= debt-to-raise)
+;; DONE     4. update vault to allow vault owner to withdraw leftover collateral (if any)
+;; TODO     5. if not all vault debt is covered: auction off collateral again (if any left)
+;; TODO     6. if not all vault debt is covered and no collateral is left: cover xUSD with gov token
 ;; TODO: maybe keep an extra map with bids and (bidder, auction id, lot id) tuple as key with all their bids
 (define-private (close-auction (auction-id uint))
   (let ((auction (get-auction-by-id auction-id)))

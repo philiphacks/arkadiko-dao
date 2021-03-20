@@ -1,12 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { LotProps } from './lot-group';
-import { callReadOnlyFunction, cvToJSON, uintCV } from '@stacks/transactions';
-import { stacksNetwork as network } from '@common/utils';
-import { useSTXAddress } from '@common/use-stx-address';
+import { uintCV } from '@stacks/transactions';
+import { useConnect } from '@stacks/connect-react';
+import { getAuthOrigin, stacksNetwork as network } from '@common/utils';
 
 export const Lot: React.FC<LotProps> = ({ id, lotId, collateralAmount, xusd }) => {
-  const redeemLot = () => {
-    console.log('go go go');
+  const { doContractCall } = useConnect();
+  const redeemLot = async () => {
+    const authOrigin = getAuthOrigin();
+    await doContractCall({
+      network,
+      authOrigin,
+      contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
+      contractName: 'auction-engine',
+      functionName: 'redeem-lot-collateral',
+      functionArgs: [uintCV(id), uintCV(lotId)],
+      postConditionMode: 0x01,
+      finished: data => {
+        console.log('finished redeeming lot!', data);
+      },
+    });
   };
 
   return (
