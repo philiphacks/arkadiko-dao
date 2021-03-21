@@ -96,7 +96,7 @@
           )
         )
       )
-      (err u2151)
+      (err err-minter-failed)
     )
   )
 )
@@ -192,6 +192,7 @@
   )
 )
 
+;; TODO: is this atomic? e.g. if xUSD burn succeeds but STX reserve burn fails, what then?
 (define-public (burn (vault-id uint) (vault-owner principal))
   (let ((vault (get-vault-by-id vault-id)))
     (asserts! (is-eq tx-sender (get owner vault)) (err err-unauthorized))
