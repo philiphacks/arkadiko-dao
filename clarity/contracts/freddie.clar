@@ -196,7 +196,7 @@
   (let ((vault (get-vault-by-id vault-id)))
     (asserts! (is-eq tx-sender (get owner vault)) (err err-unauthorized))
 
-    (if (unwrap-panic (as-contract (contract-call? .xusd-token burn (get debt vault) (get owner vault))))
+    (if (unwrap-panic (contract-call? .xusd-token burn (get debt vault) (get owner vault)))
       (if (unwrap-panic (contract-call? .stx-reserve burn (get owner vault) (get collateral vault)))
         (begin
           (let ((entries (get ids (get-vault-entries vault-owner))))

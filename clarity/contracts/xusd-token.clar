@@ -57,7 +57,7 @@
     (if 
       (and
         (is-eq contract-caller 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP.freddie)
-        (is-ok (as-contract (ft-burn? xusd amount mint-owner)))
+        (is-ok (ft-burn? xusd amount sender))
       )
       (ok true)
       (err err-burn-failed)
