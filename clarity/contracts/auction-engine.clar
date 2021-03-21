@@ -331,18 +331,17 @@
         )
       )
       (begin
-        (if
-          (or
-            (<= (get lots-sold auction) (get lots auction)) ;; not all lots are sold
-            (<= (get total-collateral-auctioned auction) (get collateral-amount auction)) ;; we have some collateral left to auction
-          )
+        (if (or
+          (<= (get lots-sold auction) (get lots auction)) ;; not all lots are sold
+          (<= (get total-collateral-auctioned auction) (get collateral-amount auction)) ;; we have some collateral left to auction
         ) ;; if any collateral left to auction
-        (start-auction
-          (get vault-id auction)
-          (- (get collateral-amount auction) (get total-collateral-auctioned auction))
-          (- (get debt-to-raise auction) (get total-debt-raised auction))
+          (ok (unwrap-panic (start-auction
+            (get vault-id auction)
+            (- (get collateral-amount auction) (get total-collateral-auctioned auction))
+            (- (get debt-to-raise auction) (get total-debt-raised auction))
+          )))
+          (ok true) ;; TODO: no collateral left and/or all current lots are sold. Need to sell governance token to raise more xUSD
         )
-        (ok true) ;; TODO: no collateral left and/or all current lots are sold. Need to sell governance token to raise more xUSD
       )
     )
   )
