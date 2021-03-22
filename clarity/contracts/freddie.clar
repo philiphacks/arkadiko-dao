@@ -197,7 +197,7 @@
   (let ((vault (get-vault-by-id vault-id)))
     (asserts! (is-eq tx-sender (get owner vault)) (err err-unauthorized))
 
-    (if (unwrap-panic (contract-call? .xusd-token burn (get debt vault) (get owner vault)))
+    (if (is-ok (unwrap! (contract-call? .xusd-token burn (get debt vault) (get owner vault)) (err u5)))
       (if (unwrap-panic (contract-call? .stx-reserve burn (get owner vault) (get collateral vault)))
         (begin
           (let ((entries (get ids (get-vault-entries vault-owner))))
@@ -285,7 +285,7 @@
 (define-public (finalize-liquidation (vault-id uint) (leftover-collateral uint) (debt-raised uint))
   (if (is-eq contract-caller 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP.auction-engine)
     (let ((vault (get-vault-by-id vault-id)))
-      (if (unwrap-panic (contract-call? .xusd-token burn debt-raised (as-contract tx-sender)))
+      (if (is-ok (unwrap! (contract-call? .xusd-token burn debt-raised (as-contract tx-sender)) (err u5)))
         (begin
           (map-set vaults
             { id: vault-id }
