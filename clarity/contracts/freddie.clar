@@ -14,6 +14,7 @@
 
 ;; constants
 (define-constant blocks-per-day u144)
+(define-constant mint-owner 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP)
 
 ;; Map of vault entries
 ;; The entry consists of a user principal with their collateral and debt balance
@@ -64,13 +65,13 @@
 
 (define-read-only (calculate-current-collateral-to-debt-ratio (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
-    (ok (unwrap-panic (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.stx-reserve calculate-current-collateral-to-debt-ratio (get debt vault) (get collateral vault))))
+    (ok (unwrap-panic (contract-call? .stx-reserve calculate-current-collateral-to-debt-ratio (get debt vault) (get collateral vault))))
   )
 )
 
 (define-public (collateralize-and-mint (uamount uint) (sender principal) (collateral-type (string-ascii 4)))
-  (let ((debt (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.stx-reserve collateralize-and-mint uamount sender)))
-    (if (is-ok (as-contract (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.xusd-token mint (unwrap-panic debt) sender)))
+  (let ((debt (contract-call? .stx-reserve collateralize-and-mint uamount sender)))
+    (if (is-ok (as-contract (contract-call? .xusd-token mint (unwrap-panic debt) sender)))
       (begin
         (let ((vault-id (+ (var-get last-vault-id) u1)))
           (let ((entries (get ids (get-vault-entries sender))))
@@ -103,7 +104,7 @@
 
 (define-public (deposit (vault-id uint) (uamount uint))
   (let ((vault (get-vault-by-id vault-id)))
-    (if (unwrap-panic (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.stx-reserve deposit uamount))
+    (if (unwrap-panic (contract-call? .stx-reserve deposit uamount))
       (begin
         (let ((new-collateral (+ uamount (get collateral vault))))
           (map-set vaults
@@ -134,7 +135,7 @@
   (let ((vault (get-vault-by-id vault-id)))
     (asserts! (is-eq tx-sender (get owner vault)) (err err-unauthorized))
 
-    (if (unwrap-panic (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.stx-reserve withdraw (get owner vault) uamount))
+    (if (unwrap-panic (contract-call? .stx-reserve withdraw (get owner vault) uamount))
       (begin
         (let ((new-collateral (- (get collateral vault) uamount)))
           (map-set vaults
@@ -165,7 +166,7 @@
   (let ((vault (get-vault-by-id vault-id)))
     (asserts! (is-eq tx-sender (get owner vault)) (err err-unauthorized))
 
-    (if (unwrap-panic (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.stx-reserve mint (get owner vault) (get collateral vault) (get debt vault) extra-debt))
+    (if (unwrap-panic (contract-call? .stx-reserve mint (get owner vault) (get collateral vault) (get debt vault) extra-debt))
       (begin
         (let ((new-total-debt (+ extra-debt (get debt vault))))
           (map-set vaults
@@ -197,36 +198,35 @@
   (let ((vault (get-vault-by-id vault-id)))
     (asserts! (is-eq tx-sender (get owner vault)) (err err-unauthorized))
 
-    (ok true)
-    ;; (if (is-ok (unwrap! (contract-call? .xusd-token burn (get debt vault) (get owner vault)) (err u5)))
-    ;;   (if (unwrap-panic (contract-call? .stx-reserve burn (get owner vault) (get collateral vault)))
-    ;;     (begin
-    ;;       (let ((entries (get ids (get-vault-entries vault-owner))))
-    ;;         (map-set vaults
-    ;;           { id: vault-id }
-    ;;           {
-    ;;             id: vault-id,
-    ;;             owner: vault-owner,
-    ;;             collateral: u0,
-    ;;             collateral-type: (get collateral-type vault),
-    ;;             debt: u0,
-    ;;             created-at-block-height: (get created-at-block-height vault),
-    ;;             updated-at-block-height: block-height,
-    ;;             stability-fee-last-paid: (get stability-fee-last-paid vault),
-    ;;             is-liquidated: false,
-    ;;             auction-ended: false,
-    ;;             leftover-collateral: u0
-    ;;           }
-    ;;         )
-    ;;         ;; TODO: remove vault ID from vault entries
-    ;;         ;; (map-set vault-entries { user: tx-sender } { () })
-    ;;         (ok (map-delete vaults { id: vault-id }))
-    ;;       )
-    ;;     )
-    ;;     (err err-burn-failed)
-    ;;   )
-    ;;   (err err-burn-failed)
-    ;; )
+    (if (is-ok (contract-call? .xusd-token burn (get debt vault) (get owner vault)))
+      (if (unwrap-panic (contract-call? .stx-reserve burn (get owner vault) (get collateral vault)))
+        (begin
+          (let ((entries (get ids (get-vault-entries vault-owner))))
+            (map-set vaults
+              { id: vault-id }
+              {
+                id: vault-id,
+                owner: vault-owner,
+                collateral: u0,
+                collateral-type: (get collateral-type vault),
+                debt: u0,
+                created-at-block-height: (get created-at-block-height vault),
+                updated-at-block-height: block-height,
+                stability-fee-last-paid: (get stability-fee-last-paid vault),
+                is-liquidated: false,
+                auction-ended: false,
+                leftover-collateral: u0
+              }
+            )
+            ;; TODO: remove vault ID from vault entries
+            ;; (map-set vault-entries { user: tx-sender } { () })
+            (ok (map-delete vaults { id: vault-id }))
+          )
+        )
+        (err err-burn-failed)
+      )
+      (err err-burn-failed)
+    )
   )
 )
 
@@ -239,7 +239,7 @@
   (let ((vault (get-vault-by-id vault-id)))
     (let ((days (/ (- block-height (get stability-fee-last-paid vault)) blocks-per-day)))
       (let ((debt (/ (get debt vault) u10000))) ;; we can round to 2 numbers after comma, e.g. 1925000 uxUSD == 1.92 xUSD
-        (let ((daily-interest (/ (* debt (unwrap-panic (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.dao get-stability-fee "stx"))) u100)))
+        (let ((daily-interest (/ (* debt (unwrap-panic (contract-call? .dao get-stability-fee "stx"))) u100)))
           (ok (tuple (fee (* daily-interest days)) (decimals u8) (days days))) ;; 8 decimals so u5233 means 5233/10^8 xUSD daily interest
         )
       )
@@ -251,7 +251,7 @@
   (if (is-eq contract-caller 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP.liquidator)
     (begin
       (let ((vault (get-vault-by-id vault-id)))
-        (if (is-ok (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.stx-reserve liquidate (get collateral vault) (get debt vault)))
+        (if (is-ok (contract-call? .stx-reserve liquidate (get collateral vault) (get debt vault)))
           (begin
             (let ((collateral (get collateral vault)))
               (map-set vaults
@@ -270,7 +270,7 @@
                   leftover-collateral: u0
                 }
               )
-              (let ((debt (/ (* (unwrap-panic (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.dao get-liquidation-ratio "stx")) (get debt vault)) u100)))
+              (let ((debt (/ (* (unwrap-panic (contract-call? .dao get-liquidation-ratio "stx")) (get debt vault)) u100)))
                 (ok (tuple (ustx-amount collateral) (debt (+ debt (get debt vault)))))
               )
             )
@@ -284,49 +284,39 @@
 )
 
 (define-public (finalize-liquidation (vault-id uint) (leftover-collateral uint) (debt-raised uint))
-  (let ((result (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.xusd-token burn debt-raised (as-contract tx-sender))))
-    (if (is-ok result)
-      (begin
-        (ok true)
-      )
-      (begin
-        (err false)
+  (if (is-eq contract-caller 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP.auction-engine)
+    (let ((vault (get-vault-by-id vault-id)))
+      (if (is-ok (contract-call? .xusd-token burn debt-raised mint-owner))
+        (begin
+          (map-set vaults
+            { id: vault-id }
+            {
+              id: vault-id,
+              owner: (get owner vault),
+              collateral: u0,
+              collateral-type: (get collateral-type vault),
+              debt: (get debt vault),
+              created-at-block-height: (get created-at-block-height vault),
+              updated-at-block-height: block-height,
+              stability-fee-last-paid: (get stability-fee-last-paid vault),
+              is-liquidated: true,
+              auction-ended: true,
+              leftover-collateral: leftover-collateral
+            }
+          )
+          (ok true)
+        )
+        (err u12532)
       )
     )
+    (err err-unauthorized)
   )
-  ;; (if (is-eq contract-caller 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP.auction-engine)
-  ;;   (let ((vault (get-vault-by-id vault-id)))
-  ;;     (if (is-ok (contract-call? .xusd-token burn debt-raised (as-contract tx-sender)))
-  ;;       (begin
-  ;;         (map-set vaults
-  ;;           { id: vault-id }
-  ;;           {
-  ;;             id: vault-id,
-  ;;             owner: (get owner vault),
-  ;;             collateral: u0,
-  ;;             collateral-type: (get collateral-type vault),
-  ;;             debt: (get debt vault),
-  ;;             created-at-block-height: (get created-at-block-height vault),
-  ;;             updated-at-block-height: block-height,
-  ;;             stability-fee-last-paid: (get stability-fee-last-paid vault),
-  ;;             is-liquidated: true,
-  ;;             auction-ended: true,
-  ;;             leftover-collateral: leftover-collateral
-  ;;           }
-  ;;         )
-  ;;         (ok true)
-  ;;       )
-  ;;       (err u12532)
-  ;;     )
-  ;;   )
-  ;;   (err err-unauthorized)
-  ;; )
 )
 
 (define-public (withdraw-leftover-collateral (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
     (asserts! (is-eq tx-sender (get owner vault)) (err err-unauthorized))
-    (if (unwrap-panic (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.stx-reserve withdraw (get owner vault) (get leftover-collateral vault)))
+    (if (unwrap-panic (contract-call? .stx-reserve withdraw (get owner vault) (get leftover-collateral vault)))
       (begin
         (map-set vaults
           { id: vault-id }
