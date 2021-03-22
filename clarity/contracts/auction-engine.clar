@@ -327,6 +327,7 @@
             finalize-liquidation
             (get vault-id auction)
             (- (get collateral-amount auction) (get total-collateral-auctioned auction))
+            (get total-debt-raised auction)
           )
         )
       )

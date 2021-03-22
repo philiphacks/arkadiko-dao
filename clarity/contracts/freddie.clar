@@ -282,26 +282,31 @@
   )
 )
 
-(define-public (finalize-liquidation (vault-id uint) (leftover-collateral uint))
+(define-public (finalize-liquidation (vault-id uint) (leftover-collateral uint) (debt-raised uint))
   (if (is-eq contract-caller 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP.auction-engine)
     (let ((vault (get-vault-by-id vault-id)))
-      (map-set vaults
-        { id: vault-id }
-        {
-          id: vault-id,
-          owner: (get owner vault),
-          collateral: u0,
-          collateral-type: (get collateral-type vault),
-          debt: (get debt vault),
-          created-at-block-height: (get created-at-block-height vault),
-          updated-at-block-height: block-height,
-          stability-fee-last-paid: (get stability-fee-last-paid vault),
-          is-liquidated: true,
-          auction-ended: true,
-          leftover-collateral: leftover-collateral
-        }
+      (if (unwrap-panic (contract-call? .xusd-token burn debt-raised (as-contract tx-sender)))
+        (begin
+          (map-set vaults
+            { id: vault-id }
+            {
+              id: vault-id,
+              owner: (get owner vault),
+              collateral: u0,
+              collateral-type: (get collateral-type vault),
+              debt: (get debt vault),
+              created-at-block-height: (get created-at-block-height vault),
+              updated-at-block-height: block-height,
+              stability-fee-last-paid: (get stability-fee-last-paid vault),
+              is-liquidated: true,
+              auction-ended: true,
+              leftover-collateral: leftover-collateral
+            }
+          )
+          (ok true)
+        )
+        (err u12532)
       )
-      (ok true)
     )
     (err err-unauthorized)
   )
