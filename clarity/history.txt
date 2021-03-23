@@ -1,5 +1,0 @@
-#V2
-ST000000000000000000002AMW42H.stacker-registry
-(contract-call? ST000000000000000000002AMW42H.stacker-registry .is-stacker 'ST123456)
-(contract-call? 'ST000000000000000000002AMW42H.stacker-registry .is-stacker 'ST123456)
-(contract-call? 'ST000000000000000000002AMW42H.stacker-registry .is-stacker 'ST238B5WSC8B8XETWDXMH7HZC2MJ2RNTYY15YY7SH)
