@@ -71,6 +71,8 @@
 )
 
 (define-public (collateralize-and-mint (collateral-amount uint) (debt uint) (sender principal) (collateral-type (string-ascii 4)))
+  (asserts! (is-eq tx-sender sender) (err err-unauthorized))
+
   (let ((ratio (unwrap-panic (contract-call? .stx-reserve calculate-current-collateral-to-debt-ratio debt collateral-amount))))
     (asserts! (>= ratio (unwrap-panic (contract-call? .dao get-liquidation-ratio "stx"))) (err err-insufficient-collateral))
 
@@ -321,6 +323,7 @@
 (define-public (withdraw-leftover-collateral (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
     (asserts! (is-eq tx-sender (get owner vault)) (err err-unauthorized))
+
     (if (unwrap-panic (contract-call? .stx-reserve withdraw (get owner vault) (get leftover-collateral vault)))
       (begin
         (map-set vaults
