@@ -13,7 +13,7 @@
     "noEmit": true
   },
   "include": [
-    "tests"
+    "./test"
   ],
   "exclude": [
     "node_modules"
