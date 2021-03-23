@@ -48,12 +48,7 @@
 
 (define-public (burn (amount uint) (sender principal))
   (if (is-eq contract-caller 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP.freddie)
-    (begin
-      (print "burning xUSD")
-      (print amount)
-      (print sender)
-      (ok (unwrap! (ft-burn? xusd amount sender) (err u4)))
-    )
+    (ok (unwrap! (ft-burn? xusd amount sender) (err err-burn-failed)))
     (err err-burn-failed)
   )
 )

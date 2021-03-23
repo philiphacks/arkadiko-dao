@@ -306,7 +306,7 @@
           )
           (ok true)
         )
-        (err u12532)
+        (err err-liquidation-failed)
       )
     )
     (err err-unauthorized)
