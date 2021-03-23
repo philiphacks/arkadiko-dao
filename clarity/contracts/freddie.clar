@@ -138,6 +138,8 @@
   )
 )
 
+;; TODO: make sure not more is withdrawn than collateral-to-debt-ratio
+;; TODO: make sure ustx-amount < stx-collateral in vault (and is positive)
 (define-public (withdraw (vault-id uint) (uamount uint))
   (let ((vault (get-vault-by-id vault-id)))
     (asserts! (is-eq tx-sender (get owner vault)) (err err-unauthorized))
