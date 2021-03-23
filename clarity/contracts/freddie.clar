@@ -71,9 +71,8 @@
 )
 
 (define-public (collateralize-and-mint (collateral-amount uint) (debt uint) (sender principal) (collateral-type (string-ascii 4)))
-  (asserts! (is-eq tx-sender sender) (err err-unauthorized))
-
   (let ((ratio (unwrap-panic (contract-call? .stx-reserve calculate-current-collateral-to-debt-ratio debt collateral-amount))))
+    (asserts! (is-eq tx-sender sender) (err err-unauthorized))
     (asserts! (>= ratio (unwrap-panic (contract-call? .dao get-liquidation-ratio "stx"))) (err err-insufficient-collateral))
 
     (let ((debt-created (contract-call? .stx-reserve collateralize-and-mint collateral-amount debt sender)))
@@ -138,35 +137,39 @@
   )
 )
 
-;; TODO: make sure not more is withdrawn than collateral-to-debt-ratio
-;; TODO: make sure ustx-amount < stx-collateral in vault (and is positive)
 (define-public (withdraw (vault-id uint) (uamount uint))
   (let ((vault (get-vault-by-id vault-id)))
     (asserts! (is-eq tx-sender (get owner vault)) (err err-unauthorized))
+    (asserts! (> uamount u0) (err err-insufficient-collateral))
+    (asserts! (<= uamount (get collateral vault)) (err err-insufficient-collateral))
 
-    (if (unwrap-panic (contract-call? .stx-reserve withdraw (get owner vault) uamount))
-      (begin
-        (let ((new-collateral (- (get collateral vault) uamount)))
-          (map-set vaults
-            { id: vault-id }
-            {
-              id: vault-id,
-              owner: tx-sender,
-              collateral: new-collateral,
-              collateral-type: (get collateral-type vault),
-              debt: (get debt vault),
-              created-at-block-height: (get created-at-block-height vault),
-              updated-at-block-height: block-height,
-              stability-fee-last-paid: (get stability-fee-last-paid vault),
-              is-liquidated: false,
-              auction-ended: false,
-              leftover-collateral: u0
-            }
+    (let ((ratio (unwrap-panic (contract-call? .stx-reserve calculate-current-collateral-to-debt-ratio (get debt vault) (- (get collateral vault) uamount)))))
+      (asserts! (>= ratio (unwrap-panic (contract-call? .dao get-collateral-to-debt-ratio "stx"))) (err err-insufficient-collateral))
+
+      (if (unwrap-panic (contract-call? .stx-reserve withdraw (get owner vault) uamount))
+        (begin
+          (let ((new-collateral (- (get collateral vault) uamount)))
+            (map-set vaults
+              { id: vault-id }
+              {
+                id: vault-id,
+                owner: tx-sender,
+                collateral: new-collateral,
+                collateral-type: (get collateral-type vault),
+                debt: (get debt vault),
+                created-at-block-height: (get created-at-block-height vault),
+                updated-at-block-height: block-height,
+                stability-fee-last-paid: (get stability-fee-last-paid vault),
+                is-liquidated: false,
+                auction-ended: false,
+                leftover-collateral: u0
+              }
+            )
+            (ok true)
           )
-          (ok true)
         )
+        (err err-withdraw-failed)
       )
-      (err err-withdraw-failed)
     )
   )
 )

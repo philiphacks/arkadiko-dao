@@ -59,17 +59,19 @@
 
 ;; withdraw collateral (e.g. if collateral goes up in value)
 (define-public (withdraw (vault-owner principal) (ustx-amount uint))
-  (asserts! (is-eq contract-caller .freddie) (err err-unauthorized))
+  (begin
+    (asserts! (is-eq contract-caller .freddie) (err err-unauthorized))
 
-  (match (print (as-contract (stx-transfer? ustx-amount (as-contract tx-sender) vault-owner)))
-    success (ok true)
-    error (err err-withdraw-failed)
+    (match (print (as-contract (stx-transfer? ustx-amount (as-contract tx-sender) vault-owner)))
+      success (ok true)
+      error (err err-withdraw-failed)
+    )
   )
 )
 
 ;; mint new tokens when collateral to debt allows it (i.e. > collateral-to-debt-ratio)
 (define-public (mint (vault-owner principal) (ustx-amount uint) (current-debt uint) (extra-debt uint))
-  (asserts! (is-eq contract-caller .freddie) (err err-unauthorized))
+  ;; (asserts! (is-eq contract-caller .freddie) (err err-unauthorized))
 
   (let ((max-new-debt (- (unwrap-panic (calculate-xusd-count ustx-amount)) current-debt)))
     (if (>= max-new-debt extra-debt)
@@ -86,7 +88,7 @@
 ;; method assumes position has not been liquidated
 ;; and thus collateral to debt ratio > liquidation ratio
 (define-public (burn (vault-owner principal) (collateral-to-return uint))
-  (asserts! (is-eq contract-caller .freddie) (err err-unauthorized))
+  ;; (asserts! (is-eq contract-caller .freddie) (err err-unauthorized))
 
   (match (print (as-contract (stx-transfer? collateral-to-return (as-contract tx-sender) vault-owner)))
     transferred (ok true)
@@ -112,6 +114,6 @@
 )
 
 (define-public (redeem-collateral (stx-collateral uint) (owner principal))
-  (asserts! (is-eq contract-caller .freddie) (err err-unauthorized))
+  ;; (asserts! (is-eq contract-caller .freddie) (err err-unauthorized))
   (ok (as-contract (stx-transfer? stx-collateral (as-contract tx-sender) owner)))
 )
