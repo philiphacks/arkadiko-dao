@@ -6,6 +6,9 @@
 (define-constant err-lot-sold u2)
 (define-constant err-poor-bid u3)
 (define-constant err-xusd-transfer-failed u4)
+(define-constant err-auction-not-allowed u5)
+(define-constant err-insufficient-collateral u6)
+(define-constant err-not-authorized u7)
 
 (define-map auctions
   { id: uint }
@@ -77,31 +80,37 @@
 ;; if we cannot cover the vault's debt with the collateral sale,
 ;; we will have to sell some governance or STX tokens from the reserve
 (define-public (start-auction (vault-id uint) (uamount uint) (debt-to-raise uint))
-  (let ((auction-id (+ (var-get last-auction-id) u1)))
-    ;; 500 collateral => 500 / 100 = 5 lots
-    (let ((amount-of-lots (+ u1 (/ uamount (var-get lot-size)))))
-      (let ((last-lot (mod uamount (var-get lot-size))))
-        (map-set auctions
-          { id: auction-id }
-          {
-            id: auction-id,
-            collateral-amount: uamount,
-            debt-to-raise: debt-to-raise,
-            vault-id: vault-id,
-            lot-size: (var-get lot-size),
-            lots: amount-of-lots,
-            last-lot-size: last-lot,
-            lots-sold: u0,
-            ends-at: (+ block-height u10000),
-            total-collateral-auctioned: u0,
-            total-debt-raised: u0,
-            is-open: true
-          }
+  (let ((vault (contract-call? .freddie get-vault-by-id vault-id)))
+    (asserts! (is-eq contract-caller .liquidator) (err err-not-authorized))
+    (asserts! (is-eq (get is-liquidated vault) true) (err err-auction-not-allowed))
+    (asserts! (>= (get collateral vault) uamount) (err err-insufficient-collateral))
+
+    (let ((auction-id (+ (var-get last-auction-id) u1)))
+      ;; 500 collateral => 500 / 100 = 5 lots
+      (let ((amount-of-lots (+ u1 (/ uamount (var-get lot-size)))))
+        (let ((last-lot (mod uamount (var-get lot-size))))
+          (map-set auctions
+            { id: auction-id }
+            {
+              id: auction-id,
+              collateral-amount: uamount,
+              debt-to-raise: debt-to-raise,
+              vault-id: vault-id,
+              lot-size: (var-get lot-size),
+              lots: amount-of-lots,
+              last-lot-size: last-lot,
+              lots-sold: u0,
+              ends-at: (+ block-height u10000),
+              total-collateral-auctioned: u0,
+              total-debt-raised: u0,
+              is-open: true
+            }
+          )
+          (print "Added new open auction")
+          (var-set auction-ids (unwrap-panic (as-max-len? (append (var-get auction-ids) auction-id) u2000)))
+          (var-set last-auction-id auction-id)
+          (ok true)
         )
-        (print "Added new open auction")
-        (var-set auction-ids (unwrap-panic (as-max-len? (append (var-get auction-ids) auction-id) u2000)))
-        (var-set last-auction-id auction-id)
-        (ok true)
       )
     )
   )
