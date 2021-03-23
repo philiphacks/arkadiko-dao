@@ -71,15 +71,17 @@
 
 ;; mint new tokens when collateral to debt allows it (i.e. > collateral-to-debt-ratio)
 (define-public (mint (vault-owner principal) (ustx-amount uint) (current-debt uint) (extra-debt uint))
-  ;; (asserts! (is-eq contract-caller .freddie) (err err-unauthorized))
+  (begin
+    (asserts! (is-eq contract-caller .freddie) (err err-unauthorized))
 
-  (let ((max-new-debt (- (unwrap-panic (calculate-xusd-count ustx-amount)) current-debt)))
-    (if (>= max-new-debt extra-debt)
-      (match (print (as-contract (contract-call? .xusd-token mint extra-debt vault-owner)))
-        success (ok true)
-        error (err err-mint-failed)
+    (let ((max-new-debt (- (unwrap-panic (calculate-xusd-count ustx-amount)) current-debt)))
+      (if (>= max-new-debt extra-debt)
+        (match (print (as-contract (contract-call? .xusd-token mint extra-debt vault-owner)))
+          success (ok true)
+          error (err err-mint-failed)
+        )
+        (err err-mint-failed)
       )
-      (err err-mint-failed)
     )
   )
 )
@@ -88,11 +90,13 @@
 ;; method assumes position has not been liquidated
 ;; and thus collateral to debt ratio > liquidation ratio
 (define-public (burn (vault-owner principal) (collateral-to-return uint))
-  ;; (asserts! (is-eq contract-caller .freddie) (err err-unauthorized))
+  (begin
+    (asserts! (is-eq contract-caller .freddie) (err err-unauthorized))
 
-  (match (print (as-contract (stx-transfer? collateral-to-return (as-contract tx-sender) vault-owner)))
-    transferred (ok true)
-    error (err err-transfer-failed)
+    (match (print (as-contract (stx-transfer? collateral-to-return (as-contract tx-sender) vault-owner)))
+      transferred (ok true)
+      error (err err-transfer-failed)
+    )
   )
 )
 
@@ -114,6 +118,8 @@
 )
 
 (define-public (redeem-collateral (stx-collateral uint) (owner principal))
-  ;; (asserts! (is-eq contract-caller .freddie) (err err-unauthorized))
-  (ok (as-contract (stx-transfer? stx-collateral (as-contract tx-sender) owner)))
+  (begin
+    (asserts! (is-eq contract-caller .freddie) (err err-unauthorized))
+    (ok (as-contract (stx-transfer? stx-collateral (as-contract tx-sender) owner)))
+  )
 )
