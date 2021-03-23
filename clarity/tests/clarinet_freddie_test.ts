@@ -11,7 +11,7 @@ Clarinet.test({
     // assertEquals(block.receipts[0].result, "(ok u2)");
     // assertEquals(block.receipts[1].result, "(ok u6)");
     // assertEquals(block.receipts[2].result, "(ok u16)");
-    console.log(block);
+    console.log(block, 'blaat');
 
     // block = chain.mineBlock([
     //   Tx.contractCall("counter", "increment", [types.uint(1)], accounts[0].address),
