@@ -80,10 +80,9 @@
 ;; if we cannot cover the vault's debt with the collateral sale,
 ;; we will have to sell some governance or STX tokens from the reserve
 (define-public (start-auction (vault-id uint) (uamount uint) (debt-to-raise uint))
-  ;; (let ((vault (contract-call? .freddie get-vault-by-id vault-id)))
-  ;;   (asserts! (is-eq contract-caller .liquidator) (err err-not-authorized))
-  ;;   (asserts! (is-eq (get is-liquidated vault) true) (err err-auction-not-allowed))
-  ;;   (asserts! (>= (get collateral vault) uamount) (err err-insufficient-collateral))
+  (let ((vault (contract-call? .freddie get-vault-by-id vault-id)))
+    (asserts! (is-eq contract-caller .liquidator) (err err-not-authorized))
+    (asserts! (is-eq (get is-liquidated vault) true) (err err-auction-not-allowed))
 
     (let ((auction-id (+ (var-get last-auction-id) u1)))
       ;; 500 collateral => 500 / 100 = 5 lots
@@ -113,7 +112,7 @@
         )
       )
     )
-  ;; )
+  )
 )
 
 ;; calculates the minimum collateral amount to sell
