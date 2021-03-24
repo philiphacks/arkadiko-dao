@@ -128,7 +128,7 @@ export const App: React.FC = () => {
     if (userSession.isSignInPending()) {
       const userData = await userSession.handlePendingSignIn();
       const balance = await fetchBalances(userData?.profile?.stxAddress?.testnet);
-      setState({ userData, balance: balance, vaults: [], riskParameters: {}, isStacker: false, currentTxId: '' });
+      setState({ userData, balance: balance, vaults: [], riskParameters: {}, isStacker: false });
       setAppPrivateKey(userData.appPrivateKey);
     } else if (userSession.isUserSignedIn()) {
       setAppPrivateKey(userSession.loadUserData().appPrivateKey);
@@ -147,7 +147,7 @@ export const App: React.FC = () => {
       const userData = userSession.loadUserData();
       setAppPrivateKey(userSession.loadUserData().appPrivateKey);
       setAuthResponse(authResponse);
-      setState({ userData, balance: {}, vaults: [], riskParameters: {}, isStacker: false, currentTxId: '' });
+      setState({ userData, balance: {}, vaults: [], riskParameters: {}, isStacker: false });
       console.log(userData);
     },
     onCancel: () => {

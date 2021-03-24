@@ -1,7 +1,11 @@
 import React from 'react';
 import { Vault } from './vault';
 
-export const VaultGroup: React.FC = ({ vaults }) => {
+interface VaultGroupProps {
+  vaults: object[];
+}
+
+export const VaultGroup: React.FC<VaultGroupProps> = ({ vaults }) => {
   const vaultItems = vaults.map((vault: object) =>
     <Vault
       key={vault.id}
@@ -10,6 +14,7 @@ export const VaultGroup: React.FC = ({ vaults }) => {
       debt={vault['debt']}
       isLiquidated={vault['is-liquidated']}
       auctionEnded={vault['auction-ended']}
+      leftoverCollateral={vault['leftover-collateral']}
     />
   );
   return (

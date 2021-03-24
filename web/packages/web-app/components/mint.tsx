@@ -1,99 +1,33 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { space, Box, Text } from '@blockstack/ui';
+import React, { useContext } from 'react';
+import { Box } from '@blockstack/ui';
 import { getAuthOrigin, stacksNetwork as network } from '@common/utils';
 import { useSTXAddress } from '@common/use-stx-address';
 import BN from 'bn.js';
 import {
   broadcastTransaction,
-  callReadOnlyFunction,
-  cvToJSON,
   createStacksPrivateKey,
   standardPrincipalCV,
   makeSTXTokenTransfer,
   privateKeyToString,
   uintCV,
-  stringAsciiCV,
-  tupleCV
+  stringAsciiCV
 } from '@stacks/transactions';
-import { ExplorerLink } from './explorer-link';
 import { VaultGroup } from './vault-group';
 import { getStxPrice } from '@common/get-stx-price';
 import { Link } from '@components/link';
 import { NavLink as RouterLink } from 'react-router-dom'
 import { AppContext } from '@common/context';
 import { useConnect } from '@stacks/connect-react';
-import { connectWebSocketClient } from '@stacks/blockchain-api-client';
 
 export const Mint = () => {
   const address = useSTXAddress();
-  const [txId, setTxId] = useState<string>('');
-  const [txType, setTxType] = useState<string>('');
   const env = process.env.REACT_APP_NETWORK_ENV;
   const price = parseFloat(getStxPrice().price);
   const state = useContext(AppContext);
-  const { vaults, setVaults } = useContext(AppContext);
+  const { vaults } = useContext(AppContext);
   const { doContractCall } = useConnect();
 
-  const clearState = () => {
-    setTxId('');
-    setTxType('');
-  };
-
-  const setState = (type: string, id: string) => {
-    setTxId(id);
-    setTxType(type);
-  };
-
-  useEffect(() => {
-    let sub;
-    const getData = async () => {
-      const vaults = await callReadOnlyFunction({
-        contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
-        contractName: "freddie",
-        functionName: "get-vaults",
-        functionArgs: [standardPrincipalCV(address || '')],
-        senderAddress:address || '',
-        network: network,
-      });
-      const json = cvToJSON(vaults);
-      console.log('Got updated vaults...', json);
-      let arr:Array<{ id: string, owner: string, collateral: string, debt: string, 'is-liquidated': string, 'auction-ended': string }> = [];
-      json.value.value.forEach((e: object) => {
-        const vault = tupleCV(e);
-        const data = vault.data.value;
-        if (data['id'].value !== 0) {
-          arr.push({
-            id: data['id'].value,
-            owner: data['owner'].value,
-            collateral: data['collateral'].value,
-            'is-liquidated': data['is-liquidated'].value,
-            'auction-ended': data['auction-ended'].value,
-            'leftover-collateral': data['leftover-collateral'].value,
-            debt: data['debt'].value
-          });
-        }
-      });
-
-      console.log('Setting vaults to', arr, setVaults);
-      setVaults(arr);
-    };
-
-    const subscribe = async (txId:string) => {
-      const client = await connectWebSocketClient('ws://localhost:3999');
-      sub = await client.subscribeTxUpdates(txId, update => {
-        console.log('Got an update:', update);
-        void getData();
-      });
-      console.log({ client, sub });
-    };
-    if (txId) {
-      console.log('Subscribing on updates with TX id:', txId);
-      subscribe(txId);
-    }
-  }, [txId]);
-
   const addMocknetStx = async () => {
-    clearState();
     const key = '9aef533e754663a453984b69d36f109be817e9940519cc84979419e2be00864801';
     const senderKey = createStacksPrivateKey(key);
     console.log('Adding STX from mocknet address to', address, 'on network', network);
@@ -104,13 +38,10 @@ export const Mint = () => {
       senderKey: privateKeyToString(senderKey),
       network: network
     });
-    console.log(transaction);
-    const result = await broadcastTransaction(transaction, network);
-    console.log(result);
+    await broadcastTransaction(transaction, network);
   };
 
   const callCollateralizeAndMint = async () => {
-    clearState();
     const authOrigin = getAuthOrigin();
     const args = [
       uintCV(10 * 1000000),
@@ -125,11 +56,7 @@ export const Mint = () => {
       contractName: 'freddie',
       functionName: 'collateralize-and-mint',
       functionArgs: args,
-      postConditionMode: 0x01,
-      finished: data => {
-        console.log('finished collateralizing!', data);
-        setState('Contract Call', data.txId);
-      },
+      postConditionMode: 0x01
     });
   };
 
@@ -156,15 +83,6 @@ export const Mint = () => {
               )}
             </h2>
 
-            {txId && (
-              <Text textStyle="body.large" display="block" my={space('base')}>
-                <Text color="green" fontSize={1}>
-                  Successfully broadcasted &quot;{txType}&quot;
-                </Text>
-                <ExplorerLink txId={txId} />
-              </Text>
-            )}
-
             <div className="mt-2 grid grid-cols-1 gap-5 sm:grid-cols-4 lg:grid-cols-4">
               <div className="bg-white overflow-hidden shadow rounded-lg">
                 <div className="p-5">
@@ -181,7 +99,7 @@ export const Mint = () => {
                         </dt>
                         <dd>
                           <div className="text-lg font-medium text-gray-900">
-                            {parseInt(state.balance['stx'], 10) / 1000000} STX
+                            {state.balance['stx'] / 1000000} STX
                           </div>
                         </dd>
                       </dl>
@@ -229,7 +147,7 @@ export const Mint = () => {
                         </dt>
                         <dd>
                           <div className="text-lg font-medium text-gray-900">
-                            {parseInt(state.balance['xusd'], 10) / 1000000} xUSD
+                            {state.balance['xusd'] / 1000000} xUSD
                           </div>
                         </dd>
                       </dl>
@@ -253,7 +171,7 @@ export const Mint = () => {
                         </dt>
                         <dd>
                           <div className="text-lg font-medium text-gray-900">
-                            {parseInt(state.balance['diko'], 10) / 1000000} DIKO
+                            {state.balance['diko'] / 1000000} DIKO
                           </div>
                         </dd>
                       </dl>
@@ -320,7 +238,7 @@ export const Mint = () => {
                           <span className="text-gray-900 font-medium">{state.riskParameters['liquidation-penalty']}%</span>
                         </td>
                         <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
-                          <span className="text-gray-900 font-medium">${parseInt(state.riskParameters['maximum-debt'], 10)/1000000} million</span>
+                          <span className="text-gray-900 font-medium">${state.riskParameters['maximum-debt'] / 1000000} million</span>
                         </td>
                         <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
                           <span className="text-gray-900 font-medium">$0 million</span>
