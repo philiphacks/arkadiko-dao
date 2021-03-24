@@ -1,20 +1,21 @@
 import React from 'react';
-import { Vault } from './vault';
+import { Vault, VaultProps } from './vault';
 
 interface VaultGroupProps {
-  vaults: object[];
+  vaults: VaultProps[];
 }
 
 export const VaultGroup: React.FC<VaultGroupProps> = ({ vaults }) => {
-  const vaultItems = vaults.map((vault: object) =>
+  const vaultItems = vaults.map((vault: VaultProps) =>
     <Vault
       key={vault.id}
       id={vault.id}
+      owner={vault['owner']}
       collateral={vault['collateral']}
       debt={vault['debt']}
-      isLiquidated={vault['is-liquidated']}
-      auctionEnded={vault['auction-ended']}
-      leftoverCollateral={vault['leftover-collateral']}
+      isLiquidated={vault['isLiquidated']}
+      auctionEnded={vault['auctionEnded']}
+      leftoverCollateral={vault['leftoverCollateral']}
     />
   );
   return (

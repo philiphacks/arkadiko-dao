@@ -7,8 +7,9 @@ import { getAuthOrigin, stacksNetwork as network } from '@common/utils';
 import { useConnect } from '@stacks/connect-react';
 import { uintCV } from '@stacks/transactions';
 
-interface VaultProps {
+export interface VaultProps {
   id: string;
+  owner: string;
   collateral: number;
   debt: number;
   isLiquidated: boolean;

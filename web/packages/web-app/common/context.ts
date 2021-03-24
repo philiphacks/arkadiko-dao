@@ -1,5 +1,6 @@
 import { createContext } from 'react';
 import { UserSession, AppConfig, UserData } from '@stacks/auth';
+import { VaultProps } from '@components/vault';
 
 interface UserBalance {
   stx: number;
@@ -18,14 +19,18 @@ interface RiskParameters {
 export interface AppState {
   userData: UserData | null;
   balance: UserBalance;
-  vaults: object[];
+  vaults: VaultProps[];
   riskParameters: RiskParameters;
   isStacker: boolean;
   setVaults: (vaults: object[]) => [];
 }
 
-const defaultRiskParameters = () => {
+export const defaultRiskParameters = () => {
   return { 'stability-fee': 0, 'liquidation-ratio': 0, 'liquidation-penalty': 0, 'collateral-to-debt-ratio': 0, 'maximum-debt': 0 };
+};
+
+export const defaultBalance = () => {
+  return { stx: 0, xusd: 0, diko: 0 };
 };
 
 export const defaultState = (): AppState => {
@@ -35,13 +40,14 @@ export const defaultState = (): AppState => {
   if (userSession.isUserSignedIn()) {
     return {
       userData: userSession.loadUserData(),
-      balance: { stx: 0, xusd: 0, diko: 0 },
+      balance: defaultBalance(),
       vaults: [],
       riskParameters: defaultRiskParameters(),
       isStacker: false,
       setVaults: () => []
     };
   }
+
   return {
     userData: null,
     balance: { stx: 0, xusd: 0, diko: 0 },
@@ -49,7 +55,7 @@ export const defaultState = (): AppState => {
     riskParameters: defaultRiskParameters(),
     isStacker: false,
     setVaults: () => []
-  }
+  };
 };
 
 export const AppContext = createContext<AppState>(defaultState());

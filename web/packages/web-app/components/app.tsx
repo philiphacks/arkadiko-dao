@@ -4,13 +4,16 @@ import { Connect } from '@stacks/connect-react';
 import { AuthOptions } from '@stacks/connect';
 import { getAuthOrigin } from '@common/utils';
 import { UserSession, AppConfig } from '@stacks/auth';
-import { defaultState, AppContext, AppState } from '@common/context';
+import { defaultState, AppContext, AppState, defaultRiskParameters, defaultBalance } from '@common/context';
 import { Header } from '@components/header';
 import { Routes } from '@components/routes';
 import { fetchBalances } from '@common/get-balance';
 import { getRPCClient } from '@common/utils';
 import { stacksNetwork as network } from '@common/utils';
-import { callReadOnlyFunction, cvToJSON, standardPrincipalCV, tupleCV } from '@stacks/transactions';
+import { callReadOnlyFunction, cvToJSON, standardPrincipalCV, tupleCV, ClarityValue } from '@stacks/transactions';
+import { VaultProps } from './vault';
+
+type TupleData = { [key: string]: ClarityValue };
 
 const icon = '/assets/logo.png';
 export const App: React.FC = () => {
@@ -23,7 +26,7 @@ export const App: React.FC = () => {
 
   const signOut = () => {
     userSession.signUserOut();
-    setState({ userData: null, balance: null, vaults: [], riskParameters: {}, isStacker: false, currentTxId: '' });
+    setState(defaultState());
   };
 
   const authOrigin = getAuthOrigin();
@@ -48,18 +51,18 @@ export const App: React.FC = () => {
             network: network,
           });
           const json = cvToJSON(vaults);
-          let arr:Array<{ id: string, owner: string, collateral: string, debt: string, 'is-liquidated': string, 'auction-ended': string }> = [];
-          json.value.value.forEach((e: object) => {
+          let arr:Array<VaultProps> = [];
+          json.value.value.forEach((e: TupleData) => {
             const vault = tupleCV(e);
-            const data = vault.data.value;
+            const data = (vault.data.value as object);
             if (data['id'].value !== 0) {
               arr.push({
                 id: data['id'].value,
                 owner: data['owner'].value,
                 collateral: data['collateral'].value,
-                'is-liquidated': data['is-liquidated'].value,
-                'auction-ended': data['auction-ended'].value,
-                'leftover-collateral': data['leftover-collateral'].value,
+                isLiquidated: data['is-liquidated'].value,
+                auctionEnded: data['auction-ended'].value,
+                leftoverCollateral: data['leftover-collateral'].value,
                 debt: data['debt'].value
               });
             }
@@ -128,7 +131,7 @@ export const App: React.FC = () => {
     if (userSession.isSignInPending()) {
       const userData = await userSession.handlePendingSignIn();
       const balance = await fetchBalances(userData?.profile?.stxAddress?.testnet);
-      setState({ userData, balance: balance, vaults: [], riskParameters: {}, isStacker: false });
+      setState({ userData, balance: balance, vaults: [], riskParameters: defaultRiskParameters(), isStacker: false });
       setAppPrivateKey(userData.appPrivateKey);
     } else if (userSession.isUserSignedIn()) {
       setAppPrivateKey(userSession.loadUserData().appPrivateKey);
@@ -147,7 +150,7 @@ export const App: React.FC = () => {
       const userData = userSession.loadUserData();
       setAppPrivateKey(userSession.loadUserData().appPrivateKey);
       setAuthResponse(authResponse);
-      setState({ userData, balance: {}, vaults: [], riskParameters: {}, isStacker: false });
+      setState({ userData, balance: defaultBalance(), vaults: [], riskParameters: defaultRiskParameters(), isStacker: false });
       console.log(userData);
     },
     onCancel: () => {
