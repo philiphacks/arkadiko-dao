@@ -30,7 +30,7 @@ export const debtClass = (ratio: number) => {
 };
 
 export const debtBackgroundClass = (ratio: number) => {
-  if (ratio < 150) {
+  if (ratio && ratio < 150) {
     return 'bg-red-300';
   }
 
