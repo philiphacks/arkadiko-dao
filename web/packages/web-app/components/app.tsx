@@ -23,7 +23,7 @@ export const App: React.FC = () => {
 
   const signOut = () => {
     userSession.signUserOut();
-    setState({ userData: null, balance: null, vaults: [], riskParameters: {} });
+    setState({ userData: null, balance: null, vaults: [], riskParameters: {}, isStacker: false, currentTxId: '' });
   };
 
   const authOrigin = getAuthOrigin();
@@ -100,7 +100,18 @@ export const App: React.FC = () => {
                 'maximum-debt': params['maximum-debt'].value,
                 'stability-fee': params['stability-fee'].value
               },
-              isStacker: cvToJSON(isStacker).value.value
+              isStacker: cvToJSON(isStacker).value.value,
+              currentTxId: '',
+              setVaults: (newVaults: object[]) => {
+                setState(prevState => ({
+                  userData: prevState.userData,
+                  balance: prevState.balance,
+                  vaults: newVaults,
+                  riskParameters: prevState.riskParameters,
+                  isStacker: prevState.isStacker,
+                  currentTxId: prevState.currentTxId
+                }))
+              }
             });
           }
         } catch (error) {
@@ -117,7 +128,7 @@ export const App: React.FC = () => {
     if (userSession.isSignInPending()) {
       const userData = await userSession.handlePendingSignIn();
       const balance = await fetchBalances(userData?.profile?.stxAddress?.testnet);
-      setState({ userData, balance: balance, vaults: [], riskParameters: {}, isStacker: false });
+      setState({ userData, balance: balance, vaults: [], riskParameters: {}, isStacker: false, currentTxId: '' });
       setAppPrivateKey(userData.appPrivateKey);
     } else if (userSession.isUserSignedIn()) {
       setAppPrivateKey(userSession.loadUserData().appPrivateKey);
@@ -136,7 +147,7 @@ export const App: React.FC = () => {
       const userData = userSession.loadUserData();
       setAppPrivateKey(userSession.loadUserData().appPrivateKey);
       setAuthResponse(authResponse);
-      setState({ userData, balance: {}, vaults: [], riskParameters: {}, isStacker: false });
+      setState({ userData, balance: {}, vaults: [], riskParameters: {}, isStacker: false, currentTxId: '' });
       console.log(userData);
     },
     onCancel: () => {

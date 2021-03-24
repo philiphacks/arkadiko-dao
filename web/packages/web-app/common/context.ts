@@ -7,6 +7,8 @@ export interface AppState {
   vaults: object[];
   riskParameters: object;
   isStacker: boolean;
+  currentTxId: string | null;
+  setVaults: (vaults: object[]) => [];
 }
 
 export const defaultState = (): AppState => {
@@ -19,10 +21,20 @@ export const defaultState = (): AppState => {
       balance: { stx: 0, xusd: 0 },
       vaults: [],
       riskParameters: { 'stability-fee': 0, 'liquidation-ratio': 0, 'collateral-to-debt-ratio': 0, 'maximum-debt': 0 },
-      isStacker: false
+      isStacker: false,
+      currentTxId: '',
+      setVaults: (vaults: object[]) => { console.log('blaatschap', vaults); return []; }
     };
   }
-  return { userData: null, balance: null, vaults: [], riskParameters: {}, isStacker: false };
+  return {
+    userData: null,
+    balance: null,
+    vaults: [],
+    riskParameters: {},
+    isStacker: false,
+    currentTxId: '',
+    setVaults: (vaults: object[]) => { console.log('blaatschap', vaults); return []; }
+  }
 };
 
 export const AppContext = createContext<AppState>(defaultState());

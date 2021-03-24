@@ -1,16 +1,19 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { space, Box, Text } from '@blockstack/ui';
 import { getAuthOrigin, stacksNetwork as network } from '@common/utils';
 import { useSTXAddress } from '@common/use-stx-address';
 import BN from 'bn.js';
 import {
   broadcastTransaction,
+  callReadOnlyFunction,
+  cvToJSON,
   createStacksPrivateKey,
   standardPrincipalCV,
   makeSTXTokenTransfer,
   privateKeyToString,
   uintCV,
-  stringAsciiCV
+  stringAsciiCV,
+  tupleCV
 } from '@stacks/transactions';
 import { ExplorerLink } from './explorer-link';
 import { VaultGroup } from './vault-group';
@@ -19,6 +22,7 @@ import { Link } from '@components/link';
 import { NavLink as RouterLink } from 'react-router-dom'
 import { AppContext } from '@common/context';
 import { useConnect } from '@stacks/connect-react';
+import { connectWebSocketClient } from '@stacks/blockchain-api-client';
 
 export const Mint = () => {
   const address = useSTXAddress();
@@ -27,6 +31,7 @@ export const Mint = () => {
   const env = process.env.REACT_APP_NETWORK_ENV;
   const price = parseFloat(getStxPrice().price);
   const state = useContext(AppContext);
+  const { vaults, setVaults } = useContext(AppContext);
   const { doContractCall } = useConnect();
 
   const clearState = () => {
@@ -38,6 +43,54 @@ export const Mint = () => {
     setTxId(id);
     setTxType(type);
   };
+
+  useEffect(() => {
+    let sub;
+    const getData = async () => {
+      const vaults = await callReadOnlyFunction({
+        contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
+        contractName: "freddie",
+        functionName: "get-vaults",
+        functionArgs: [standardPrincipalCV(address || '')],
+        senderAddress:address || '',
+        network: network,
+      });
+      const json = cvToJSON(vaults);
+      console.log('Got updated vaults...', json);
+      let arr:Array<{ id: string, owner: string, collateral: string, debt: string, 'is-liquidated': string, 'auction-ended': string }> = [];
+      json.value.value.forEach((e: object) => {
+        const vault = tupleCV(e);
+        const data = vault.data.value;
+        if (data['id'].value !== 0) {
+          arr.push({
+            id: data['id'].value,
+            owner: data['owner'].value,
+            collateral: data['collateral'].value,
+            'is-liquidated': data['is-liquidated'].value,
+            'auction-ended': data['auction-ended'].value,
+            'leftover-collateral': data['leftover-collateral'].value,
+            debt: data['debt'].value
+          });
+        }
+      });
+
+      console.log('Setting vaults to', arr, setVaults);
+      setVaults(arr);
+    };
+
+    const subscribe = async (txId:string) => {
+      const client = await connectWebSocketClient('ws://localhost:3999');
+      sub = await client.subscribeTxUpdates(txId, update => {
+        console.log('Got an update:', update);
+        void getData();
+      });
+      console.log({ client, sub });
+    };
+    if (txId) {
+      console.log('Subscribing on updates with TX id:', txId);
+      subscribe(txId);
+    }
+  }, [txId]);
 
   const addMocknetStx = async () => {
     clearState();
@@ -54,13 +107,14 @@ export const Mint = () => {
     console.log(transaction);
     const result = await broadcastTransaction(transaction, network);
     console.log(result);
-  }
+  };
 
   const callCollateralizeAndMint = async () => {
     clearState();
     const authOrigin = getAuthOrigin();
     const args = [
       uintCV(10 * 1000000),
+      uintCV(1000000),
       standardPrincipalCV(address || ''),
       stringAsciiCV('stx')
     ];
@@ -74,7 +128,6 @@ export const Mint = () => {
       postConditionMode: 0x01,
       finished: data => {
         console.log('finished collateralizing!', data);
-        console.log(data.stacksTransaction.auth.spendingCondition?.nonce.toNumber());
         setState('Contract Call', data.txId);
       },
     });
@@ -297,8 +350,8 @@ export const Mint = () => {
             </div>
           </div>
 
-          {state.vaults.length ? (
-            <VaultGroup />
+          {vaults.length ? (
+            <VaultGroup vaults={vaults} />
           ): (
             <div className="hidden sm:block">
               <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">

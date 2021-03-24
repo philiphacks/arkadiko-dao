@@ -1,11 +1,8 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Vault } from './vault';
-import { AppContext } from '@common/context';
 
-export const VaultGroup: React.FC = () => {
-  const state = useContext(AppContext);
-
-  const vaultItems = state.vaults.map((vault: object) =>
+export const VaultGroup: React.FC = ({ vaults }) => {
+  const vaultItems = vaults.map((vault: object) =>
     <Vault
       key={vault.id}
       id={vault.id}
