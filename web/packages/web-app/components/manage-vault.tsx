@@ -82,7 +82,8 @@ export const ManageVault = ({ match }) => {
       postConditionMode: 0x01,
       finished: data => {
         console.log('finished burn!', data);
-        window.location.href = '/';
+        setTxId(data.txId);
+        setTxStatus('pending');
       },
     });
   };
@@ -158,7 +159,8 @@ export const ManageVault = ({ match }) => {
       postConditionMode: 0x01,
       finished: data => {
         console.log('finished mint!', data);
-        console.log(data.stacksTransaction.auth.spendingCondition?.nonce.toNumber());
+        setTxId(data.txId);
+        setTxStatus('pending');
       },
     });
   };
@@ -177,6 +179,8 @@ export const ManageVault = ({ match }) => {
       postConditionMode: 0x01,
       finished: data => {
         console.log('finished withdraw!', data);
+        setTxId(data.txId);
+        setTxStatus('pending');
       },
     });
   };
@@ -193,6 +197,8 @@ export const ManageVault = ({ match }) => {
       postConditionMode: 0x01,
       finished: data => {
         console.log('finished notify risky reserve!', data);
+        setTxId(data.txId);
+        setTxStatus('pending');
       },
     });
   };
