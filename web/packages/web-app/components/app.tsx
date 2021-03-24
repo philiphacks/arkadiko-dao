@@ -10,7 +10,7 @@ import { Routes } from '@components/routes';
 import { fetchBalances } from '@common/get-balance';
 import { getRPCClient } from '@common/utils';
 import { stacksNetwork as network } from '@common/utils';
-import { callReadOnlyFunction, cvToJSON, standardPrincipalCV, tupleCV, ClarityValue } from '@stacks/transactions';
+import { callReadOnlyFunction, cvToJSON, standardPrincipalCV, tupleCV, ClarityValue, stringAsciiCV } from '@stacks/transactions';
 import { VaultProps } from './vault';
 
 type TupleData = { [key: string]: ClarityValue };
@@ -77,6 +77,28 @@ export const App: React.FC = () => {
     }));
   };
 
+  const fetchCollateralTypes = async (address: string) => {
+    const types = await callReadOnlyFunction({
+      contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
+      contractName: "dao",
+      functionName: "get-collateral-type-by-token",
+      functionArgs: [stringAsciiCV('stx')],
+      senderAddress: address,
+      network: network,
+    });
+    const json = cvToJSON(types);
+
+    setState(prevState => ({
+      ...prevState,
+      collateralTypes: [{
+        name: json.value['name'].value,
+        token: json.value['token'].value,
+        url: json.value['url'].value,
+        'total-debt': json.value['total-debt'].value
+      }]
+    }));
+  };
+
   useEffect(() => {
     let mounted = true;
 
@@ -87,6 +109,7 @@ export const App: React.FC = () => {
         try {
           fetchBalance(userData?.profile?.stxAddress?.testnet || '');
           fetchVaults(userData?.profile?.stxAddress?.testnet || '');
+          fetchCollateralTypes(userData?.profile?.stxAddress?.testnet || '');
 
           const riskParameters = await callReadOnlyFunction({
             contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
@@ -139,6 +162,7 @@ export const App: React.FC = () => {
       const balance = await fetchBalances(userData?.profile?.stxAddress?.testnet);
       fetchBalance(userData?.profile?.stxAddress?.testnet || '');
       fetchVaults(userData?.profile?.stxAddress?.testnet || '');
+      fetchCollateralTypes(userData?.profile?.stxAddress?.testnet || '');
       setState(prevState => ({ ...prevState, userData, balance: balance, riskParameters: defaultRiskParameters(), isStacker: false }));
       setAppPrivateKey(userData.appPrivateKey);
     } else if (userSession.isUserSignedIn()) {
@@ -160,6 +184,7 @@ export const App: React.FC = () => {
       setAuthResponse(authResponse);
       fetchBalance(userData?.profile?.stxAddress?.testnet || '');
       fetchVaults(userData?.profile?.stxAddress?.testnet || '');
+      fetchCollateralTypes(userData?.profile?.stxAddress?.testnet || '');
       setState(prevState => ({ ...prevState, userData, balance: defaultBalance(), riskParameters: defaultRiskParameters(), isStacker: false }));
     },
     onCancel: () => {

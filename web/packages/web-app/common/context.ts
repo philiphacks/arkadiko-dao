@@ -8,6 +8,13 @@ interface UserBalance {
   diko: number;
 }
 
+interface CollateralType {
+  name: string;
+  token: string;
+  url: string;
+  'total-debt': number;
+}
+
 interface RiskParameters {
   'stability-fee': number;
   'stability-fee-apy': number;
@@ -21,6 +28,7 @@ export interface AppState {
   userData: UserData | null;
   balance: UserBalance;
   vaults: VaultProps[];
+  collateralTypes: CollateralType[];
   riskParameters: RiskParameters;
   isStacker: boolean;
 }
@@ -42,6 +50,7 @@ export const defaultState = (): AppState => {
       userData: userSession.loadUserData(),
       balance: defaultBalance(),
       vaults: [],
+      collateralTypes: [],
       riskParameters: defaultRiskParameters(),
       isStacker: false
     };
@@ -51,6 +60,7 @@ export const defaultState = (): AppState => {
     userData: null,
     balance: { stx: 0, xusd: 0, diko: 0 },
     vaults: [],
+    collateralTypes: [],
     riskParameters: defaultRiskParameters(),
     isStacker: false
   };

@@ -59,6 +59,18 @@
   )
 )
 
+(define-read-only (get-collateral-type-by-token (token (string-ascii 4)))
+  (unwrap!
+    (map-get? collateral-types { token: token })
+    (tuple
+      (name "")
+      (token "")
+      (url "")
+      (total-debt u0)
+    )
+  )
+)
+
 ;; risk parameters
 (define-map risk-parameters
   { token: (string-ascii 4) }
