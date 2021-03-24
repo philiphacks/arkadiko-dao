@@ -158,7 +158,7 @@ export const ManageVault = ({ match }) => {
       functionArgs: [uintCV(match.params.id), uintCV(parseFloat(value) * 1000000)],
       postConditionMode: 0x01,
       finished: data => {
-        console.log('finished mint!', data);
+        console.log('finished mint!', data, data.txId);
         setTxId(data.txId);
         setTxStatus('pending');
       },
