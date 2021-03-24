@@ -76,6 +76,8 @@
   { token: (string-ascii 4) }
   {
     name: (string-ascii 256),
+    token: (string-ascii 4),
+    url: (string-ascii 256),
     total-debt: uint
   }
 )
@@ -374,6 +376,8 @@
     { token: "stx" }
     {
       name: "Stacks",
+      token: "STX",
+      url: "https://www.stacks.co/",
       total-debt: u0
     }
   )
