@@ -116,7 +116,8 @@ export const App: React.FC = () => {
                 'liquidation-penalty': params['liquidation-penalty'].value,
                 'liquidation-ratio': params['liquidation-ratio'].value,
                 'maximum-debt': params['maximum-debt'].value,
-                'stability-fee': params['stability-fee'].value
+                'stability-fee': params['stability-fee'].value,
+                'stability-fee-apy': params['stability-fee-apy'].value
               },
               isStacker: cvToJSON(isStacker).value.value,
               currentTxId: ''

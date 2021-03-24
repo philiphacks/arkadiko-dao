@@ -71,7 +71,7 @@ export const Vault: React.FC<VaultProps> = ({ id, collateral, debt, isLiquidated
         </span>
       </td>
       <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
-        <span className="text-gray-900 font-medium">{state.riskParameters['stability-fee']}%</span>
+        <span className="text-gray-900 font-medium">{state.riskParameters['stability-fee-apy']}%</span>
       </td>
       <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
         <span className="text-gray-900 font-medium">{state.riskParameters['liquidation-ratio']}%</span>

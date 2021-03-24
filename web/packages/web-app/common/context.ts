@@ -10,6 +10,7 @@ interface UserBalance {
 
 interface RiskParameters {
   'stability-fee': number;
+  'stability-fee-apy': number;
   'liquidation-ratio': number;
   'liquidation-penalty': number;
   'collateral-to-debt-ratio': number;
@@ -25,7 +26,7 @@ export interface AppState {
 }
 
 export const defaultRiskParameters = () => {
-  return { 'stability-fee': 0, 'liquidation-ratio': 0, 'liquidation-penalty': 0, 'collateral-to-debt-ratio': 0, 'maximum-debt': 0 };
+  return { 'stability-fee': 0, 'stability-fee-apy': 0, 'liquidation-ratio': 0, 'liquidation-penalty': 0, 'collateral-to-debt-ratio': 0, 'maximum-debt': 0 };
 };
 
 export const defaultBalance = () => {
