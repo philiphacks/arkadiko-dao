@@ -22,7 +22,6 @@ export interface AppState {
   vaults: VaultProps[];
   riskParameters: RiskParameters;
   isStacker: boolean;
-  setVaults: (vaults: object[]) => [];
 }
 
 export const defaultRiskParameters = () => {
@@ -43,8 +42,7 @@ export const defaultState = (): AppState => {
       balance: defaultBalance(),
       vaults: [],
       riskParameters: defaultRiskParameters(),
-      isStacker: false,
-      setVaults: () => []
+      isStacker: false
     };
   }
 
@@ -53,8 +51,7 @@ export const defaultState = (): AppState => {
     balance: { stx: 0, xusd: 0, diko: 0 },
     vaults: [],
     riskParameters: defaultRiskParameters(),
-    isStacker: false,
-    setVaults: () => []
+    isStacker: false
   };
 };
 
