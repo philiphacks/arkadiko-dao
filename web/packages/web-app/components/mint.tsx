@@ -242,7 +242,7 @@ export const Mint = () => {
                             <span className="text-gray-900 font-medium">${state.riskParameters['maximum-debt'] / 1000000} million</span>
                           </td>
                           <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
-                            <span className="text-gray-900 font-medium">${state.collateralTypes[0]['total-debt']}</span>
+                            <span className="text-gray-900 font-medium">${state.collateralTypes[0]['total-debt'] / 1000000}</span>
                           </td>
                         </tr>
                       ): null }

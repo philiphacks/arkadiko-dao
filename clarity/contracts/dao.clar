@@ -156,6 +156,21 @@
 )
 
 ;; setters accessible only by DAO contract
+(define-public (add-debt-to-collateral-type (token (string-ascii 4)) (debt uint))
+  (let ((collateral-type (get-collateral-type-by-token token)))
+    (map-set collateral-types
+      { token: token }
+      {
+        name: (get name collateral-type),
+        token: (get token collateral-type),
+        url: (get url collateral-type),
+        total-debt: (+ debt (get total-debt collateral-type))
+      }
+    )
+    (ok debt)
+  )
+)
+
 (define-public (set-liquidation-ratio (token (string-ascii 4)) (ratio uint))
   (if (is-eq contract-caller .dao)
     (begin

@@ -98,7 +98,9 @@
                 }
               )
               (var-set last-vault-id vault-id)
-              (ok debt)
+              (let ((result (contract-call? .dao add-debt-to-collateral-type "stx" debt)))
+                (ok debt)
+              )
             )
           )
         )
