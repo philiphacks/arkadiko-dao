@@ -1,6 +1,6 @@
 # Stacking STX in Arkadiko
 
-By default, we stack all STX collateral that is used to create vaults and mint stablecoins (xUSD).
+By default, we stack all STX collateral that is used to create vaults.
 
 A few resources that are helpful in understanding pools:
 1. How to run a Stacking Pool? https://app.sigle.io/friedger.id/UOvy85BCSD-bjlrv_6q74
