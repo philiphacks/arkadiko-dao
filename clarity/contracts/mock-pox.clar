@@ -17,7 +17,7 @@
 )
 
 (define-public (stack-aggregation-commit (pox-address (tuple (hashbytes (buff 20)) (version (buff 1)))) (reward-cycle uint))
- (if true
+  (if true
     (ok true)
     (err 1)
   )
