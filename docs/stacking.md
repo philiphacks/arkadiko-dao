@@ -31,6 +31,6 @@ When a vault gets liquidated during the stacking cycle, the vault owner will not
 - from the auctioned collateral: a % that goes to the DAO reserve
 - from the leftover collateral: % that goes to the vault owner, DAO and governance tokens as described by the DAO parameters
 
-Since STX tokens can be stacked at the time of the auction and thus won't be liquid, Arikadiko will auction a STX derivative called STX futures. The incentive to buy the STX futures are the additional yield that comes with the lot (which can be "free" yield if your purchase is nearing the end of the stacking cycle). Once the stacking cycle ends, the STX Futures owner can exchange their tokens for real STX.
+Since STX tokens can be stacked at the time of the auction and thus won't be liquid, Arikadiko will auction a STX derivative called STX futures. The incentive to buy the STX futures are the additional yield that comes with the lot. Once the stacking cycle ends and STX is unlocked, the STX Futures owner can exchange their tokens for real STX.
 
 STX Futures tokens will be burned as soon as they are exchanged for real STX. If the total Arkadiko supply of STX futures tokens is zero, it means no STX tokens are owed to lot winners. As STX Futures spread in the ecosystem, these might be exchanged at other liquidity providers (e.g. exchanges, p2p) as well.
