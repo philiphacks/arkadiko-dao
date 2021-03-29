@@ -1,4 +1,4 @@
-;; (impl-trait .vault-trait.vault-trait)
+(impl-trait .vault-trait.vault-trait)
 
 ;; errors
 (define-constant err-unauthorized u1)
@@ -120,6 +120,6 @@
 (define-public (redeem-collateral (stx-collateral uint) (owner principal))
   (begin
     (asserts! (is-eq contract-caller .auction-engine) (err err-unauthorized))
-    (ok (as-contract (stx-transfer? stx-collateral (as-contract tx-sender) owner)))
+    (as-contract (stx-transfer? stx-collateral (as-contract tx-sender) owner))
   )
 )
