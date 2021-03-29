@@ -330,7 +330,7 @@
     (asserts! (>= block-height (get start-block-height proposal)) (err err-unauthorized))
 
     (let ((vote-count (get vote-count (get-votes-by-member-by-id proposal-id tx-sender))))
-      (if (unwrap-panic (contract-call? .arkadiko-token transfer proposal-reserve amount))
+      (if (unwrap-panic (contract-call? .arkadiko-token transfer amount tx-sender proposal-reserve))
         (begin
           (map-set proposals
             { id: proposal-id }
@@ -363,7 +363,7 @@
     (asserts! (>= block-height (get start-block-height proposal)) (err err-unauthorized))
 
     (let ((vote-count (get vote-count (get-votes-by-member-by-id proposal-id tx-sender))))
-      (if (unwrap-panic (contract-call? .arkadiko-token transfer proposal-reserve amount))
+      (if (unwrap-panic (contract-call? .arkadiko-token transfer amount tx-sender proposal-reserve))
         (begin
           (map-set proposals
             { id: proposal-id }

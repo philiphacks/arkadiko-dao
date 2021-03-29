@@ -1,4 +1,4 @@
-(impl-trait 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.mock-ft-trait.mock-ft-trait)
+(impl-trait .mock-ft-trait.mock-ft-trait)
 
 ;; Defines the Arkadiko Governance Token according to the SRC20 Standard
 (define-fungible-token diko)
