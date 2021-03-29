@@ -1,3 +1,5 @@
+(use-trait vault-trait .vault-trait.vault-trait)
+
 ;; for now this is a fairly centralised Oracle, which is subject to failure.
 ;; Ideally, we implement a Chainlink Price Feed Oracle ASAP
 (define-constant err-not-white-listed u51)
@@ -20,4 +22,8 @@
 
 (define-read-only (get-price)
   { price: (var-get last-price-in-cents), height: (var-get last-block) }
+)
+
+(define-public (test (vault <vault-trait>))
+  (ok (contract-call? vault test))
 )

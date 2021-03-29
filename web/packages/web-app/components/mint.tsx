@@ -10,7 +10,8 @@ import {
   makeSTXTokenTransfer,
   privateKeyToString,
   uintCV,
-  stringAsciiCV
+  stringAsciiCV,
+  contractPrincipalCV
 } from '@stacks/transactions';
 import { VaultGroup } from './vault-group';
 import { getStxPrice } from '@common/get-stx-price';
@@ -40,6 +41,25 @@ export const Mint = () => {
       network: network
     });
     await broadcastTransaction(transaction, network);
+  };
+
+  const callVaultTraitTest = async () => {
+    const authOrigin = getAuthOrigin();
+    const args = [
+      contractPrincipalCV('ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP', 'stx-reserve')
+    ];
+    await doContractCall({
+      network,
+      authOrigin,
+      contractAddress,
+      contractName: 'oracle',
+      functionName: 'test',
+      functionArgs: args,
+      postConditionMode: 0x01,
+      finished: data => {
+        console.log('finished test TX!', data.txId);
+      }
+    });
   };
 
   const callCollateralizeAndMint = async () => {
@@ -75,6 +95,9 @@ export const Mint = () => {
                   </Link>
                   <Link onClick={() => callCollateralizeAndMint()} color="blue" display="inline-block" my={3} ml={5}>
                     (Create test vault)
+                  </Link>
+                  <Link onClick={() => callVaultTraitTest()} color="blue" display="inline-block" my={3} ml={5}>
+                    (Call vault trait test)
                   </Link>
                 </Box>
               ) : (

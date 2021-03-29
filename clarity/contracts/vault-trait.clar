@@ -27,5 +27,7 @@
 
     ;; redeem collateral after an auction ran
     (redeem-collateral (uint principal) (response bool uint))
+
+    (test () (response bool uint))
   )
 )
