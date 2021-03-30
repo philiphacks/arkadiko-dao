@@ -79,31 +79,34 @@ export const App: React.FC = () => {
   };
 
   const fetchCollateralTypes = async (address: string) => {
-    const types = await callReadOnlyFunction({
-      contractAddress,
-      contractName: "dao",
-      functionName: "get-collateral-type-by-token",
-      functionArgs: [stringAsciiCV('stx')],
-      senderAddress: address,
-      network: network,
-    });
-    const json = cvToJSON(types);
+    ['stx', 'diko'].forEach(async (token) => {
+      const types = await callReadOnlyFunction({
+        contractAddress,
+        contractName: "dao",
+        functionName: "get-collateral-type-by-token",
+        functionArgs: [stringAsciiCV(token)],
+        senderAddress: address,
+        network: network,
+      });
+      const json = cvToJSON(types);
+      console.log(json);
 
-    setState(prevState => ({
-      ...prevState,
-      collateralTypes: [{
-        name: json.value['name'].value,
-        token: json.value['token'].value,
-        url: json.value['url'].value,
-        'total-debt': json.value['total-debt'].value,
-        'collateral-to-debt-ratio': json.value['collateral-to-debt-ratio'].value,
-        'liquidation-penalty': json.value['liquidation-penalty'].value,
-        'liquidation-ratio': json.value['liquidation-ratio'].value,
-        'maximum-debt': json.value['maximum-debt'].value,
-        'stability-fee': json.value['stability-fee'].value,
-        'stability-fee-apy': json.value['stability-fee-apy'].value
-      }]
-    }));
+      setState(prevState => ({
+        ...prevState,
+        collateralTypes: [{
+          name: json.value['name'].value,
+          token: json.value['token'].value,
+          url: json.value['url'].value,
+          'total-debt': json.value['total-debt'].value,
+          'collateral-to-debt-ratio': json.value['collateral-to-debt-ratio'].value,
+          'liquidation-penalty': json.value['liquidation-penalty'].value,
+          'liquidation-ratio': json.value['liquidation-ratio'].value,
+          'maximum-debt': json.value['maximum-debt'].value,
+          'stability-fee': json.value['stability-fee'].value,
+          'stability-fee-apy': json.value['stability-fee-apy'].value
+        }]
+      }));
+    });
   };
 
   useEffect(() => {

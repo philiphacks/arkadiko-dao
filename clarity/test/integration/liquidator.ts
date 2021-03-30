@@ -57,7 +57,7 @@ describe("stacks reserve test suite", () => {
         secretKey,
         [
           uintCV(5000000), uintCV(1925000),
-          standardPrincipalCV(alice), stringAsciiCV('stx'),
+          standardPrincipalCV(alice), stringAsciiCV('stx-a'),
           contractPrincipalCV(deployContractAddress, 'stx-reserve')
         ]
       );

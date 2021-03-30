@@ -24,7 +24,7 @@
   id: uint,
   owner: principal,
   collateral: uint,
-  collateral-type: (string-ascii 4),
+  collateral-type: (string-ascii 12),
   debt: uint,
   created-at-block-height: uint,
   updated-at-block-height: uint,
@@ -87,7 +87,7 @@
   )
 )
 
-(define-public (collateralize-and-mint (collateral-amount uint) (debt uint) (sender principal) (collateral-type (string-ascii 4)) (reserve <vault-trait>))
+(define-public (collateralize-and-mint (collateral-amount uint) (debt uint) (sender principal) (collateral-type (string-ascii 12)) (reserve <vault-trait>))
   (let ((ratio (unwrap-panic (contract-call? reserve calculate-current-collateral-to-debt-ratio debt collateral-amount))))
     (asserts! (is-eq tx-sender sender) (err err-unauthorized))
     (asserts! (>= ratio (unwrap-panic (contract-call? .dao get-liquidation-ratio collateral-type))) (err err-insufficient-collateral))
