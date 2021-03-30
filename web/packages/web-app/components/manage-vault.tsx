@@ -30,6 +30,7 @@ export const ManageVault = ({ match }) => {
   const [liquidationPenalty, setLiquidationPenalty] = useState(0);
   const [liquidationRatio, setLiquidationRatio] = useState(0);
   const [collateralToDebtRatio, setCollateralToDebtRatio] = useState(0);
+  const [collateralToWithdraw, setCollateralToWithdraw] = useState(0);
 
   const searchVault = (id: string) => {
     for (let i = 0; i < state.vaults.length; i++) {
@@ -61,6 +62,12 @@ export const ManageVault = ({ match }) => {
       setCollateralToDebtRatio(state.collateralTypes[vault.collateralType.toLowerCase()].collateralToDebtRatio);
     }
   }, [vault, state.collateralTypes]);
+
+  useEffect(() => {
+    if (vault && collateralToDebtRatio) {
+      setCollateralToWithdraw(availableStxToWithdraw(price, stxLocked(), outstandingDebt(), collateralToDebtRatio));
+    }
+  }, [collateralToDebtRatio, price]);
 
   useEffect(() => {
     let sub;
@@ -503,7 +510,7 @@ export const ManageVault = ({ match }) => {
 
                       <div className="text-sm text-gray-500">
                         <p>
-                          {availableStxToWithdraw(price, stxLocked(), outstandingDebt(), collateralToDebtRatio)} STX
+                          {collateralToWithdraw} STX
                         </p>
                       </div>
 
