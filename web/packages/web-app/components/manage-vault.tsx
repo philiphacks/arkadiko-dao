@@ -393,7 +393,7 @@ export const ManageVault = ({ match }) => {
 
                     <div className="max-w-xl text-sm text-gray-500">
                       <p>
-                        {state.collateralTypes.length > 0 ? (state.collateralTypes[0]['stability-fee-apy']) : ``}%
+                        {state.collateralTypes.length > 0 ? (state.collateralTypes[0]['stability-fee-apy'] / 100) : ``}%
                       </p>
                     </div>
                   </div>

@@ -78,7 +78,7 @@ export const CreateVaultConfirm = ({ setStep, coinAmounts }) => {
               Stability Fee
             </h3>
             <p className="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3">
-              {state.collateralTypes[0]['stability-fee-apy']}%
+              {state.collateralTypes[0]['stability-fee-apy'] / 100}%
             </p>
           </div>
           <hr/>
