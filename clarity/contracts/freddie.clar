@@ -65,6 +65,12 @@
   )
 )
 
+(define-read-only (get-collateral-type-for-vault (vault-id uint))
+  (let ((vault (get-vault-by-id vault-id)))
+    (get collateral-type vault)
+  )
+)
+
 (define-public (calculate-current-collateral-to-debt-ratio (vault-id uint) (reserve <vault-trait>))
   (let ((vault (get-vault-by-id vault-id)))
     (if (is-eq (get is-liquidated vault) true)
