@@ -53,11 +53,11 @@ export const CreateVaultTransact = ({ coinAmounts }) => {
     clearState();
     const authOrigin = getAuthOrigin();
     const args = [
-      uintCV(parseInt(coinAmounts['amounts']['stx'], 10) * 1000000),
+      uintCV(parseInt(coinAmounts['amounts']['collateral'], 10) * 1000000),
       uintCV(parseInt(coinAmounts['amounts']['xusd'], 10) * 1000000),
       standardPrincipalCV(address || ''),
-      stringAsciiCV('stx'),
-      contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', 'stx-reserve')
+      stringAsciiCV(coinAmounts['token-name'].toLowerCase()),
+      contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', coinAmounts['token-name'].toLowerCase() + '-reserve')
     ];
     await doContractCall({
       network,

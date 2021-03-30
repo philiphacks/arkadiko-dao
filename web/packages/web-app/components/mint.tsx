@@ -16,7 +16,6 @@ import {
 import { VaultGroup } from './vault-group';
 import { getStxPrice } from '@common/get-stx-price';
 import { Link } from '@components/link';
-import { NavLink as RouterLink } from 'react-router-dom'
 import { AppContext } from '@common/context';
 import { useConnect } from '@stacks/connect-react';
 import { CollateralTypeGroup } from '@components/collateral-type-group';
@@ -206,19 +205,6 @@ export const Mint = () => {
           <h2 className="mt-8 text-lg leading-6 font-medium text-gray-900">
             Vaults
           </h2>
-
-          <div className="hidden sm:block">
-            <div className="">
-              <div className="flex flex-col">
-                <div className="align-middle min-w-full overflow-x-auto shadow overflow-hidden sm:rounded-lg"></div>
-                  <Box my="base">
-                    <RouterLink to="/vaults/new" exact className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mr-5">
-                      New Vault
-                    </RouterLink>
-                  </Box>
-              </div>
-            </div>
-          </div>
 
           {vaults.length ? (
             <VaultGroup vaults={vaults} />

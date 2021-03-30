@@ -15,7 +15,7 @@ export const CreateVaultConfirm = ({ setStep, coinAmounts }) => {
               Depositing
             </h3>
             <p className="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3">
-              {coinAmounts['amounts']['stx']} STX
+              {coinAmounts['amounts']['collateral']} {coinAmounts['token-name']}
             </p>
           </div>
           <hr/>
@@ -55,7 +55,7 @@ export const CreateVaultConfirm = ({ setStep, coinAmounts }) => {
               Liquidation Price
             </h3>
             <p className="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3">
-              ${coinAmounts['liquidation-price']} / STX
+              ${coinAmounts['liquidation-price']} / {coinAmounts['token-name']}
             </p>
           </div>
           <hr/>
