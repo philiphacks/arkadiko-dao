@@ -43,32 +43,14 @@ export const Mint = () => {
     await broadcastTransaction(transaction, network);
   };
 
-  const callVaultTraitTest = async () => {
-    const authOrigin = getAuthOrigin();
-    const args = [
-      contractPrincipalCV('ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP', 'stx-reserve')
-    ];
-    await doContractCall({
-      network,
-      authOrigin,
-      contractAddress,
-      contractName: 'oracle',
-      functionName: 'test',
-      functionArgs: args,
-      postConditionMode: 0x01,
-      finished: data => {
-        console.log('finished test TX!', data.txId);
-      }
-    });
-  };
-
   const callCollateralizeAndMint = async () => {
     const authOrigin = getAuthOrigin();
     const args = [
       uintCV(10 * 1000000),
       uintCV(1000000),
       standardPrincipalCV(address || ''),
-      stringAsciiCV('stx')
+      stringAsciiCV('stx'),
+      contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', 'stx-reserve')
     ];
     await doContractCall({
       network,
@@ -95,9 +77,6 @@ export const Mint = () => {
                   </Link>
                   <Link onClick={() => callCollateralizeAndMint()} color="blue" display="inline-block" my={3} ml={5}>
                     (Create test vault)
-                  </Link>
-                  <Link onClick={() => callVaultTraitTest()} color="blue" display="inline-block" my={3} ml={5}>
-                    (Call vault trait test)
                   </Link>
                 </Box>
               ) : (
