@@ -71,11 +71,18 @@
   )
 )
 
-(define-public (calculate-current-collateral-to-debt-ratio (vault-id uint) (reserve <vault-trait>))
+(define-public (calculate-current-collateral-to-debt-ratio (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
     (if (is-eq (get is-liquidated vault) true)
       (ok u999)
-      (ok (unwrap! (contract-call? reserve calculate-current-collateral-to-debt-ratio (get debt vault) (get collateral vault)) (ok u0)))
+      (begin
+        (let ((stx-price-in-cents (contract-call? .oracle get-price (get collateral-type vault))))
+          (if (> (get debt vault) u0)
+            (ok (/ (* (get collateral vault) (get last-price-in-cents stx-price-in-cents)) (get debt vault)))
+            (err u0)
+          )
+        )
+      )
     )
   )
 )
@@ -270,35 +277,32 @@
   )
 )
 
-(define-public (liquidate (vault-id uint) (reserve <vault-trait>))
+(define-public (liquidate (vault-id uint))
   (if (is-eq contract-caller .liquidator)
     (begin
       (let ((vault (get-vault-by-id vault-id)))
-        (if (is-ok (contract-call? reserve liquidate (get collateral vault) (get debt vault)))
-          (begin
-            (let ((collateral (get collateral vault)))
-              (map-set vaults
-                { id: vault-id }
-                {
-                  id: vault-id,
-                  owner: (get owner vault),
-                  collateral: u0,
-                  collateral-type: (get collateral-type vault),
-                  debt: (get debt vault),
-                  created-at-block-height: (get created-at-block-height vault),
-                  updated-at-block-height: block-height,
-                  stability-fee-last-paid: (get stability-fee-last-paid vault),
-                  is-liquidated: true,
-                  auction-ended: false,
-                  leftover-collateral: u0
-                }
-              )
-              (let ((debt (/ (* (unwrap-panic (contract-call? .dao get-liquidation-penalty "stx")) (get debt vault)) u100)))
-                (ok (tuple (ustx-amount collateral) (debt (+ debt (get debt vault)))))
-              )
+        (begin
+          (let ((collateral (get collateral vault)))
+            (map-set vaults
+              { id: vault-id }
+              {
+                id: vault-id,
+                owner: (get owner vault),
+                collateral: u0,
+                collateral-type: (get collateral-type vault),
+                debt: (get debt vault),
+                created-at-block-height: (get created-at-block-height vault),
+                updated-at-block-height: block-height,
+                stability-fee-last-paid: (get stability-fee-last-paid vault),
+                is-liquidated: true,
+                auction-ended: false,
+                leftover-collateral: u0
+              }
+            )
+            (let ((debt (/ (* (unwrap-panic (contract-call? .dao get-liquidation-penalty (get collateral-type vault))) (get debt vault)) u100)))
+              (ok (tuple (ustx-amount collateral) (debt (+ debt (get debt vault)))))
             )
           )
-          (err err-liquidation-failed)
         )
       )
     )

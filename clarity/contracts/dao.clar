@@ -1,4 +1,4 @@
-(use-trait vault-trait 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.vault-trait.vault-trait)
+(use-trait vault-trait .vault-trait.vault-trait)
 ;; Arkadiko DAO
 ;; 1. See all proposals
 ;; 2. Vote on a proposal
