@@ -47,7 +47,7 @@ describe("stacks reserve test suite", () => {
         'oracle',
         'update-price',
         secretDeployKey,
-        [uintCV(77)]
+        [stringAsciiCV('stx'), uintCV(77)]
       );
 
       console.log('Calling collateralize-and-mint function');
@@ -67,7 +67,7 @@ describe("stacks reserve test suite", () => {
         'oracle',
         'update-price',
         secretDeployKey,
-        [uintCV(55)]
+        [stringAsciiCV('stx'), uintCV(55)]
       );
 
       // now vault is under liquidation ratio
