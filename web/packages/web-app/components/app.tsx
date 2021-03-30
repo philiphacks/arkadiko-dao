@@ -90,7 +90,7 @@ export const App: React.FC = () => {
         network: network,
       });
       const json = cvToJSON(types);
-      // console.log(json);
+      // console.log('coll type: ', json);
       collTypes[token] = {
         name: json.value['name'].value,
         token: json.value['token'].value,

@@ -15,7 +15,10 @@ export const CreateVaultStepOne: React.FC<VaultProps> = ({ setStep, setCoinAmoun
     setCoinAmounts({
       amounts: { stx: stxAmount, xusd: coinAmount },
       'liquidation-price': liquidationPrice,
-      'collateral-to-debt-ratio': collateralToDebt
+      'collateral-to-debt-ratio': collateralToDebt,
+      'liquidation-ratio': liquidationRatio,
+      'liquidation-penalty': liquidationPenalty,
+      'stability-fee-apy': stabilityFeeApy
     });
     setStep(1);
   };
@@ -24,10 +27,13 @@ export const CreateVaultStepOne: React.FC<VaultProps> = ({ setStep, setCoinAmoun
   const [maximumToMint, setMaximumToMint] = useState(0);
   const [liquidationPrice, setLiquidationPrice] = useState(0);
   const [collateralToDebt, setCollateralToDebt] = useState(0);
+  const [stabilityFeeApy, setStabilityFeeApy] = useState(0);
+  const [liquidationPenalty, setLiquidationPenalty] = useState(0);
+  const [liquidationRatio, setLiquidationRatio] = useState(0);
   const price = parseFloat(getStxPrice().price);
 
   const maximumCoinsToMint = (value: string) => {
-    const maxRatio = parseInt(state.collateralTypes[0]['liquidation-ratio'], 10) + 30;
+    const maxRatio = parseInt(liquidationRatio, 10) + 30;
     const ustxAmount = parseInt(value, 10) * 1000000;
     setMaximumToMint(Math.floor(ustxAmount * price / maxRatio));
   };
@@ -46,11 +52,18 @@ export const CreateVaultStepOne: React.FC<VaultProps> = ({ setStep, setCoinAmoun
 
   useEffect(() => {
     if (stxAmount && coinAmount) {
-      const liquidationRatio = parseInt(state.collateralTypes[0]['liquidation-ratio'], 10);
       setLiquidationPrice(getLiquidationPrice(liquidationRatio, parseInt(coinAmount, 10), parseInt(stxAmount, 10)));
       setCollateralToDebt(getCollateralToDebtRatio(price, parseInt(coinAmount, 10), parseInt(stxAmount, 10)));
     }
   }, [stxAmount, coinAmount]);
+
+  useEffect(() => {
+    if (state.collateralTypes['stx-a']) {
+      setStabilityFeeApy(state.collateralTypes['stx-a'].stabilityFeeApy);
+      setLiquidationPenalty(state.collateralTypes['stx-a'].liquidationPenalty);
+      setLiquidationRatio(state.collateralTypes['stx-a'].liquidationRatio);
+    }
+  }, [state.collateralTypes]);
 
   return (
     <Box>
@@ -171,21 +184,21 @@ export const CreateVaultStepOne: React.FC<VaultProps> = ({ setStep, setCoinAmoun
                 Stability Fee
               </h3>
               <p className="max-w-xl text-sm text-gray-500 mb-3">
-                {state.collateralTypes[0]['stability-fee-apy'] / 100}%
+                {stabilityFeeApy / 100}%
               </p>
 
               <h3 className="text-md leading-6 font-medium text-gray-900">
                 Liquidation Ratio
               </h3>
               <p className="max-w-xl text-sm text-gray-500 mb-3">
-                {state.collateralTypes[0]['liquidation-ratio']}%
+                {liquidationRatio}%
               </p>
 
               <h3 className="text-md leading-6 font-medium text-gray-900">
                 Liquidation Penalty
               </h3>
               <p className="max-w-xl text-sm text-gray-500 mb-3">
-                {state.collateralTypes[0]['liquidation-penalty']}%
+                {liquidationPenalty}%
               </p>
             </div>
           </div>
