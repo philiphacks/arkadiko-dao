@@ -12,6 +12,7 @@ export interface VaultProps {
   owner: string;
   collateral: number;
   collateralType: string;
+  collateralToken: string;
   debt: number;
   isLiquidated: boolean;
   auctionEnded: boolean;
@@ -38,7 +39,7 @@ export const debtBackgroundClass = (ratio: number) => {
   return 'bg-white';
 };
 
-export const Vault: React.FC<VaultProps> = ({ id, collateral, collateralType, debt, isLiquidated, auctionEnded, leftoverCollateral }) => {
+export const Vault: React.FC<VaultProps> = ({ id, collateral, collateralType, collateralToken, debt, isLiquidated, auctionEnded, leftoverCollateral }) => {
   const state = useContext(AppContext);
   const { doContractCall } = useConnect();
   const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS || '';
@@ -95,7 +96,7 @@ export const Vault: React.FC<VaultProps> = ({ id, collateral, collateralType, de
         <span className="text-gray-900 font-medium">${debt / 1000000} xUSD</span>
       </td>
       <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
-        <span className="text-gray-900 font-medium">{collateral / 1000000} STX</span>
+        <span className="text-gray-900 font-medium">{collateral / 1000000} {collateralToken.toUpperCase()}</span>
       </td>
       <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-900">
         <span className="text-gray-900 font-medium">

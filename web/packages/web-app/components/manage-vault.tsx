@@ -7,9 +7,9 @@ import { useConnect } from '@stacks/connect-react';
 import { uintCV, contractPrincipalCV, standardPrincipalCV } from '@stacks/transactions';
 import { AppContext } from '@common/context';
 import { getCollateralToDebtRatio } from '@common/get-collateral-to-debt-ratio';
-import { debtClass } from './vault';
+import { debtClass, VaultProps } from './vault';
 import { getStxPrice } from '@common/get-stx-price';
-import { getLiquidationPrice, availableStxToWithdraw, availableCoinsToMint } from '@common/vault-utils';
+import { getLiquidationPrice, availableCollateralToWithdraw, availableCoinsToMint } from '@common/vault-utils';
 import { Link } from '@components/link';
 import { Redirect } from 'react-router-dom';
 import { connectWebSocketClient } from '@stacks/blockchain-api-client';
@@ -19,18 +19,21 @@ export const ManageVault = ({ match }) => {
   const senderAddress = useSTXAddress();
   const state = useContext(AppContext);
   const price = parseFloat(getStxPrice().price);
+  const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS || '';
+
   const [showDepositModal, setShowDepositModal] = useState(false);
-  const [extraStxDeposit, setExtraStxDeposit] = useState('');
+  const [extraCollateralDeposit, setExtraCollateralDeposit] = useState('');
   const [isLiquidated, setIsLiquidated] = useState(false);
   const [auctionEnded, setAuctionEnded] = useState(false);
   const [txId, setTxId] = useState<string>('');
   const [txStatus, setTxStatus] = useState<string>('');
-  const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS || '';
   const [stabilityFeeApy, setStabilityFeeApy] = useState(0);
   const [liquidationPenalty, setLiquidationPenalty] = useState(0);
   const [liquidationRatio, setLiquidationRatio] = useState(0);
   const [collateralToDebtRatio, setCollateralToDebtRatio] = useState(0);
   const [collateralToWithdraw, setCollateralToWithdraw] = useState(0);
+  const [reserveName, setReserveName] = useState('');
+  const [serializedVault, setVault] = useState<VaultProps>();
 
   const searchVault = (id: string) => {
     for (let i = 0; i < state.vaults.length; i++) {
@@ -48,8 +51,10 @@ export const ManageVault = ({ match }) => {
     let mounted = true;
 
     if (mounted && vault) {
+      setVault(vault);
       setIsLiquidated(vault['isLiquidated']);
       setAuctionEnded(vault['auctionEnded']);
+      setReserveName(vault['collateralToken'] + '-reserve');
     }
     return () => { mounted = false; }
   }, [vault]);
@@ -65,7 +70,7 @@ export const ManageVault = ({ match }) => {
 
   useEffect(() => {
     if (vault && collateralToDebtRatio) {
-      setCollateralToWithdraw(availableStxToWithdraw(price, stxLocked(), outstandingDebt(), collateralToDebtRatio));
+      setCollateralToWithdraw(availableCollateralToWithdraw(price, collateralLocked(), outstandingDebt(), collateralToDebtRatio));
     }
   }, [collateralToDebtRatio, price]);
 
@@ -102,7 +107,7 @@ export const ManageVault = ({ match }) => {
       functionArgs: [
         uintCV(match.params.id),
         standardPrincipalCV(senderAddress || ''),
-        contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', 'stx-reserve')
+        contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', reserveName)
       ],
       postConditionMode: 0x01,
       finished: data => {
@@ -118,7 +123,7 @@ export const ManageVault = ({ match }) => {
   }
 
   const addDeposit = async () => {
-    if (!extraStxDeposit) {
+    if (!extraCollateralDeposit) {
       return;
     }
 
@@ -131,8 +136,8 @@ export const ManageVault = ({ match }) => {
       functionName: 'deposit',
       functionArgs: [
         uintCV(match.params.id),
-        uintCV(parseFloat(extraStxDeposit) * 1000000),
-        contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', 'stx-reserve')
+        uintCV(parseFloat(extraCollateralDeposit) * 1000000),
+        contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', reserveName)
       ],
       postConditionMode: 0x01,
       finished: data => {
@@ -145,14 +150,14 @@ export const ManageVault = ({ match }) => {
 
   const liquidationPrice = () => {
     if (vault) {
-      // (liquidationRatio * coinsMinted) / stxCollateral = rekt
+      // (liquidationRatio * coinsMinted) / collateral = rekt
       return getLiquidationPrice(liquidationRatio, vault['debt'], vault['collateral']);
     }
 
     return 0;
   }
 
-  const stxLocked = () => {
+  const collateralLocked = () => {
     if (vault) {
       return vault['collateral'] / 1000000;
     }
@@ -170,11 +175,11 @@ export const ManageVault = ({ match }) => {
 
   const onInputChange = (event: { target: { value: any; }; }) => {
     const value = event.target.value;
-    setExtraStxDeposit(value);
+    setExtraCollateralDeposit(value);
   };
 
   const callMint = async () => {
-    const value = availableCoinsToMint(price, stxLocked(), outstandingDebt(), collateralToDebtRatio)
+    const value = availableCoinsToMint(price, collateralLocked(), outstandingDebt(), collateralToDebtRatio)
 
     const authOrigin = getAuthOrigin();
     await doContractCall({
@@ -186,7 +191,7 @@ export const ManageVault = ({ match }) => {
       functionArgs: [
         uintCV(match.params.id),
         uintCV(parseFloat(value) * 1000000),
-        contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', 'stx-reserve')
+        contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', reserveName)
       ],
       postConditionMode: 0x01,
       finished: data => {
@@ -198,7 +203,7 @@ export const ManageVault = ({ match }) => {
   };
 
   const callWithdraw = async () => {
-    const value = availableStxToWithdraw(price, stxLocked(), outstandingDebt(), collateralToDebtRatio);
+    const value = availableCollateralToWithdraw(price, collateralLocked(), outstandingDebt(), collateralToDebtRatio);
 
     const authOrigin = getAuthOrigin();
     await doContractCall({
@@ -210,7 +215,7 @@ export const ManageVault = ({ match }) => {
       functionArgs: [
         uintCV(match.params.id),
         uintCV(parseFloat(value) * 1000000),
-        contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', 'stx-reserve')
+        contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', reserveName)
       ],
       postConditionMode: 0x01,
       finished: data => {
@@ -285,20 +290,20 @@ export const ManageVault = ({ match }) => {
                 </h3>
                 <div className="mt-2">
                   <p className="text-sm text-gray-500">
-                    Choose how much extra collateral you want to post. You have a balance of {state.balance['stx'] / 1000000} STX.
+                    Choose how much extra collateral you want to post. You have a balance of {state.balance['stx'] / 1000000} {serializedVault?.collateralToken.toUpperCase()}.
                   </p>
 
                   <div className="mt-4 relative rounded-md shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     </div>
-                    <input type="text" name="stx" id="stxAmount"
-                           value={extraStxDeposit}
+                    <input type="text" name="collateral" id="collateralAmount"
+                           value={extraCollateralDeposit}
                            onChange={onInputChange}
                            className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md"
-                           placeholder="0.00" aria-describedby="stx-currency" />
+                           placeholder="0.00" aria-describedby="collateral-currency" />
                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                      <span className="text-gray-500 sm:text-sm" id="stx-currency">
-                        STX
+                      <span className="text-gray-500 sm:text-sm" id="collateral-currency">
+                        {serializedVault?.collateralToken.toUpperCase()}
                       </span>
                     </div>
                   </div>
@@ -323,7 +328,7 @@ export const ManageVault = ({ match }) => {
         <main className="flex-1 relative pb-8 z-0 overflow-y-auto">
           <div className="mt-8">
             <h1 className="text-2xl leading-6 font-medium text-gray-900 mb-4">
-              STX/xUSD Vault #{match.params.id}
+              {serializedVault?.collateralToken.toUpperCase()}/xUSD Vault #{match.params.id}
             </h1>
           </div>
 
@@ -349,7 +354,7 @@ export const ManageVault = ({ match }) => {
               <div className="bg-white shadow sm:rounded-lg w-full">
                 <div className="px-4 py-5 sm:p-6">
                   <h2 className="text-lg leading-6 font-medium text-gray-900">
-                    ${liquidationPrice()} USD (STX/USD)
+                    ${liquidationPrice()} USD ({serializedVault?.collateralToken.toUpperCase()}/USD)
                   </h2>
                   <div className="mt-2 sm:flex sm:items-start sm:justify-between">
                     <div className="max-w-xl text-sm text-gray-500">
@@ -461,7 +466,7 @@ export const ManageVault = ({ match }) => {
             <ul className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 xl:grid-cols-4 mt-8">
               <li className="relative col-span-2 flex shadow-sm rounded-md">
                 <h2 className="text-lg leading-6 font-medium text-gray-900 mt-8 mb-4">
-                  STX Locked
+                  {serializedVault?.collateralToken.toUpperCase()} Locked
                 </h2>
               </li>
 
@@ -479,13 +484,13 @@ export const ManageVault = ({ match }) => {
                     <div className="mt-2 sm:flex sm:items-start sm:justify-between mb-5">
                       <div className="max-w-xl text-sm text-gray-500">
                         <p>
-                          STX Locked
+                        {serializedVault?.collateralToken.toUpperCase()} Locked
                         </p>
                       </div>
 
                       <div className="text-sm text-gray-500">
                         <p>
-                          {stxLocked()} STX
+                          {collateralLocked()} {serializedVault?.collateralToken.toUpperCase()}
                         </p>
                       </div>
 
@@ -510,7 +515,7 @@ export const ManageVault = ({ match }) => {
 
                       <div className="text-sm text-gray-500">
                         <p>
-                          {collateralToWithdraw} STX
+                          {collateralToWithdraw} {serializedVault?.collateralToken.toUpperCase()}
                         </p>
                       </div>
 
@@ -566,7 +571,7 @@ export const ManageVault = ({ match }) => {
 
                       <div className="max-w-xl text-sm text-gray-500">
                         <p>
-                          {availableCoinsToMint(price, stxLocked(), outstandingDebt(), collateralToDebtRatio)} xUSD
+                          {availableCoinsToMint(price, collateralLocked(), outstandingDebt(), collateralToDebtRatio)} xUSD
                         </p>
                       </div>
 

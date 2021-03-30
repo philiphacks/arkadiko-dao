@@ -6,7 +6,7 @@ export const getCollateralToDebtRatio = (price:number, coinsMinted:number, stxCo
   return (stxCollateral * price) / coinsMinted;
 };
 
-export const availableStxToWithdraw = (price:number, currentStxCollateral:number, coinsMinted:number, collateralToDebt:number) => {
+export const availableCollateralToWithdraw = (price:number, currentStxCollateral:number, coinsMinted:number, collateralToDebt:number) => {
   // 200 = (stxCollateral * 111) / 5
   const minimumStxCollateral = (collateralToDebt * coinsMinted) / price;
   if (currentStxCollateral - minimumStxCollateral > 0) {
