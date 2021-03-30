@@ -233,16 +233,16 @@ export const Mint = () => {
                             </div>
                           </td>
                           <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
-                            <span className="text-gray-900 font-medium">{state.riskParameters['stability-fee-apy']}%</span>
+                            <span className="text-gray-900 font-medium">{state.collateralTypes[0]['stability-fee-apy']}%</span>
                           </td>
                           <td className="hidden px-6 py-4 whitespace-nowrap text-sm text-gray-500 md:block">
-                            <span className="text-gray-900 font-medium">{state.riskParameters['liquidation-ratio']}%</span>
+                            <span className="text-gray-900 font-medium">{state.collateralTypes[0]['liquidation-ratio']}%</span>
                           </td>
                           <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
-                            <span className="text-gray-900 font-medium">{state.riskParameters['liquidation-penalty']}%</span>
+                            <span className="text-gray-900 font-medium">{state.collateralTypes[0]['liquidation-penalty']}%</span>
                           </td>
                           <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
-                            <span className="text-gray-900 font-medium">${state.riskParameters['maximum-debt'] / 1000000} million</span>
+                            <span className="text-gray-900 font-medium">${state.collateralTypes[0]['maximum-debt'] / 1000000} million</span>
                           </td>
                           <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
                             <span className="text-gray-900 font-medium">${state.collateralTypes[0]['total-debt'] / 1000000}</span>

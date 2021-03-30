@@ -13,9 +13,6 @@ interface CollateralType {
   token: string;
   url: string;
   'total-debt': number;
-}
-
-interface RiskParameters {
   'stability-fee': number;
   'stability-fee-apy': number;
   'liquidation-ratio': number;
@@ -29,13 +26,8 @@ export interface AppState {
   balance: UserBalance;
   vaults: VaultProps[];
   collateralTypes: CollateralType[];
-  riskParameters: RiskParameters;
   isStacker: boolean;
 }
-
-export const defaultRiskParameters = () => {
-  return { 'stability-fee': 0, 'stability-fee-apy': 0, 'liquidation-ratio': 0, 'liquidation-penalty': 0, 'collateral-to-debt-ratio': 0, 'maximum-debt': 0 };
-};
 
 export const defaultBalance = () => {
   return { stx: 0, xusd: 0, diko: 0 };
@@ -51,7 +43,6 @@ export const defaultState = (): AppState => {
       balance: defaultBalance(),
       vaults: [],
       collateralTypes: [],
-      riskParameters: defaultRiskParameters(),
       isStacker: false
     };
   }
@@ -61,7 +52,6 @@ export const defaultState = (): AppState => {
     balance: { stx: 0, xusd: 0, diko: 0 },
     vaults: [],
     collateralTypes: [],
-    riskParameters: defaultRiskParameters(),
     isStacker: false
   };
 };

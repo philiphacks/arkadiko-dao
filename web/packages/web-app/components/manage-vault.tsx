@@ -126,7 +126,7 @@ export const ManageVault = ({ match }) => {
   const liquidationPrice = () => {
     if (vault) {
       // (liquidationRatio * coinsMinted) / stxCollateral = rekt
-      const liquidationRatio = state.riskParameters['liquidation-ratio'];
+      const liquidationRatio = state.collateralTypes[0]['liquidation-ratio'];
       return getLiquidationPrice(liquidationRatio, vault['debt'], vault['collateral']);
     }
 
@@ -155,7 +155,7 @@ export const ManageVault = ({ match }) => {
   };
 
   const callMint = async () => {
-    const value = availableCoinsToMint(price, stxLocked(), outstandingDebt(), state.riskParameters['collateral-to-debt-ratio'])
+    const value = availableCoinsToMint(price, stxLocked(), outstandingDebt(), state.collateralTypes[0]['collateral-to-debt-ratio'])
 
     const authOrigin = getAuthOrigin();
     await doContractCall({
@@ -179,7 +179,7 @@ export const ManageVault = ({ match }) => {
   };
 
   const callWithdraw = async () => {
-    const value = availableStxToWithdraw(price, stxLocked(), outstandingDebt(), state.riskParameters['collateral-to-debt-ratio']);
+    const value = availableStxToWithdraw(price, stxLocked(), outstandingDebt(), state.collateralTypes[0]['collateral-to-debt-ratio']);
 
     const authOrigin = getAuthOrigin();
     await doContractCall({
@@ -355,7 +355,7 @@ export const ManageVault = ({ match }) => {
 
                     <div className="max-w-xl text-sm text-gray-500">
                       <p>
-                        {state.riskParameters['liquidation-penalty']}%
+                        {state.collateralTypes[0]['liquidation-penalty']}%
                       </p>
                     </div>
                   </div>
@@ -379,7 +379,7 @@ export const ManageVault = ({ match }) => {
 
                     <div className="max-w-xl text-sm text-gray-500">
                       <p>
-                        {state.riskParameters['liquidation-ratio']}%
+                        {state.collateralTypes[0]['liquidation-ratio']}%
                       </p>
                     </div>
                   </div>
@@ -491,7 +491,7 @@ export const ManageVault = ({ match }) => {
 
                       <div className="text-sm text-gray-500">
                         <p>
-                          {availableStxToWithdraw(price, stxLocked(), outstandingDebt(), state.riskParameters['collateral-to-debt-ratio'])} STX
+                          {availableStxToWithdraw(price, stxLocked(), outstandingDebt(), state.collateralTypes[0]['collateral-to-debt-ratio'])} STX
                         </p>
                       </div>
 
@@ -547,7 +547,7 @@ export const ManageVault = ({ match }) => {
 
                       <div className="max-w-xl text-sm text-gray-500">
                         <p>
-                          {availableCoinsToMint(price, stxLocked(), outstandingDebt(), state.riskParameters['collateral-to-debt-ratio'])} xUSD
+                          {availableCoinsToMint(price, stxLocked(), outstandingDebt(), state.collateralTypes[0]['collateral-to-debt-ratio'])} xUSD
                         </p>
                       </div>
 

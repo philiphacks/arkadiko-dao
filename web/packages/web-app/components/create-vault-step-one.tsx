@@ -27,7 +27,7 @@ export const CreateVaultStepOne: React.FC<VaultProps> = ({ setStep, setCoinAmoun
   const price = parseFloat(getStxPrice().price);
 
   const maximumCoinsToMint = (value: string) => {
-    const maxRatio = parseInt(state.riskParameters['liquidation-ratio'], 10) + 30;
+    const maxRatio = parseInt(state.collateralTypes[0]['liquidation-ratio'], 10) + 30;
     const ustxAmount = parseInt(value, 10) * 1000000;
     setMaximumToMint(Math.floor(ustxAmount * price / maxRatio));
   };
@@ -46,7 +46,7 @@ export const CreateVaultStepOne: React.FC<VaultProps> = ({ setStep, setCoinAmoun
 
   useEffect(() => {
     if (stxAmount && coinAmount) {
-      const liquidationRatio = parseInt(state.riskParameters['liquidation-ratio'], 10);
+      const liquidationRatio = parseInt(state.collateralTypes[0]['liquidation-ratio'], 10);
       setLiquidationPrice(getLiquidationPrice(liquidationRatio, parseInt(coinAmount, 10), parseInt(stxAmount, 10)));
       setCollateralToDebt(getCollateralToDebtRatio(price, parseInt(coinAmount, 10), parseInt(stxAmount, 10)));
     }
@@ -171,21 +171,21 @@ export const CreateVaultStepOne: React.FC<VaultProps> = ({ setStep, setCoinAmoun
                 Stability Fee
               </h3>
               <p className="max-w-xl text-sm text-gray-500 mb-3">
-                {state.riskParameters['stability-fee-apy']}%
+                {state.collateralTypes[0]['stability-fee-apy']}%
               </p>
 
               <h3 className="text-md leading-6 font-medium text-gray-900">
                 Liquidation Ratio
               </h3>
               <p className="max-w-xl text-sm text-gray-500 mb-3">
-                {state.riskParameters['liquidation-ratio']}%
+                {state.collateralTypes[0]['liquidation-ratio']}%
               </p>
 
               <h3 className="text-md leading-6 font-medium text-gray-900">
                 Liquidation Penalty
               </h3>
               <p className="max-w-xl text-sm text-gray-500 mb-3">
-                {state.riskParameters['liquidation-penalty']}%
+                {state.collateralTypes[0]['liquidation-penalty']}%
               </p>
             </div>
           </div>

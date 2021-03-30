@@ -71,46 +71,6 @@
       (token "")
       (url "")
       (total-debt u0)
-      (vault-principal .stx-reserve)
-    )
-  )
-)
-
-;; risk parameters
-(define-map risk-parameters
-  { token: (string-ascii 4) }
-  {
-    liquidation-ratio: uint,
-    collateral-to-debt-ratio: uint,
-    maximum-debt: uint,
-    liquidation-penalty: uint,
-    stability-fee: uint,
-    stability-fee-apy: uint
-  }
-)
-
-(define-map collateral-types
-  { token: (string-ascii 4) }
-  {
-    name: (string-ascii 256),
-    token: (string-ascii 4),
-    url: (string-ascii 256),
-    total-debt: uint,
-    vault-principal: principal
-  }
-)
-
-(define-map proposal-types
-  { type: (string-ascii 200) }
-  {
-    changes-keys: (list 10 (string-ascii 256))
-  }
-)
-
-(define-read-only (get-risk-parameters (token (string-ascii 4)))
-  (unwrap!
-    (map-get? risk-parameters { token: token })
-    (tuple
       (liquidation-ratio u0)
       (collateral-to-debt-ratio u0)
       (maximum-debt u0)
@@ -121,28 +81,51 @@
   )
 )
 
+(define-map collateral-types
+  { token: (string-ascii 4) }
+  {
+    name: (string-ascii 256),
+    token: (string-ascii 4),
+    url: (string-ascii 256),
+    total-debt: uint,
+    liquidation-ratio: uint,
+    collateral-to-debt-ratio: uint,
+    maximum-debt: uint,
+    liquidation-penalty: uint,
+    stability-fee: uint,
+    stability-fee-apy: uint
+  }
+)
+
+(define-map proposal-types
+  { type: (string-ascii 200) }
+  {
+    changes-keys: (list 10 (string-ascii 256))
+  }
+)
+
 (define-read-only (get-liquidation-ratio (token (string-ascii 4)))
-  (ok (get liquidation-ratio (get-risk-parameters token)))
+  (ok (get liquidation-ratio (get-collateral-type-by-token token)))
 )
 
 (define-read-only (get-collateral-to-debt-ratio (token (string-ascii 4)))
-  (ok (get collateral-to-debt-ratio (get-risk-parameters token)))
+  (ok (get collateral-to-debt-ratio (get-collateral-type-by-token token)))
 )
 
 (define-read-only (get-maximum-debt (token (string-ascii 4)))
-  (ok (get maximum-debt (get-risk-parameters token)))
+  (ok (get maximum-debt (get-collateral-type-by-token token)))
 )
 
 (define-read-only (get-liquidation-penalty (token (string-ascii 4)))
-  (ok (get liquidation-penalty (get-risk-parameters token)))
+  (ok (get liquidation-penalty (get-collateral-type-by-token token)))
 )
 
 (define-read-only (get-stability-fee (token (string-ascii 4)))
-  (ok (get stability-fee (get-risk-parameters token)))
+  (ok (get stability-fee (get-collateral-type-by-token token)))
 )
 
 (define-read-only (get-stability-fee-apy (token (string-ascii 4)))
-  (ok (get stability-fee-apy (get-risk-parameters token)))
+  (ok (get stability-fee-apy (get-collateral-type-by-token token)))
 )
 
 (define-read-only (get-stacker-yield)
@@ -171,7 +154,12 @@
         token: (get token collateral-type),
         url: (get url collateral-type),
         total-debt: (+ debt (get total-debt collateral-type)),
-        vault-principal: (get vault-principal collateral-type)
+        liquidation-ratio: (get liquidation-ratio collateral-type),
+        collateral-to-debt-ratio: (get collateral-to-debt-ratio collateral-type),
+        maximum-debt: (get maximum-debt collateral-type),
+        liquidation-penalty: (get liquidation-penalty collateral-type),
+        stability-fee: (get stability-fee collateral-type),
+        stability-fee-apy: (get stability-fee-apy collateral-type)
       }
     )
     (ok debt)
@@ -181,8 +169,8 @@
 (define-public (set-liquidation-ratio (token (string-ascii 4)) (ratio uint))
   (if (is-eq contract-caller .dao)
     (begin
-      (let ((params (get-risk-parameters token)))
-        (map-set risk-parameters
+      (let ((params (get-collateral-type-by-token token)))
+        (map-set collateral-types
           { token: token }
           {
             liquidation-ratio: ratio,
@@ -203,8 +191,8 @@
 (define-public (set-collateral-to-debt-ratio (token (string-ascii 4)) (ratio uint))
   (if (is-eq contract-caller .dao)
     (begin
-      (let ((params (get-risk-parameters token)))
-        (map-set risk-parameters
+      (let ((params (get-collateral-type-by-token token)))
+        (map-set collateral-types
           { token: token }
           {
             liquidation-ratio: (get liquidation-ratio params),
@@ -225,8 +213,8 @@
 (define-public (set-maximum-debt (token (string-ascii 4)) (debt uint))
   (if (is-eq contract-caller .dao)
     (begin
-      (let ((params (get-risk-parameters token)))
-        (map-set risk-parameters
+      (let ((params (get-collateral-type-by-token token)))
+        (map-set collateral-types
           { token: token }
           {
             liquidation-ratio: (get liquidation-ratio params),
@@ -247,8 +235,8 @@
 (define-public (set-liquidation-penalty (token (string-ascii 4)) (penalty uint))
   (if (is-eq contract-caller .dao)
     (begin
-      (let ((params (get-risk-parameters token)))
-        (map-set risk-parameters
+      (let ((params (get-collateral-type-by-token token)))
+        (map-set collateral-types
           { token: token }
           {
             liquidation-ratio: (get liquidation-ratio params),
@@ -269,8 +257,8 @@
 (define-public (set-stability-fee (token (string-ascii 4)) (fee uint) (fee-apy uint))
   (if (is-eq contract-caller .dao)
     (begin
-      (let ((params (get-risk-parameters token)))
-        (map-set risk-parameters
+      (let ((params (get-collateral-type-by-token token)))
+        (map-set collateral-types
           { token: token }
           {
             liquidation-ratio: (get liquidation-ratio params),
@@ -436,22 +424,6 @@
 
 ;; Initialize the contract
 (begin
-  (try!
-    (if (map-set risk-parameters
-      { token: "stx" }
-      {
-        liquidation-ratio: u150,
-        collateral-to-debt-ratio: u200,
-        maximum-debt: u10000000,
-        liquidation-penalty: u13,
-        stability-fee: u2726, ;; 0.002726155% daily percentage == 1% APY
-        stability-fee-apy: u1
-      }
-    )
-      (ok true)
-      (err false)
-    )
-  )
   (map-set collateral-types
     { token: "stx" }
     {
@@ -459,7 +431,12 @@
       token: "STX",
       url: "https://www.stacks.co/",
       total-debt: u0,
-      vault-principal: .stx-reserve
+      liquidation-ratio: u150,
+      collateral-to-debt-ratio: u200,
+      maximum-debt: u10000000,
+      liquidation-penalty: u13,
+      stability-fee: u2726, ;; 0.002726155% daily percentage == 1% APY
+      stability-fee-apy: u1
     }
   )
   (map-set proposal-types

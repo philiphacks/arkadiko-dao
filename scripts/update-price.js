@@ -29,7 +29,7 @@ rp(requestOptions).then(async (response) => {
     contractAddress: CONTRACT_ADDRESS,
     contractName: CONTRACT_NAME,
     functionName: FUNCTION_NAME,
-    functionArgs: [tx.uintCV(new BN(price.toFixed(2) * 100))],
+    functionArgs: [tx.stringAsciiCV('stx'), tx.uintCV(new BN(price.toFixed(2) * 100))],
     senderKey: process.env.STACKS_PRIVATE_KEY,
     postConditionMode: 1,
     network

@@ -48,7 +48,7 @@ export const CreateVaultConfirm = ({ setStep, coinAmounts }) => {
               Liquidation Ratio
             </h3>
             <p className="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3">
-              {state.riskParameters['liquidation-ratio']}%
+              {state.collateralTypes[0]['liquidation-ratio']}%
             </p>
           </div>
           <hr/>
@@ -68,7 +68,7 @@ export const CreateVaultConfirm = ({ setStep, coinAmounts }) => {
               Liquidation Penalty
             </h3>
             <p className="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3">
-              {state.riskParameters['liquidation-penalty']}%
+              {state.collateralTypes[0]['liquidation-penalty']}%
             </p>
           </div>
           <hr/>
@@ -78,7 +78,7 @@ export const CreateVaultConfirm = ({ setStep, coinAmounts }) => {
               Stability Fee
             </h3>
             <p className="mt-1 text-sm text-gray-600 whitespace-nowrap sm:mt-0 sm:ml-3">
-              {state.riskParameters['stability-fee-apy']}%
+              {state.collateralTypes[0]['stability-fee-apy']}%
             </p>
           </div>
           <hr/>

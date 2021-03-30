@@ -95,32 +95,14 @@ export const App: React.FC = () => {
         name: json.value['name'].value,
         token: json.value['token'].value,
         url: json.value['url'].value,
-        'total-debt': json.value['total-debt'].value
+        'total-debt': json.value['total-debt'].value,
+        'collateral-to-debt-ratio': json.value['collateral-to-debt-ratio'].value,
+        'liquidation-penalty': json.value['liquidation-penalty'].value,
+        'liquidation-ratio': json.value['liquidation-ratio'].value,
+        'maximum-debt': json.value['maximum-debt'].value,
+        'stability-fee': json.value['stability-fee'].value,
+        'stability-fee-apy': json.value['stability-fee-apy'].value
       }]
-    }));
-  };
-
-  const fetchRiskParameters = async (address: string) => {
-    const riskParameters = await callReadOnlyFunction({
-      contractAddress,
-      contractName: "stx-reserve",
-      functionName: "get-risk-parameters",
-      functionArgs: [],
-      senderAddress: address,
-      network: network
-    });
-    const params = cvToJSON(riskParameters).value.value;
-
-    setState(prevState => ({
-      ...prevState,
-      riskParameters: {
-        'collateral-to-debt-ratio': params['collateral-to-debt-ratio'].value,
-        'liquidation-penalty': params['liquidation-penalty'].value,
-        'liquidation-ratio': params['liquidation-ratio'].value,
-        'maximum-debt': params['maximum-debt'].value,
-        'stability-fee': params['stability-fee'].value,
-        'stability-fee-apy': params['stability-fee-apy'].value
-      }
     }));
   };
 
@@ -135,7 +117,6 @@ export const App: React.FC = () => {
           fetchBalance(resolveSTXAddress(userData));
           fetchVaults(resolveSTXAddress(userData));
           fetchCollateralTypes(resolveSTXAddress(userData));
-          fetchRiskParameters(resolveSTXAddress(userData));
 
           const isStacker = await callReadOnlyFunction({
             contractAddress,
@@ -169,7 +150,6 @@ export const App: React.FC = () => {
       fetchBalance(resolveSTXAddress(userData));
       fetchVaults(resolveSTXAddress(userData));
       fetchCollateralTypes(resolveSTXAddress(userData));
-      fetchRiskParameters(resolveSTXAddress(userData));
       setState(prevState => ({ ...prevState, userData, isStacker: false }));
       setAppPrivateKey(userData.appPrivateKey);
     } else if (userSession.isUserSignedIn()) {
@@ -192,7 +172,6 @@ export const App: React.FC = () => {
       fetchBalance(resolveSTXAddress(userData));
       fetchVaults(resolveSTXAddress(userData));
       fetchCollateralTypes(resolveSTXAddress(userData));
-      fetchRiskParameters(resolveSTXAddress(userData));
       setState(prevState => ({ ...prevState, userData, isStacker: false }));
     },
     onCancel: () => {
