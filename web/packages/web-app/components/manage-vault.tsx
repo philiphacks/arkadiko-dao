@@ -8,7 +8,7 @@ import { uintCV, contractPrincipalCV, standardPrincipalCV } from '@stacks/transa
 import { AppContext } from '@common/context';
 import { getCollateralToDebtRatio } from '@common/get-collateral-to-debt-ratio';
 import { debtClass, VaultProps } from './vault';
-import { getStxPrice } from '@common/get-stx-price';
+import { getPrice } from '@common/get-price';
 import { getLiquidationPrice, availableCollateralToWithdraw, availableCoinsToMint } from '@common/vault-utils';
 import { Link } from '@components/link';
 import { Redirect } from 'react-router-dom';
@@ -18,7 +18,7 @@ export const ManageVault = ({ match }) => {
   const { doContractCall } = useConnect();
   const senderAddress = useSTXAddress();
   const state = useContext(AppContext);
-  const price = parseFloat(getStxPrice().price);
+  const price = parseFloat(getPrice().price);
   const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS || '';
 
   const [showDepositModal, setShowDepositModal] = useState(false);

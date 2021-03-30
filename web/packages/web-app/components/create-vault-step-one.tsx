@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Box } from '@blockstack/ui';
 import { AppContext } from '@common/context';
-import { getStxPrice } from '@common/get-stx-price';
+import { getPrice } from '@common/get-price';
 import { getLiquidationPrice, getCollateralToDebtRatio } from '@common/vault-utils';
 import { useLocation } from "react-router-dom";
 
@@ -37,7 +37,7 @@ export const CreateVaultStepOne: React.FC<VaultProps> = ({ setStep, setCoinAmoun
   const [stabilityFeeApy, setStabilityFeeApy] = useState(0);
   const [liquidationPenalty, setLiquidationPenalty] = useState(0);
   const [liquidationRatio, setLiquidationRatio] = useState(0);
-  const price = parseFloat(getStxPrice().price);
+  const price = parseFloat(getPrice().price);
 
   const maximumCoinsToMint = (value: string) => {
     const maxRatio = parseInt(liquidationRatio, 10) + 30;

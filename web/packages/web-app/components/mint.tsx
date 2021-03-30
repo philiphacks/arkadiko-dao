@@ -14,7 +14,7 @@ import {
   contractPrincipalCV
 } from '@stacks/transactions';
 import { VaultGroup } from './vault-group';
-import { getStxPrice } from '@common/get-stx-price';
+import { getPrice } from '@common/get-price';
 import { Link } from '@components/link';
 import { AppContext } from '@common/context';
 import { useConnect } from '@stacks/connect-react';
@@ -23,7 +23,7 @@ import { CollateralTypeGroup } from '@components/collateral-type-group';
 export const Mint = () => {
   const address = useSTXAddress();
   const env = process.env.REACT_APP_NETWORK_ENV;
-  const price = parseFloat(getStxPrice().price);
+  const price = parseFloat(getPrice().price);
   const state = useContext(AppContext);
   const { vaults } = useContext(AppContext);
   const { doContractCall } = useConnect();
