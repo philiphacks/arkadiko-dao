@@ -24,7 +24,8 @@
   id: uint,
   owner: principal,
   collateral: uint,
-  collateral-type: (string-ascii 12),
+  collateral-type: (string-ascii 12), ;; e.g. STX-A, STX-B, BTC-A etc (represents the collateral class)
+  collateral-token: (string-ascii 12) ;; e.g. STX, BTC etc (represents the symbol of the collateral)
   debt: uint,
   created-at-block-height: uint,
   updated-at-block-height: uint,
@@ -45,6 +46,7 @@
       (owner 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP)
       (collateral u0)
       (collateral-type "")
+      (collateral-token "")
       (debt u0)
       (created-at-block-height u0)
       (updated-at-block-height u0)
@@ -105,6 +107,7 @@
                 owner: sender,
                 collateral: collateral-amount,
                 collateral-type: collateral-type,
+                collateral-token: "STX",
                 debt: debt,
                 created-at-block-height: block-height,
                 updated-at-block-height: block-height,
@@ -138,6 +141,7 @@
               owner: tx-sender,
               collateral: new-collateral,
               collateral-type: (get collateral-type vault),
+              collateral-token: (get collateral-token vault),
               debt: (get debt vault),
               created-at-block-height: (get created-at-block-height vault),
               updated-at-block-height: block-height,
@@ -174,6 +178,7 @@
                 owner: tx-sender,
                 collateral: new-collateral,
                 collateral-type: (get collateral-type vault),
+                collateral-token: (get collateral-token vault),
                 debt: (get debt vault),
                 created-at-block-height: (get created-at-block-height vault),
                 updated-at-block-height: block-height,
@@ -206,6 +211,7 @@
               owner: (get owner vault),
               collateral: (get collateral vault),
               collateral-type: (get collateral-type vault),
+              collateral-token: (get collateral-token vault),
               debt: new-total-debt,
               created-at-block-height: (get created-at-block-height vault),
               updated-at-block-height: block-height,
@@ -239,6 +245,7 @@
                 owner: vault-owner,
                 collateral: u0,
                 collateral-type: (get collateral-type vault),
+                collateral-token: (get collateral-token vault),
                 debt: u0,
                 created-at-block-height: (get created-at-block-height vault),
                 updated-at-block-height: block-height,
@@ -290,6 +297,7 @@
                 owner: (get owner vault),
                 collateral: u0,
                 collateral-type: (get collateral-type vault),
+                collateral-token: (get collateral-token vault),
                 debt: (get debt vault),
                 created-at-block-height: (get created-at-block-height vault),
                 updated-at-block-height: block-height,
@@ -322,6 +330,7 @@
               owner: (get owner vault),
               collateral: u0,
               collateral-type: (get collateral-type vault),
+              collateral-token: (get collateral-token vault),
               debt: (get debt vault),
               created-at-block-height: (get created-at-block-height vault),
               updated-at-block-height: block-height,
@@ -353,6 +362,7 @@
             owner: tx-sender,
             collateral: (get collateral vault),
             collateral-type: (get collateral-type vault),
+            collateral-token: (get collateral-token vault),
             debt: (get debt vault),
             created-at-block-height: (get created-at-block-height vault),
             updated-at-block-height: block-height,

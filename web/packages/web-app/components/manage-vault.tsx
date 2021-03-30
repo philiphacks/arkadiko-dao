@@ -26,6 +26,10 @@ export const ManageVault = ({ match }) => {
   const [txId, setTxId] = useState<string>('');
   const [txStatus, setTxStatus] = useState<string>('');
   const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS || '';
+  const [stabilityFeeApy, setStabilityFeeApy] = useState(0);
+  const [liquidationPenalty, setLiquidationPenalty] = useState(0);
+  const [liquidationRatio, setLiquidationRatio] = useState(0);
+  const [collateralToDebtRatio, setCollateralToDebtRatio] = useState(0);
 
   const searchVault = (id: string) => {
     for (let i = 0; i < state.vaults.length; i++) {
@@ -48,6 +52,15 @@ export const ManageVault = ({ match }) => {
     }
     return () => { mounted = false; }
   }, [vault]);
+
+  useEffect(() => {
+    if (vault && state.collateralTypes[vault.collateralType.toLowerCase()]) {
+      setStabilityFeeApy(state.collateralTypes[vault.collateralType.toLowerCase()].stabilityFeeApy);
+      setLiquidationPenalty(state.collateralTypes[vault.collateralType.toLowerCase()].liquidationPenalty);
+      setLiquidationRatio(state.collateralTypes[vault.collateralType.toLowerCase()].liquidationRatio);
+      setCollateralToDebtRatio(state.collateralTypes[vault.collateralType.toLowerCase()].collateralToDebtRatio);
+    }
+  }, [vault, state.collateralTypes]);
 
   useEffect(() => {
     let sub;
@@ -126,7 +139,6 @@ export const ManageVault = ({ match }) => {
   const liquidationPrice = () => {
     if (vault) {
       // (liquidationRatio * coinsMinted) / stxCollateral = rekt
-      const liquidationRatio = state.collateralTypes[0]['liquidation-ratio'];
       return getLiquidationPrice(liquidationRatio, vault['debt'], vault['collateral']);
     }
 
@@ -155,7 +167,7 @@ export const ManageVault = ({ match }) => {
   };
 
   const callMint = async () => {
-    const value = availableCoinsToMint(price, stxLocked(), outstandingDebt(), state.collateralTypes[0]['collateral-to-debt-ratio'])
+    const value = availableCoinsToMint(price, stxLocked(), outstandingDebt(), collateralToDebtRatio)
 
     const authOrigin = getAuthOrigin();
     await doContractCall({
@@ -179,7 +191,7 @@ export const ManageVault = ({ match }) => {
   };
 
   const callWithdraw = async () => {
-    const value = availableStxToWithdraw(price, stxLocked(), outstandingDebt(), state.collateralTypes[0]['collateral-to-debt-ratio']);
+    const value = availableStxToWithdraw(price, stxLocked(), outstandingDebt(), collateralToDebtRatio);
 
     const authOrigin = getAuthOrigin();
     await doContractCall({
@@ -355,7 +367,7 @@ export const ManageVault = ({ match }) => {
 
                     <div className="max-w-xl text-sm text-gray-500">
                       <p>
-                        {state.collateralTypes.length > 0 ? (state.collateralTypes[0]['liquidation-penalty']) : ``}%
+                        {liquidationPenalty}%
                       </p>
                     </div>
                   </div>
@@ -379,7 +391,7 @@ export const ManageVault = ({ match }) => {
 
                     <div className="max-w-xl text-sm text-gray-500">
                       <p>
-                      {state.collateralTypes.length > 0 ? (state.collateralTypes[0]['liquidation-ratio']) : ``}%
+                      {liquidationRatio}%
                       </p>
                     </div>
                   </div>
@@ -393,7 +405,7 @@ export const ManageVault = ({ match }) => {
 
                     <div className="max-w-xl text-sm text-gray-500">
                       <p>
-                        {state.collateralTypes.length > 0 ? (state.collateralTypes[0]['stability-fee-apy'] / 100) : ``}%
+                        {stabilityFeeApy / 100}%
                       </p>
                     </div>
                   </div>
@@ -491,9 +503,7 @@ export const ManageVault = ({ match }) => {
 
                       <div className="text-sm text-gray-500">
                         <p>
-                          {state.collateralTypes.length > 0 ? (
-                            availableStxToWithdraw(price, stxLocked(), outstandingDebt(), state.collateralTypes[0]['collateral-to-debt-ratio'])
-                          ) : ``} STX
+                          {availableStxToWithdraw(price, stxLocked(), outstandingDebt(), collateralToDebtRatio)} STX
                         </p>
                       </div>
 
@@ -549,9 +559,7 @@ export const ManageVault = ({ match }) => {
 
                       <div className="max-w-xl text-sm text-gray-500">
                         <p>
-                          {state.collateralTypes.length > 0 ? (
-                            availableCoinsToMint(price, stxLocked(), outstandingDebt(), state.collateralTypes[0]['collateral-to-debt-ratio'])
-                          ) : ``} xUSD
+                          {availableCoinsToMint(price, stxLocked(), outstandingDebt(), collateralToDebtRatio)} xUSD
                         </p>
                       </div>
 

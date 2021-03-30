@@ -11,6 +11,7 @@ export interface VaultProps {
   id: string;
   owner: string;
   collateral: number;
+  collateralType: string;
   debt: number;
   isLiquidated: boolean;
   auctionEnded: boolean;

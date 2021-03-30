@@ -50,6 +50,7 @@ export const App: React.FC = () => {
           id: data['id'].value,
           owner: data['owner'].value,
           collateral: data['collateral'].value,
+          collateralType: data['collateral-type'].value,
           isLiquidated: data['is-liquidated'].value,
           auctionEnded: data['auction-ended'].value,
           leftoverCollateral: data['leftover-collateral'].value,
