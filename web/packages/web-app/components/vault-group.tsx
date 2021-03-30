@@ -12,6 +12,7 @@ export const VaultGroup: React.FC<VaultGroupProps> = ({ vaults }) => {
       id={vault.id}
       owner={vault['owner']}
       collateral={vault['collateral']}
+      collateralType={vault['collateralType']}
       debt={vault['debt']}
       isLiquidated={vault['isLiquidated']}
       auctionEnded={vault['auctionEnded']}
@@ -41,7 +42,7 @@ export const VaultGroup: React.FC<VaultGroupProps> = ({ vaults }) => {
                   xUSD amount
                 </th>
                 <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  STX amount
+                  Collateral amount
                 </th>
                 <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 </th>

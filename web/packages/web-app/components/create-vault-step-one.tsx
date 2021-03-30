@@ -24,6 +24,7 @@ export const CreateVaultStepOne: React.FC<VaultProps> = ({ setStep, setCoinAmoun
       'liquidation-ratio': liquidationRatio,
       'liquidation-penalty': liquidationPenalty,
       'stability-fee-apy': stabilityFeeApy,
+      'token-type': tokenType,
       'token-name': tokenName
     });
     setStep(1);

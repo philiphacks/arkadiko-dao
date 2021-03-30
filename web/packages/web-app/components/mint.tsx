@@ -49,6 +49,7 @@ export const Mint = () => {
       uintCV(10 * 1000000),
       uintCV(1000000),
       standardPrincipalCV(address || ''),
+      stringAsciiCV('stx-a'),
       stringAsciiCV('stx'),
       contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', 'stx-reserve')
     ];

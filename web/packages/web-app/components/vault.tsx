@@ -38,7 +38,7 @@ export const debtBackgroundClass = (ratio: number) => {
   return 'bg-white';
 };
 
-export const Vault: React.FC<VaultProps> = ({ id, collateral, debt, isLiquidated, auctionEnded, leftoverCollateral }) => {
+export const Vault: React.FC<VaultProps> = ({ id, collateral, collateralType, debt, isLiquidated, auctionEnded, leftoverCollateral }) => {
   const state = useContext(AppContext);
   const { doContractCall } = useConnect();
   const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS || '';
@@ -46,9 +46,9 @@ export const Vault: React.FC<VaultProps> = ({ id, collateral, debt, isLiquidated
   const [liquidationRatio, setLiquidationRatio] = useState(0);
 
   useEffect(() => {
-    if (state.collateralTypes['stx-a']) {
-      setStabilityFeeApy(state.collateralTypes['stx-a'].stabilityFeeApy);
-      setLiquidationRatio(state.collateralTypes['stx-a'].liquidationRatio);
+    if (state.collateralTypes[collateralType.toLowerCase()]) {
+      setStabilityFeeApy(state.collateralTypes[collateralType.toLowerCase()].stabilityFeeApy);
+      setLiquidationRatio(state.collateralTypes[collateralType.toLowerCase()].liquidationRatio);
     }
   }, [state.collateralTypes]);
 
