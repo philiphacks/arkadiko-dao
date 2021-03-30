@@ -15,13 +15,6 @@
 
 ;; MAIN LOGIC
 
-(define-public (test)
-  (begin
-    (print "This is a test")
-    (ok true)
-  )
-)
-
 ;; calculate the amount of stablecoins to mint, based on posted STX amount
 ;; ustx-amount * stx-price-in-cents == dollar-collateral-posted-in-cents
 ;; (dollar-collateral-posted-in-cents / collateral-to-debt-ratio) == stablecoins to mint
