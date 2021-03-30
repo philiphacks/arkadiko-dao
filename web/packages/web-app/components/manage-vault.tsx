@@ -355,7 +355,7 @@ export const ManageVault = ({ match }) => {
 
                     <div className="max-w-xl text-sm text-gray-500">
                       <p>
-                        {state.collateralTypes[0]['liquidation-penalty']}%
+                        {state.collateralTypes.length > 0 ? (state.collateralTypes[0]['liquidation-penalty']) : ``}%
                       </p>
                     </div>
                   </div>
@@ -379,7 +379,7 @@ export const ManageVault = ({ match }) => {
 
                     <div className="max-w-xl text-sm text-gray-500">
                       <p>
-                        {state.collateralTypes[0]['liquidation-ratio']}%
+                      {state.collateralTypes.length > 0 ? (state.collateralTypes[0]['liquidation-ratio']) : ``}%
                       </p>
                     </div>
                   </div>
@@ -393,7 +393,7 @@ export const ManageVault = ({ match }) => {
 
                     <div className="max-w-xl text-sm text-gray-500">
                       <p>
-                        0.0%
+                        {state.collateralTypes.length > 0 ? (state.collateralTypes[0]['stability-fee-apy']) : ``}%
                       </p>
                     </div>
                   </div>
@@ -491,7 +491,9 @@ export const ManageVault = ({ match }) => {
 
                       <div className="text-sm text-gray-500">
                         <p>
-                          {availableStxToWithdraw(price, stxLocked(), outstandingDebt(), state.collateralTypes[0]['collateral-to-debt-ratio'])} STX
+                          {state.collateralTypes.length > 0 ? (
+                            availableStxToWithdraw(price, stxLocked(), outstandingDebt(), state.collateralTypes[0]['collateral-to-debt-ratio'])
+                          ) : ``} STX
                         </p>
                       </div>
 
@@ -547,7 +549,9 @@ export const ManageVault = ({ match }) => {
 
                       <div className="max-w-xl text-sm text-gray-500">
                         <p>
-                          {availableCoinsToMint(price, stxLocked(), outstandingDebt(), state.collateralTypes[0]['collateral-to-debt-ratio'])} xUSD
+                          {state.collateralTypes.length > 0 ? (
+                            availableCoinsToMint(price, stxLocked(), outstandingDebt(), state.collateralTypes[0]['collateral-to-debt-ratio'])
+                          ) : ``} xUSD
                         </p>
                       </div>
 
