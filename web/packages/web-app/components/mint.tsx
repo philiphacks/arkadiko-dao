@@ -68,7 +68,7 @@ export const Mint = () => {
     <Box py={6}>
       <main className="flex-1 relative pb-8 z-0 overflow-y-auto">
         <div className="mt-8">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="">
             <h2 className="text-lg leading-6 font-medium text-gray-900 mb-4">
               Overview
               {env == 'mocknet' ? (
@@ -187,12 +187,12 @@ export const Mint = () => {
             </div>
           </div>
 
-          <h2 className="max-w-6xl mx-auto mt-8 mb-5 px-4 text-lg leading-6 font-medium text-gray-900 sm:px-6 lg:px-8">
+          <h2 className="mt-8 text-lg leading-6 font-medium text-gray-900">
             Collateral Types
           </h2>
 
           <div className="hidden sm:block">
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="">
               <div className="flex flex-col mt-2">
                 <div className="align-middle min-w-full overflow-x-auto shadow overflow-hidden sm:rounded-lg">
                   {Object.keys(state.collateralTypes).length > 0 ? (
@@ -203,12 +203,12 @@ export const Mint = () => {
             </div>
           </div>
 
-          <h2 className="max-w-6xl mx-auto mt-8 px-4 text-lg leading-6 font-medium text-gray-900 sm:px-6 lg:px-8">
+          <h2 className="mt-8 text-lg leading-6 font-medium text-gray-900">
             Vaults
           </h2>
 
           <div className="hidden sm:block">
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="">
               <div className="flex flex-col">
                 <div className="align-middle min-w-full overflow-x-auto shadow overflow-hidden sm:rounded-lg"></div>
                   <Box my="base">
@@ -224,7 +224,7 @@ export const Mint = () => {
             <VaultGroup vaults={vaults} />
           ): (
             <div className="hidden sm:block">
-              <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="">
                 <p>You currently have no open vaults</p>
               </div>
             </div>

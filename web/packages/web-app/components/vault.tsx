@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { getCollateralToDebtRatio } from '@common/get-collateral-to-debt-ratio';
 import { NavLink as RouterLink } from 'react-router-dom'
 import { AppContext } from '@common/context';
@@ -41,6 +41,15 @@ export const Vault: React.FC<VaultProps> = ({ id, collateral, debt, isLiquidated
   const state = useContext(AppContext);
   const { doContractCall } = useConnect();
   const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS || '';
+  const [stabilityFeeApy, setStabilityFeeApy] = useState(0);
+  const [liquidationRatio, setLiquidationRatio] = useState(0);
+
+  useEffect(() => {
+    if (state.collateralTypes['stx-a']) {
+      setStabilityFeeApy(state.collateralTypes['stx-a'].stabilityFeeApy);
+      setLiquidationRatio(state.collateralTypes['stx-a'].liquidationRatio);
+    }
+  }, [state.collateralTypes]);
 
   let debtRatio = 0;
   if (id) {
@@ -73,10 +82,10 @@ export const Vault: React.FC<VaultProps> = ({ id, collateral, debt, isLiquidated
         </span>
       </td>
       <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
-        <span className="text-gray-900 font-medium">{state.collateralTypes.length > 0 ? (state.collateralTypes[0]['stability-fee-apy'] / 100) : ``}%</span>
+        <span className="text-gray-900 font-medium">{stabilityFeeApy / 100}%</span>
       </td>
       <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
-        <span className="text-gray-900 font-medium">{state.collateralTypes.length > 0 ? (state.collateralTypes[0]['liquidation-ratio']) : ``}%</span>
+        <span className="text-gray-900 font-medium">{liquidationRatio}%</span>
       </td>
       <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
         <span className={`${debtClass(debtRatio)} font-medium`}>{debtRatio}%</span>
