@@ -197,7 +197,7 @@ export const Mint = () => {
                 <div className="align-middle min-w-full overflow-x-auto shadow overflow-hidden sm:rounded-lg">
                   {Object.keys(state.collateralTypes).length > 0 ? (
                     <CollateralTypeGroup types={state.collateralTypes} />
-                  ): 'no' }
+                  ): `` }
                 </div>
               </div>
             </div>
