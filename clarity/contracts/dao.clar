@@ -69,6 +69,7 @@
     (tuple
       (name "")
       (token "")
+      (token-type "")
       (url "")
       (total-debt u0)
       (liquidation-ratio u0)
@@ -86,6 +87,7 @@
   {
     name: (string-ascii 256),
     token: (string-ascii 12),
+    token-type: (string-ascii 12),
     url: (string-ascii 256),
     total-debt: uint,
     liquidation-ratio: uint,
@@ -152,6 +154,7 @@
       {
         name: (get name collateral-type),
         token: (get token collateral-type),
+        token-type: (get token-type collateral-type),
         url: (get url collateral-type),
         total-debt: (+ debt (get total-debt collateral-type)),
         liquidation-ratio: (get liquidation-ratio collateral-type),
@@ -175,6 +178,7 @@
           {
             name: (get name params),
             token: (get token params),
+            token-type: (get token-type params),
             url: (get url params),
             total-debt: (get total-debt params),
             liquidation-ratio: ratio,
@@ -201,6 +205,7 @@
           {
             name: (get name params),
             token: (get token params),
+            token-type: (get token-type params),
             url: (get url params),
             total-debt: (get total-debt params),
             liquidation-ratio: (get liquidation-ratio params),
@@ -227,6 +232,7 @@
           {
             name: (get name params),
             token: (get token params),
+            token-type: (get token-type params),
             url: (get url params),
             total-debt: (get total-debt params),
             liquidation-ratio: (get liquidation-ratio params),
@@ -253,6 +259,7 @@
           {
             name: (get name params),
             token: (get token params),
+            token-type: (get token-type params),
             url: (get url params),
             total-debt: (get total-debt params),
             liquidation-ratio: (get liquidation-ratio params),
@@ -279,6 +286,7 @@
           {
             name: (get name params),
             token: (get token params),
+            token-type: (get token-type params),
             url: (get url params),
             total-debt: (get total-debt params),
             liquidation-ratio: (get liquidation-ratio params),
@@ -449,6 +457,7 @@
     {
       name: "Stacks",
       token: "STX",
+      token-type: "STX-A",
       url: "https://www.stacks.co/",
       total-debt: u0,
       liquidation-ratio: u150,
@@ -464,6 +473,7 @@
     {
       name: "Stacks",
       token: "STX",
+      token-type: "STX-B",
       url: "https://www.stacks.co/",
       total-debt: u0,
       liquidation-ratio: u110,
@@ -479,6 +489,7 @@
     {
       name: "Arkadiko",
       token: "DIKO",
+      token-type: "DIKO-A",
       url: "https://www.arkadiko.finance/",
       total-debt: u0,
       liquidation-ratio: u200,

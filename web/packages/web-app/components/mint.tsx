@@ -19,6 +19,7 @@ import { Link } from '@components/link';
 import { NavLink as RouterLink } from 'react-router-dom'
 import { AppContext } from '@common/context';
 import { useConnect } from '@stacks/connect-react';
+import { CollateralTypeGroup } from '@components/collateral-type-group';
 
 export const Mint = () => {
   const address = useSTXAddress();
@@ -194,63 +195,9 @@ export const Mint = () => {
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex flex-col mt-2">
                 <div className="align-middle min-w-full overflow-x-auto shadow overflow-hidden sm:rounded-lg">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead>
-                      <tr>
-                        <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Collateral
-                        </th>
-                        <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Stability Fee
-                        </th>
-                        <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Liq. Ratio
-                        </th>
-                        <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Liq. Penalty
-                        </th>
-                        <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Max Debt
-                        </th>
-                        <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Current Debt
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {state.collateralTypes.length > 0 ? (
-                        <tr className="bg-white">
-                          <td className="max-w-0 px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            <div className="flex">
-                              <a href={`${state.collateralTypes[0]['url']}`} target="_blank" className="group inline-flex space-x-2 truncate text-sm">
-                                <svg className="flex-shrink-0 h-5 w-5 text-gray-400 group-hover:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                  <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                                </svg>
-                                <p className="text-gray-500 truncate group-hover:text-gray-900">
-                                  {state.collateralTypes[0]['name']} ({state.collateralTypes[0]['token']})
-                                </p>
-                              </a>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
-                            <span className="text-gray-900 font-medium">{state.collateralTypes[0]['stability-fee-apy']}%</span>
-                          </td>
-                          <td className="hidden px-6 py-4 whitespace-nowrap text-sm text-gray-500 md:block">
-                            <span className="text-gray-900 font-medium">{state.collateralTypes[0]['liquidation-ratio']}%</span>
-                          </td>
-                          <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
-                            <span className="text-gray-900 font-medium">{state.collateralTypes[0]['liquidation-penalty']}%</span>
-                          </td>
-                          <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
-                            <span className="text-gray-900 font-medium">${state.collateralTypes[0]['maximum-debt'] / 1000000} million</span>
-                          </td>
-                          <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
-                            <span className="text-gray-900 font-medium">${state.collateralTypes[0]['total-debt'] / 1000000}</span>
-                          </td>
-                        </tr>
-                      ): null }
-                    </tbody>
-                  </table>
+                  {Object.keys(state.collateralTypes).length > 0 ? (
+                    <CollateralTypeGroup types={state.collateralTypes} />
+                  ): 'no' }
                 </div>
               </div>
             </div>

@@ -79,7 +79,8 @@ export const App: React.FC = () => {
   };
 
   const fetchCollateralTypes = async (address: string) => {
-    ['stx', 'diko'].forEach(async (token) => {
+    let collTypes = {};
+    ['stx-a', 'stx-b', 'diko'].forEach(async (token) => {
       const types = await callReadOnlyFunction({
         contractAddress,
         contractName: "dao",
@@ -89,22 +90,24 @@ export const App: React.FC = () => {
         network: network,
       });
       const json = cvToJSON(types);
-      console.log(json);
+      // console.log(json);
+      collTypes[token] = {
+        name: json.value['name'].value,
+        token: json.value['token'].value,
+        tokenType: json.value['token-type'].value,
+        url: json.value['url'].value,
+        totalDebt: json.value['total-debt'].value,
+        collateralToDebtRatio: json.value['collateral-to-debt-ratio'].value,
+        liquidationPenalty: json.value['liquidation-penalty'].value,
+        liquidationRatio: json.value['liquidation-ratio'].value,
+        maximumDebt: json.value['maximum-debt'].value,
+        stabilityFee: json.value['stability-fee'].value,
+        stabilityFeeApy: json.value['stability-fee-apy'].value
+      };
 
       setState(prevState => ({
         ...prevState,
-        collateralTypes: [{
-          name: json.value['name'].value,
-          token: json.value['token'].value,
-          url: json.value['url'].value,
-          'total-debt': json.value['total-debt'].value,
-          'collateral-to-debt-ratio': json.value['collateral-to-debt-ratio'].value,
-          'liquidation-penalty': json.value['liquidation-penalty'].value,
-          'liquidation-ratio': json.value['liquidation-ratio'].value,
-          'maximum-debt': json.value['maximum-debt'].value,
-          'stability-fee': json.value['stability-fee'].value,
-          'stability-fee-apy': json.value['stability-fee-apy'].value
-        }]
+        collateralTypes: collTypes
       }));
     });
   };
