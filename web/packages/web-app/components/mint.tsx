@@ -23,7 +23,8 @@ import { CollateralTypeGroup } from '@components/collateral-type-group';
 export const Mint = () => {
   const address = useSTXAddress();
   const env = process.env.REACT_APP_NETWORK_ENV;
-  const price = parseFloat(getPrice().price);
+  const price = parseFloat(getPrice('stx').price);
+  const dikoPrice = parseFloat(getPrice('diko').price);
   const state = useContext(AppContext);
   const { vaults } = useContext(AppContext);
   const { doContractCall } = useConnect();
@@ -87,7 +88,7 @@ export const Mint = () => {
               )}
             </h2>
 
-            <div className="mt-2 grid grid-cols-1 gap-5 sm:grid-cols-4 lg:grid-cols-4">
+            <div className="mt-2 grid grid-cols-1 gap-5 sm:grid-cols-5 lg:grid-cols-5">
               <div className="bg-white overflow-hidden shadow rounded-lg">
                 <div className="p-5">
                   <div className="flex items-center">
@@ -123,7 +124,7 @@ export const Mint = () => {
                     <div className="ml-5 w-0 flex-1">
                       <dl>
                         <dt className="text-sm font-medium text-gray-500 truncate">
-                          Last STX price from Oracle
+                          Last STX price
                         </dt>
                         <dd>
                           <div className="text-lg font-medium text-gray-900">
@@ -176,6 +177,30 @@ export const Mint = () => {
                         <dd>
                           <div className="text-lg font-medium text-gray-900">
                             {state.balance['diko'] / 1000000} DIKO
+                          </div>
+                        </dd>
+                      </dl>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white overflow-hidden shadow rounded-lg">
+                <div className="p-5">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <svg className="h-6 w-6 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div className="ml-5 w-0 flex-1">
+                      <dl>
+                        <dt className="text-sm font-medium text-gray-500 truncate">
+                          Last DIKO price
+                        </dt>
+                        <dd>
+                          <div className="text-lg font-medium text-gray-900">
+                            ${dikoPrice / 100}
                           </div>
                         </dd>
                       </dl>
