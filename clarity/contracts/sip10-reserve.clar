@@ -1,11 +1,15 @@
 ;; (impl-trait .vault-trait.vault-trait)
+(use-trait mock-ft-trait 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.mock-ft-trait.mock-ft-trait)
+
+;; errors
+(define-constant err-unauthorized u1)
 
 (define-read-only (calculate-xusd-count (token (string-ascii 12)) (ucollateral-amount uint) (collateral-type (string-ascii 12)))
-  (let ((price-in-cents (contract-call? .oracle get-price token)))
+  (let ((price-in-cents (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.oracle get-price token)))
     (let ((amount
       (/
         (* ucollateral-amount (get last-price-in-cents price-in-cents))
-        (unwrap-panic (contract-call? .dao get-collateral-to-debt-ratio collateral-type))
+        (unwrap-panic (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.dao get-collateral-to-debt-ratio collateral-type))
       )))
       (ok amount)
     )
@@ -13,7 +17,7 @@
 )
 
 (define-read-only (calculate-current-collateral-to-debt-ratio (token (string-ascii 12)) (debt uint) (ucollateral uint))
-  (let ((price-in-cents (contract-call? .oracle get-price token)))
+  (let ((price-in-cents (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.oracle get-price token)))
     (if (> debt u0)
       (ok (/ (* ucollateral (get last-price-in-cents price-in-cents)) debt))
       (err u0)
@@ -60,7 +64,7 @@
 
     (let ((max-new-debt (- (unwrap-panic (calculate-xusd-count token ucollateral-amount)) current-debt)))
       (if (>= max-new-debt extra-debt)
-        (match (print (as-contract (contract-call? .xusd-token mint extra-debt vault-owner)))
+        (match (print (as-contract (contract-call? 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.xusd-token mint extra-debt vault-owner)))
           success (ok true)
           error (err err-mint-failed)
         )

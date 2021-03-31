@@ -34,6 +34,7 @@ describe("stacks reserve test suite", () => {
       await deployContract('dao');
 
       await deployContract('stx-reserve');
+      await deployContract('sip10-reserve');
       await deployContract('freddie');
 
       await deployContract('stacker-registry');

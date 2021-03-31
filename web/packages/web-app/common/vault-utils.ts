@@ -25,6 +25,15 @@ export const availableCoinsToMint = (price:number, stxCollateral:number, current
   return 0;
 };
 
+// TODO
+// Refactor for mainnet + testnet
+export const tokenTraits = {
+  'diko': {
+    'address': 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
+    'name': 'arkadiko-token'
+  }
+};
+
 export const resolveReserveName = (collateralToken: string) => {
   if (collateralToken.toLowerCase().startsWith('stx')) {
     return 'stx-reserve';
