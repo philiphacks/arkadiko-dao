@@ -13,6 +13,7 @@ import { getLiquidationPrice, availableCollateralToWithdraw, availableCoinsToMin
 import { Link } from '@components/link';
 import { Redirect } from 'react-router-dom';
 import { connectWebSocketClient } from '@stacks/blockchain-api-client';
+import { resolveReserveName } from '@common/vault-utils';
 
 export const ManageVault = ({ match }) => {
   const { doContractCall } = useConnect();
@@ -54,7 +55,7 @@ export const ManageVault = ({ match }) => {
       setVault(vault);
       setIsLiquidated(vault['isLiquidated']);
       setAuctionEnded(vault['auctionEnded']);
-      setReserveName(vault['collateralToken'] + '-reserve');
+      setReserveName(resolveReserveName(vault['collateralToken']));
     }
     return () => { mounted = false; }
   }, [vault]);

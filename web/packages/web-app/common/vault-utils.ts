@@ -24,3 +24,11 @@ export const availableCoinsToMint = (price:number, stxCollateral:number, current
 
   return 0;
 };
+
+export const resolveReserveName = (collateralToken: string) => {
+  if (collateralToken.toLowerCase().startsWith('stx')) {
+    return 'stx-reserve';
+  } else {
+    return 'sip10-reserve'; // we have only two reserves: 1 for STX and 1 for all other SIP10 FTs
+  }
+};

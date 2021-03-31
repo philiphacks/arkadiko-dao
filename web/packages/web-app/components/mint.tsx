@@ -19,6 +19,7 @@ import { Link } from '@components/link';
 import { AppContext } from '@common/context';
 import { useConnect } from '@stacks/connect-react';
 import { CollateralTypeGroup } from '@components/collateral-type-group';
+import { resolveReserveName } from '@common/vault-utils';
 
 export const Mint = () => {
   const address = useSTXAddress();
@@ -52,7 +53,7 @@ export const Mint = () => {
       standardPrincipalCV(address || ''),
       stringAsciiCV('stx-a'),
       stringAsciiCV('stx'),
-      contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', 'stx-reserve')
+      contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', resolveReserveName('stx'))
     ];
     await doContractCall({
       network,
