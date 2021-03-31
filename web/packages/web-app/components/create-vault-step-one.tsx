@@ -37,7 +37,7 @@ export const CreateVaultStepOne: React.FC<VaultProps> = ({ setStep, setCoinAmoun
   const [stabilityFeeApy, setStabilityFeeApy] = useState(0);
   const [liquidationPenalty, setLiquidationPenalty] = useState(0);
   const [liquidationRatio, setLiquidationRatio] = useState(0);
-  const price = parseFloat(getPrice().price);
+  const price = parseFloat(getPrice(tokenName.toLowerCase()).price);
 
   const maximumCoinsToMint = (value: string) => {
     const maxRatio = parseInt(liquidationRatio, 10) + 30;

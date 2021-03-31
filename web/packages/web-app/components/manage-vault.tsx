@@ -391,7 +391,7 @@ export const ManageVault = ({ match }) => {
             <li className="relative col-span-2 flex shadow-sm rounded-md">
               <div className="bg-white shadow sm:rounded-lg w-full">
                 <div className="px-4 py-5 sm:p-6">
-                  <h2 className={`text-lg leading-6 font-medium ${debtClass(debtRatio)}`}>
+                  <h2 className={`text-lg leading-6 font-medium ${debtClass(liquidationRatio, debtRatio)}`}>
                     {debtRatio}%
                   </h2>
                   <div className="mt-2 sm:flex sm:items-start sm:justify-between">

@@ -19,24 +19,16 @@ export interface VaultProps {
   leftoverCollateral: number;
 }
 
-export const debtClass = (ratio: number) => {
-  if (ratio >= 200) {
+export const debtClass = (liquidationRatio: number, ratio: number) => {
+  if (ratio > liquidationRatio + 50) {
     return 'text-green-400';
-  } else if (ratio >= 180) {
+  } else if (ratio >= liquidationRatio + 30) {
     return 'text-orange-400';
-  } else if (ratio > 160) {
+  } else if (ratio > liquidationRatio + 10) {
     return 'text-red-900';
   }
 
   return 'text-red-900';
-};
-
-export const debtBackgroundClass = (ratio: number) => {
-  if (ratio && ratio < 150) {
-    return 'bg-red-300';
-  }
-
-  return 'bg-white';
 };
 
 export const Vault: React.FC<VaultProps> = ({ id, collateral, collateralType, collateralToken, debt, isLiquidated, auctionEnded, leftoverCollateral }) => {
@@ -45,6 +37,14 @@ export const Vault: React.FC<VaultProps> = ({ id, collateral, collateralType, co
   const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS || '';
   const [stabilityFeeApy, setStabilityFeeApy] = useState(0);
   const [liquidationRatio, setLiquidationRatio] = useState(0);
+
+  const debtBackgroundClass = (ratio: number) => {
+    if (ratio && ratio < liquidationRatio) {
+      return 'bg-red-300';
+    }
+
+    return 'bg-white';
+  };
 
   useEffect(() => {
     if (state.collateralTypes[collateralType.toLowerCase()]) {
@@ -90,7 +90,7 @@ export const Vault: React.FC<VaultProps> = ({ id, collateral, collateralType, co
         <span className="text-gray-900 font-medium">{liquidationRatio}%</span>
       </td>
       <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
-        <span className={`${debtClass(debtRatio)} font-medium`}>{debtRatio}%</span>
+        <span className={`${debtClass(liquidationRatio, debtRatio)} font-medium`}>{debtRatio}%</span>
       </td>
       <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
         <span className="text-gray-900 font-medium">${debt / 1000000} xUSD</span>
