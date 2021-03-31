@@ -65,6 +65,7 @@ export const CreateVaultStepOne: React.FC<VaultProps> = ({ setStep, setCoinAmoun
   }, [collateralAmount, coinAmount]);
 
   useEffect(() => {
+    console.log(state.collateralTypes);
     if (state.collateralTypes[tokenType.toLowerCase()]) {
       setStabilityFeeApy(state.collateralTypes[tokenType.toLowerCase()].stabilityFeeApy);
       setLiquidationPenalty(state.collateralTypes[tokenType.toLowerCase()].liquidationPenalty);

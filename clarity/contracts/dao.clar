@@ -485,7 +485,7 @@
     }
   )
   (map-set collateral-types
-    { token: "diko" }
+    { token: "diko-a" }
     {
       name: "Arkadiko",
       token: "DIKO",

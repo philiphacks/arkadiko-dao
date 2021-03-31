@@ -8,7 +8,7 @@ interface CollateralTypeGroupProps {
 
 export const CollateralTypeGroup: React.FC<CollateralTypeGroupProps> = ({ types }) => {
   const collateralItems = [];
-  ['stx-a', 'stx-b', 'diko'].forEach((tokenString: string) => {
+  ['stx-a', 'stx-b', 'diko-a'].forEach((tokenString: string) => {
     let coll = types[tokenString];
     if (coll) {
       collateralItems.push(<CollateralType

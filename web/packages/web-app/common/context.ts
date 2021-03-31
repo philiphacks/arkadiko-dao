@@ -44,7 +44,7 @@ export const defaultState = (): AppState => {
       userData: userSession.loadUserData(),
       balance: defaultBalance(),
       vaults: [],
-      collateralTokens: ['stx-a', 'stx-b', 'diko'],
+      collateralTokens: ['stx-a', 'stx-b', 'diko-a'],
       collateralTypes: [],
       isStacker: false
     };
@@ -54,7 +54,7 @@ export const defaultState = (): AppState => {
     userData: null,
     balance: { stx: 0, xusd: 0, diko: 0 },
     vaults: [],
-    collateralTokens: ['stx-a', 'stx-b', 'diko'],
+    collateralTokens: ['stx-a', 'stx-b', 'diko-a'],
     collateralTypes: [],
     isStacker: false
   };
