@@ -23,7 +23,7 @@
     (burn (principal uint) (response bool uint))
 
     ;; liquidate the vault of principal. only callable by liquidator smart contract
-    (liquidate (uint uint) (response (tuple (ustx-amount uint) (debt uint)) uint))
+    ;; (liquidate (uint uint) (response (tuple (ustx-amount uint) (debt uint)) uint))
 
     ;; redeem collateral after an auction ran
     (redeem-collateral (uint principal) (response bool uint))
