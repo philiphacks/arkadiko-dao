@@ -1,4 +1,4 @@
-;; (impl-trait .vault-trait.vault-trait)
+(impl-trait .vault-trait.vault-trait)
 (use-trait mock-ft-trait .mock-ft-trait.mock-ft-trait)
 
 ;; errors
