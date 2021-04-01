@@ -31,6 +31,10 @@ export const tokenTraits = {
   'diko': {
     'address': 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
     'name': 'arkadiko-token'
+  },
+  'stx': {
+    'address': 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
+    'name': 'arkadiko-token'
   }
 };
 
