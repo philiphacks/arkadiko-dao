@@ -13,7 +13,7 @@ import { getLiquidationPrice, availableCollateralToWithdraw, availableCoinsToMin
 import { Link } from '@components/link';
 import { Redirect } from 'react-router-dom';
 import { connectWebSocketClient } from '@stacks/blockchain-api-client';
-import { resolveReserveName } from '@common/vault-utils';
+import { resolveReserveName, tokenTraits } from '@common/vault-utils';
 
 export const ManageVault = ({ match }) => {
   const { doContractCall } = useConnect();
@@ -99,6 +99,8 @@ export const ManageVault = ({ match }) => {
 
   const callBurn = async () => {
     const authOrigin = getAuthOrigin();
+    const token = tokenTraits[vault['collateralToken'].toLowerCase()]['name'];
+
     await doContractCall({
       network,
       authOrigin,
@@ -108,7 +110,8 @@ export const ManageVault = ({ match }) => {
       functionArgs: [
         uintCV(match.params.id),
         standardPrincipalCV(senderAddress || ''),
-        contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', reserveName)
+        contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', reserveName),
+        contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', token)
       ],
       postConditionMode: 0x01,
       finished: data => {
@@ -129,6 +132,7 @@ export const ManageVault = ({ match }) => {
     }
 
     const authOrigin = getAuthOrigin();
+    const token = tokenTraits[vault['collateralToken'].toLowerCase()]['name'];
     await doContractCall({
       network,
       authOrigin,
@@ -138,7 +142,8 @@ export const ManageVault = ({ match }) => {
       functionArgs: [
         uintCV(match.params.id),
         uintCV(parseFloat(extraCollateralDeposit) * 1000000),
-        contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', reserveName)
+        contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', reserveName),
+        contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', token)
       ],
       postConditionMode: 0x01,
       finished: data => {
@@ -183,6 +188,7 @@ export const ManageVault = ({ match }) => {
     const value = availableCoinsToMint(price, collateralLocked(), outstandingDebt(), collateralToDebtRatio)
 
     const authOrigin = getAuthOrigin();
+    const token = tokenTraits[vault['collateralToken'].toLowerCase()]['name'];
     await doContractCall({
       network,
       authOrigin,
@@ -192,7 +198,8 @@ export const ManageVault = ({ match }) => {
       functionArgs: [
         uintCV(match.params.id),
         uintCV(parseFloat(value) * 1000000),
-        contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', reserveName)
+        contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', reserveName),
+        contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', token)
       ],
       postConditionMode: 0x01,
       finished: data => {
@@ -207,6 +214,7 @@ export const ManageVault = ({ match }) => {
     const value = availableCollateralToWithdraw(price, collateralLocked(), outstandingDebt(), collateralToDebtRatio);
 
     const authOrigin = getAuthOrigin();
+    const token = tokenTraits[vault['collateralToken'].toLowerCase()]['name'];
     await doContractCall({
       network,
       authOrigin,
@@ -216,7 +224,8 @@ export const ManageVault = ({ match }) => {
       functionArgs: [
         uintCV(match.params.id),
         uintCV(parseFloat(value) * 1000000),
-        contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', reserveName)
+        contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', reserveName),
+        contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', token)
       ],
       postConditionMode: 0x01,
       finished: data => {
