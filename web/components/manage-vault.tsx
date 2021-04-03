@@ -21,6 +21,7 @@ export const ManageVault = ({ match }) => {
   const state = useContext(AppContext);
   const price = parseFloat(getPrice().price);
   const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS || '';
+  const { collateralTypes } = useContext(AppContext);
 
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [extraCollateralDeposit, setExtraCollateralDeposit] = useState('');
@@ -61,13 +62,13 @@ export const ManageVault = ({ match }) => {
   }, [vault]);
 
   useEffect(() => {
-    if (vault && state.collateralTypes[vault.collateralType.toLowerCase()]) {
-      setStabilityFeeApy(state.collateralTypes[vault.collateralType.toLowerCase()].stabilityFeeApy);
-      setLiquidationPenalty(state.collateralTypes[vault.collateralType.toLowerCase()].liquidationPenalty);
-      setLiquidationRatio(state.collateralTypes[vault.collateralType.toLowerCase()].liquidationRatio);
-      setCollateralToDebtRatio(state.collateralTypes[vault.collateralType.toLowerCase()].collateralToDebtRatio);
+    if (vault && collateralTypes[vault.collateralType.toLowerCase()]) {
+      setStabilityFeeApy(collateralTypes[vault.collateralType.toLowerCase()].stabilityFeeApy);
+      setLiquidationPenalty(collateralTypes[vault.collateralType.toLowerCase()].liquidationPenalty);
+      setLiquidationRatio(collateralTypes[vault.collateralType.toLowerCase()].liquidationRatio);
+      setCollateralToDebtRatio(collateralTypes[vault.collateralType.toLowerCase()].collateralToDebtRatio);
     }
-  }, [vault, state.collateralTypes]);
+  }, [vault, collateralTypes]);
 
   useEffect(() => {
     if (vault && collateralToDebtRatio) {
