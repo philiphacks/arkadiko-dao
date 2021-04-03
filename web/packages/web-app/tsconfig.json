@@ -27,8 +27,7 @@
     "moduleResolution": "node",           		/* Specify module resolution strategy: 'node' (Node.js) or 'classic' (TypeScript pre-1.6). */
 		"paths": {
 			"@components/*": ["../components/*"],
-			"@common/*": ["../common/*"],
-      "@stacks/rpc-client": ["../../rpc-client/src"]
+			"@common/*": ["../common/*"]
 		},
 		"baseUrl": "src",
 		"allowSyntheticDefaultImports": true,  		/* Allow default imports from modules with no default export. This does not affect code emit, just typechecking. */

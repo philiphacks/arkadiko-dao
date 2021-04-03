@@ -212,7 +212,7 @@ module.exports = {
     new webpack.optimize.LimitChunkCountPlugin({
       maxChunks: 1,
     }),
-    isDevelopment && new ReactRefreshWebpackPlugin({ disableRefreshCheck: true }),
+    isDevelopment && new ReactRefreshWebpackPlugin(),
   ].filter(Boolean),
 };
 
