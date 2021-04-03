@@ -27,7 +27,7 @@ export const Mint = () => {
   const price = parseFloat(getPrice('stx').price);
   const dikoPrice = parseFloat(getPrice('diko').price);
   const state = useContext(AppContext);
-  const { vaults } = useContext(AppContext);
+  const { vaults, collateralTypes } = useContext(AppContext);
   const { doContractCall } = useConnect();
   const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS || '';
 
@@ -221,8 +221,8 @@ export const Mint = () => {
             <div className="">
               <div className="flex flex-col mt-2">
                 <div className="align-middle min-w-full overflow-x-auto shadow overflow-hidden sm:rounded-lg">
-                  {Object.keys(state.collateralTypes).length > 0 ? (
-                    <CollateralTypeGroup types={state.collateralTypes} />
+                  {Object.keys(collateralTypes).length > 0 ? (
+                    <CollateralTypeGroup types={collateralTypes} />
                   ): `` }
                 </div>
               </div>
@@ -233,7 +233,7 @@ export const Mint = () => {
             Vaults
           </h2>
 
-          {vaults.length ? (
+          {vaults.length && Object.keys(collateralTypes).length === state.definedCollateralTypes.length ? (
             <VaultGroup vaults={vaults} />
           ): (
             <div className="hidden sm:block">

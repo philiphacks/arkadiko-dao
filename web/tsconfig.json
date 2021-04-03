@@ -5,6 +5,7 @@
 		"module": "commonjs",							/* Specify module code generation: 'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', or 'ESNext'. */
 		"lib": ["es2017", "dom"],                   /* Specify library files to be included in the compilation. */
 		"jsx": "react",		                      	/* Specify JSX code generation: 'preserve', 'react-native', or 'react'. */
+		"esModuleInterop": true,
 		"sourceMap": true,                     	/* Generates corresponding '.map' file. */
 		"removeComments": true,                		/* Do not emit comments to output. */
 		"noEmit": false,                        		/* Do not emit outputs. */

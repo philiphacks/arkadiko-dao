@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Vault, VaultProps } from './vault';
+import { AppContext } from '@common/context';
 
 interface VaultGroupProps {
   vaults: VaultProps[];
 }
 
 export const VaultGroup: React.FC<VaultGroupProps> = ({ vaults }) => {
+  const { collateralTypes } = useContext(AppContext);
   const vaultItems = vaults.map((vault: VaultProps) =>
     <Vault
       key={vault.id}
@@ -18,6 +20,7 @@ export const VaultGroup: React.FC<VaultGroupProps> = ({ vaults }) => {
       isLiquidated={vault['isLiquidated']}
       auctionEnded={vault['auctionEnded']}
       leftoverCollateral={vault['leftoverCollateral']}
+      collateralData={collateralTypes[vault['collateralType']]}
     />
   );
   return (
