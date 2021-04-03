@@ -4,7 +4,7 @@ import { Container } from './home';
 import { getAuthOrigin, stacksNetwork as network } from '@common/utils';
 import { useSTXAddress } from '@common/use-stx-address';
 import { useConnect } from '@stacks/connect-react';
-import { uintCV, contractPrincipalCV, standardPrincipalCV } from '@stacks/transactions';
+import { uintCV, stringAsciiCV, contractPrincipalCV, standardPrincipalCV } from '@stacks/transactions';
 import { AppContext } from '@common/context';
 import { getCollateralToDebtRatio } from '@common/get-collateral-to-debt-ratio';
 import { debtClass, VaultProps } from './vault';
@@ -188,7 +188,6 @@ export const ManageVault = ({ match }) => {
     const value = availableCoinsToMint(price, collateralLocked(), outstandingDebt(), collateralToDebtRatio)
 
     const authOrigin = getAuthOrigin();
-    const token = tokenTraits[vault['collateralToken'].toLowerCase()]['name'];
     await doContractCall({
       network,
       authOrigin,
@@ -199,7 +198,7 @@ export const ManageVault = ({ match }) => {
         uintCV(match.params.id),
         uintCV(parseFloat(value) * 1000000),
         contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', reserveName),
-        contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', token)
+        stringAsciiCV(vault['collateralToken'].toLowerCase())
       ],
       postConditionMode: 0x01,
       finished: data => {
