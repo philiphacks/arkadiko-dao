@@ -37,13 +37,22 @@ export const CreateVaultStepOne: React.FC<VaultProps> = ({ setStep, setCoinAmoun
   const [stabilityFeeApy, setStabilityFeeApy] = useState(0);
   const [liquidationPenalty, setLiquidationPenalty] = useState(0);
   const [liquidationRatio, setLiquidationRatio] = useState(0);
-  const price = parseFloat(getPrice(tokenName.toLowerCase()).price);
+  const [price, setPrice] = useState(0);
 
   const maximumCoinsToMint = (value: string) => {
     const maxRatio = parseInt(liquidationRatio, 10) + 30;
     const uCollateralAmount = parseInt(value, 10) * 1000000;
     setMaximumToMint(Math.floor(uCollateralAmount * price / maxRatio));
   };
+
+  useEffect(() => {
+    const fetchPrice = async () => {
+      let price = await getPrice(tokenName?.toLowerCase());
+      setPrice(price);
+    };
+
+    fetchPrice();
+  }, [])
 
   const onInputChange = (event) => {
     const name = event.target.name;
@@ -62,7 +71,7 @@ export const CreateVaultStepOne: React.FC<VaultProps> = ({ setStep, setCoinAmoun
       setLiquidationPrice(getLiquidationPrice(liquidationRatio, parseInt(coinAmount, 10), parseInt(collateralAmount, 10)));
       setCollateralToDebt(getCollateralToDebtRatio(price, parseInt(coinAmount, 10), parseInt(collateralAmount, 10)));
     }
-  }, [collateralAmount, coinAmount]);
+  }, [price, collateralAmount, coinAmount]);
 
   useEffect(() => {
     console.log(state.collateralTypes);

@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { Box } from '@blockstack/ui';
 import { getAuthOrigin, stacksNetwork as network } from '@common/utils';
 import { useSTXAddress } from '@common/use-stx-address';
@@ -20,16 +20,29 @@ import { AppContext } from '@common/context';
 import { useConnect } from '@stacks/connect-react';
 import { CollateralTypeGroup } from '@components/collateral-type-group';
 import { resolveReserveName } from '@common/vault-utils';
+import { useEffect } from 'react';
 
 export const Mint = () => {
   const address = useSTXAddress();
   const env = process.env.REACT_APP_NETWORK_ENV;
-  const price = parseFloat(getPrice('stx').price);
-  const dikoPrice = parseFloat(getPrice('diko').price);
   const state = useContext(AppContext);
   const { vaults, collateralTypes } = useContext(AppContext);
   const { doContractCall } = useConnect();
   const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS || '';
+  const [stxPrice, setStxPrice] = useState(0.0);
+  const [dikoPrice, setDikoPrice] = useState(0.0);
+
+  useEffect(() => {
+    const fetchPrices = async () => {
+      let stxPrice = await getPrice('stx');
+      setStxPrice(stxPrice);
+
+      let dikoPrice = await getPrice('diko');
+      setDikoPrice(dikoPrice);
+    };
+
+    fetchPrices();
+  }, []);
 
   const addMocknetStx = async () => {
     const key = '9aef533e754663a453984b69d36f109be817e9940519cc84979419e2be00864801';
@@ -129,7 +142,7 @@ export const Mint = () => {
                         </dt>
                         <dd>
                           <div className="text-lg font-medium text-gray-900">
-                            ${price / 100}
+                            ${stxPrice / 100}
                           </div>
                         </dd>
                       </dl>

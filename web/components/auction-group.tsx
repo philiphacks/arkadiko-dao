@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Auction } from './auction';
-import { getPrice } from '@common/get-price';
 import { Modal } from '@blockstack/ui';
 import { uintCV } from '@stacks/transactions';
 import { getAuthOrigin, stacksNetwork as network } from '@common/utils';
@@ -11,14 +10,13 @@ export interface AuctionProps {
   id: string;
   lotId: string;
   ustx: string;
-  price: string;
+  price: number;
   debt: string;
   endsAt: string;
 }
 
 export const AuctionGroup: React.FC<AuctionProps[]> = ({ auctions }) => {
   const { doContractCall } = useConnect();
-  const price = parseFloat(getPrice().price);
   const [showBidModal, setShowBidModal] = useState(false);
   const [bidAmount, setBidAmount] = useState('');
   const [bidAuctionId, setBidAuctionId] = useState(0);
@@ -37,7 +35,7 @@ export const AuctionGroup: React.FC<AuctionProps[]> = ({ auctions }) => {
       ustx={auction['collateral-amount']}
       debt={auction['debt']}
       endsAt={auction['ends-at']}
-      price={price}
+      price={0.0}
       setShowBidModal={setShowBidModal}
       setBidAuctionId={setBidAuctionId}
       setBidLotId={setBidLotId}
