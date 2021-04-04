@@ -32,7 +32,7 @@
   created-at-block-height: uint,
   updated-at-block-height: uint,
   stability-fee: uint,
-  stability-fee-last-paid: uint, ;; indicates the block height at which the stability fee was last paid
+  stability-fee-last-accrued: uint, ;; indicates the block height at which the stability fee was last paid
   is-liquidated: bool,
   auction-ended: bool,
   leftover-collateral: uint
@@ -54,7 +54,7 @@
       (created-at-block-height u0)
       (updated-at-block-height u0)
       (stability-fee u0)
-      (stability-fee-last-paid u0)
+      (stability-fee-last-accrued u0)
       (is-liquidated false)
       (leftover-collateral u0)
     )
@@ -124,7 +124,7 @@
                 created-at-block-height: block-height,
                 updated-at-block-height: block-height,
                 stability-fee: u0,
-                stability-fee-last-paid: block-height,
+                stability-fee-last-accrued: block-height,
                 is-liquidated: false,
                 auction-ended: false,
                 leftover-collateral: u0
@@ -159,7 +159,7 @@
               created-at-block-height: (get created-at-block-height vault),
               updated-at-block-height: block-height,
               stability-fee: (get stability-fee vault),
-              stability-fee-last-paid: (get stability-fee-last-paid vault),
+              stability-fee-last-accrued: (get stability-fee-last-accrued vault),
               is-liquidated: false,
               auction-ended: false,
               leftover-collateral: u0
@@ -197,7 +197,7 @@
                 created-at-block-height: (get created-at-block-height vault),
                 updated-at-block-height: block-height,
                 stability-fee: (get stability-fee vault),
-                stability-fee-last-paid: (get stability-fee-last-paid vault),
+                stability-fee-last-accrued: (get stability-fee-last-accrued vault),
                 is-liquidated: false,
                 auction-ended: false,
                 leftover-collateral: u0
@@ -231,7 +231,7 @@
               created-at-block-height: (get created-at-block-height vault),
               updated-at-block-height: block-height,
               stability-fee: (get stability-fee vault),
-              stability-fee-last-paid: (get stability-fee-last-paid vault),
+              stability-fee-last-accrued: (get stability-fee-last-accrued vault),
               is-liquidated: false,
               auction-ended: false,
               leftover-collateral: u0
@@ -265,7 +265,7 @@
                 created-at-block-height: (get created-at-block-height vault),
                 updated-at-block-height: block-height,
                 stability-fee: (get stability-fee vault),
-                stability-fee-last-paid: (get stability-fee-last-paid vault),
+                stability-fee-last-accrued: (get stability-fee-last-accrued vault),
                 is-liquidated: false,
                 auction-ended: false,
                 leftover-collateral: u0
@@ -290,7 +290,7 @@
 ;; but rather to (dis)incentivize the user to mint stablecoins or not
 (define-read-only (get-stability-fee-for-vault (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
-    (let ((days (/ (- block-height (get stability-fee-last-paid vault)) blocks-per-day)))
+    (let ((days (/ (- block-height (get stability-fee-last-accrued vault)) blocks-per-day)))
       (let ((debt (/ (get debt vault) u100000))) ;; we can round to 1 number after comma, e.g. 1925000 uxUSD == 1.9 xUSD
         (let ((daily-interest (/ (* debt (unwrap-panic (contract-call? .dao get-stability-fee (get collateral-type vault)))) u100)))
           (ok (tuple (fee (* daily-interest days)) (decimals u12) (days days))) ;; 12 decimals so u5233 means 5233/10^12 xUSD daily interest
@@ -318,7 +318,7 @@
               created-at-block-height: (get created-at-block-height vault),
               updated-at-block-height: block-height,
               stability-fee: (+ (/ (get fee fee) (get decimals fee)) (get stability-fee vault)),
-              stability-fee-last-paid: (+ (get stability-fee-last-paid vault) (* (get days fee) blocks-per-day)),
+              stability-fee-last-accrued: (+ (get stability-fee-last-accrued vault) (* (get days fee) blocks-per-day)),
               is-liquidated: false,
               auction-ended: false,
               leftover-collateral: (get leftover-collateral vault)
@@ -348,7 +348,7 @@
             created-at-block-height: (get created-at-block-height vault),
             updated-at-block-height: block-height,
             stability-fee: u0,
-            stability-fee-last-paid: (get stability-fee-last-paid vault),
+            stability-fee-last-accrued: (get stability-fee-last-accrued vault),
             is-liquidated: false,
             auction-ended: false,
             leftover-collateral: (get leftover-collateral vault)
@@ -379,7 +379,7 @@
                 created-at-block-height: (get created-at-block-height vault),
                 updated-at-block-height: block-height,
                 stability-fee: (get stability-fee vault),
-                stability-fee-last-paid: (get stability-fee-last-paid vault),
+                stability-fee-last-accrued: (get stability-fee-last-accrued vault),
                 is-liquidated: true,
                 auction-ended: false,
                 leftover-collateral: u0
@@ -413,7 +413,7 @@
               created-at-block-height: (get created-at-block-height vault),
               updated-at-block-height: block-height,
               stability-fee: (get stability-fee vault),
-              stability-fee-last-paid: (get stability-fee-last-paid vault),
+              stability-fee-last-accrued: (get stability-fee-last-accrued vault),
               is-liquidated: true,
               auction-ended: true,
               leftover-collateral: leftover-collateral
@@ -446,7 +446,7 @@
             created-at-block-height: (get created-at-block-height vault),
             updated-at-block-height: block-height,
             stability-fee: (get stability-fee vault),
-            stability-fee-last-paid: (get stability-fee-last-paid vault),
+            stability-fee-last-accrued: (get stability-fee-last-accrued vault),
             is-liquidated: true,
             auction-ended: true,
             leftover-collateral: u0
