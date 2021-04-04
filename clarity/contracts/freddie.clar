@@ -32,7 +32,7 @@
   created-at-block-height: uint,
   updated-at-block-height: uint,
   stability-fee: uint,
-  stability-fee-last-accrued: uint, ;; indicates the block height at which the stability fee was last paid
+  stability-fee-last-accrued: uint, ;; indicates the block height at which the stability fee was last accrued (calculated)
   is-liquidated: bool,
   auction-ended: bool,
   leftover-collateral: uint
