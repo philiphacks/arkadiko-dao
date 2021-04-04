@@ -332,6 +332,35 @@
   )
 )
 
+(define-public (pay-stability-fee (vault-id uint))
+  (let ((vault (get-vault-by-id vault-id)))
+    (if (is-ok (contract-call? .xusd-token transfer (get stability-fee vault) tx-sender (as-contract tx-sender)))
+      (begin
+        (map-set vaults
+          { id: vault-id }
+          {
+            id: vault-id,
+            owner: (get owner vault),
+            collateral: (get collateral vault),
+            collateral-type: (get collateral-type vault),
+            collateral-token: (get collateral-token vault),
+            debt: (get debt vault),
+            created-at-block-height: (get created-at-block-height vault),
+            updated-at-block-height: block-height,
+            stability-fee: u0,
+            stability-fee-last-paid: (get stability-fee-last-paid vault),
+            is-liquidated: false,
+            auction-ended: false,
+            leftover-collateral: (get leftover-collateral vault)
+          }
+        )
+        (ok true)
+      )
+      (err u5)
+    )
+  )
+)
+
 (define-public (liquidate (vault-id uint))
   (if (is-eq contract-caller .liquidator)
     (begin
