@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { AuctionProps} from './auction-group';
-import { callReadOnlyFunction, cvToJSON, uintCV } from '@stacks/transactions';
+import { callReadOnlyFunction, cvToJSON, uintCV, stringAsciiCV } from '@stacks/transactions';
 import { stacksNetwork as network } from '@common/utils';
 import { useSTXAddress } from '@common/use-stx-address';
 
@@ -21,7 +21,7 @@ export const Auction: React.FC<AuctionProps> = ({ id, lotId, ustx, price, debt, 
         contractAddress,
         contractName: "auction-engine",
         functionName: "calculate-minimum-collateral-amount",
-        functionArgs: [uintCV(id)],
+        functionArgs: [uintCV(id), stringAsciiCV('stx')],
         senderAddress: stxAddress || '',
         network: network,
       });
