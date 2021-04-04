@@ -250,7 +250,8 @@ export const ManageVault = ({ match }) => {
         uintCV(match.params.id),
         uintCV(parseFloat(value) * 1000000),
         contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', reserveName),
-        contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', token)
+        contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', token),
+        stringAsciiCV(vault.collateralToken.toLowerCase())
       ],
       postConditionMode: 0x01,
       finished: data => {
