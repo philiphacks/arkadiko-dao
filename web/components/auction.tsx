@@ -4,7 +4,7 @@ import { callReadOnlyFunction, cvToJSON, uintCV, stringAsciiCV } from '@stacks/t
 import { stacksNetwork as network } from '@common/utils';
 import { useSTXAddress } from '@common/use-stx-address';
 
-export const Auction: React.FC<AuctionProps> = ({ id, lotId, ustx, price, debt, endsAt, setShowBidModal, setBidAuctionId, setBidLotId, setPreferredBid, setCollateralAmount }) => {
+export const Auction: React.FC<AuctionProps> = ({ id, lotId, price, debt, endsAt, setShowBidModal, setBidAuctionId, setBidLotId, setPreferredBid, setCollateralAmount }) => {
   const [minimumCollateralAmount, setMinimumCollateralAmount] = useState(0);
   const [currentBid, setCurrentBid] = useState(0);
   const [isClosed, setIsClosed] = useState(false);
@@ -21,7 +21,7 @@ export const Auction: React.FC<AuctionProps> = ({ id, lotId, ustx, price, debt, 
         contractAddress,
         contractName: "auction-engine",
         functionName: "calculate-minimum-collateral-amount",
-        functionArgs: [uintCV(id), stringAsciiCV('stx')],
+        functionArgs: [uintCV(id)],
         senderAddress: stxAddress || '',
         network: network,
       });

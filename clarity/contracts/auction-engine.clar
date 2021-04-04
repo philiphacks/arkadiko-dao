@@ -18,6 +18,7 @@
   {
     id: uint,
     collateral-amount: uint,
+    collateral-token: (string-ascii 12),
     debt-to-raise: uint,
     vault-id: uint,
     lot-size: uint,
@@ -35,6 +36,7 @@
   {
     xusd: uint,
     collateral-amount: uint,
+    collateral-token: (string-ascii 12),
     owner: principal,
     is-accepted: bool
   }
@@ -49,7 +51,7 @@
 )
 
 (define-data-var last-auction-id uint u0)
-(define-data-var auction-ids (list 2000 uint) (list u0))
+(define-data-var auction-ids (list 1800 uint) (list u0))
 (define-data-var lot-size uint u100000000) ;; 100 xUSD
 
 (define-read-only (get-auction-by-id (id uint))
@@ -58,6 +60,7 @@
     (tuple
       (id u0)
       (collateral-amount u0)
+      (collateral-token "")
       (debt-to-raise u0)
       (vault-id u0)
       (lot-size u0)
@@ -98,6 +101,7 @@
                 {
                   id: auction-id,
                   collateral-amount: uamount,
+                  collateral-token: (get collateral-token vault),
                   debt-to-raise: debt-to-raise,
                   vault-id: vault-id,
                   lot-size: (var-get lot-size),
@@ -111,7 +115,7 @@
                 }
               )
               (print "Added new open auction")
-              (var-set auction-ids (unwrap-panic (as-max-len? (append (var-get auction-ids) auction-id) u2000)))
+              (var-set auction-ids (unwrap-panic (as-max-len? (append (var-get auction-ids) auction-id) u1800)))
               (var-set last-auction-id auction-id)
               (ok true)
             )
@@ -123,6 +127,7 @@
               {
                 id: auction-id,
                 collateral-amount: uamount,
+                collateral-token: (get collateral-token vault),
                 debt-to-raise: debt-to-raise,
                 vault-id: vault-id,
                 lot-size: (var-get lot-size),
@@ -136,7 +141,7 @@
               }
             )
             (print "Added new open auction")
-            (var-set auction-ids (unwrap-panic (as-max-len? (append (var-get auction-ids) auction-id) u2000)))
+            (var-set auction-ids (unwrap-panic (as-max-len? (append (var-get auction-ids) auction-id) u1800)))
             (var-set last-auction-id auction-id)
             (ok true)
           )
@@ -149,9 +154,9 @@
 ;; calculates the minimum collateral amount to sell
 ;; e.g. if we need to cover 10 xUSD debt, and we have 20 STX at $1/STX,
 ;; we only need to auction off 10 STX
-(define-read-only (calculate-minimum-collateral-amount (auction-id uint) (collateral-token (string-ascii 12)))
-  (let ((price-in-cents (contract-call? .oracle get-price collateral-token)))
-    (let ((auction (get-auction-by-id auction-id)))
+(define-read-only (calculate-minimum-collateral-amount (auction-id uint))
+  (let ((auction (get-auction-by-id auction-id)))
+    (let ((price-in-cents (contract-call? .oracle get-price (get collateral-token auction))))
       (let ((amount (/ (/ (get debt-to-raise auction) (get last-price-in-cents price-in-cents)) (get lots auction))))
         (if (> (/ (get collateral-amount auction) (get lots auction)) (* u100 amount))
           (ok (* u100 amount))
@@ -168,6 +173,7 @@
     (tuple
       (xusd u0)
       (collateral-amount u0)
+      (collateral-token "")
       (owner 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP)
       (is-accepted false)
     )
@@ -232,6 +238,7 @@
                 {
                   id: auction-id,
                   collateral-amount: (get collateral-amount auction),
+                  collateral-token: (get collateral-token auction),
                   debt-to-raise: (get debt-to-raise auction),
                   vault-id: (get vault-id auction),
                   lot-size: (get lot-size auction),
@@ -249,6 +256,7 @@
                 {
                   xusd: xusd,
                   collateral-amount: collateral-amount,
+                  collateral-token: (get collateral-token auction),
                   owner: tx-sender,
                   is-accepted: accepted-bid
                 }
@@ -349,6 +357,7 @@
       {
         id: auction-id,
         collateral-amount: (get collateral-amount auction),
+        collateral-token: (get collateral-token auction),
         debt-to-raise: (get debt-to-raise auction),
         vault-id: (get vault-id auction),
         lot-size: (get lot-size auction),

@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { AppContext } from '@common/context';
-import { Box, Text } from '@blockstack/ui';
+import { Box } from '@blockstack/ui';
 import { Redirect } from 'react-router-dom';
 import { Container } from './home'
 import { getAuthOrigin, stacksNetwork as network } from '@common/utils';
@@ -12,28 +12,10 @@ import { LotGroup } from '@components/lot-group';
 
 export const Auctions: React.FC = () => {
   const state = useContext(AppContext);
-  const { doContractCall } = useConnect();
   const stxAddress = useSTXAddress();
   const [auctions, setAuctions] = useState([]);
   const [lots, setLots] = useState([]);
   const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS || '';
-
-  const registerStacker = async () => {
-    const authOrigin = getAuthOrigin();
-    await doContractCall({
-      network,
-      authOrigin,
-      contractAddress,
-      contractName: 'stacker-registry',
-      functionName: 'register',
-      functionArgs: [],
-      postConditionMode: 0x01,
-      finished: data => {
-        console.log('finished registering stacking!', data);
-        window.location.href = '/';
-      },
-    });
-  };
 
   useEffect(() => {
     let mounted = true;
@@ -137,23 +119,6 @@ export const Auctions: React.FC = () => {
 
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                   <h2 className="text-lg leading-6 font-medium text-gray-900 mt-8">Auctions</h2>
-
-                  <div className="hidden sm:block mb-5">
-                    <div className="flex flex-col">
-                      <div className="align-middle min-w-full overflow-x-auto shadow overflow-hidden sm:rounded-lg"></div>
-                      {state.isStacker ? (
-                        <p>You are a registered stacker and are able to buy up auctions.</p>
-                      ) : (
-                        <Box my="base">
-                          <Text onClick={() => registerStacker()}
-                                _hover={{ cursor: 'pointer'}}
-                                className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mr-5">
-                            Register as Stacker
-                          </Text>
-                        </Box>
-                      )}
-                    </div>
-                  </div>
 
                   {auctions.length > 0 ? (
                     <AuctionGroup auctions={auctions} />
