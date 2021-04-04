@@ -3,8 +3,7 @@ import { AppContext } from '@common/context';
 import { Box } from '@blockstack/ui';
 import { Redirect } from 'react-router-dom';
 import { Container } from './home'
-import { getAuthOrigin, stacksNetwork as network } from '@common/utils';
-import { useConnect } from '@stacks/connect-react';
+import { stacksNetwork as network } from '@common/utils';
 import { callReadOnlyFunction, cvToJSON, tupleCV, uintCV, standardPrincipalCV } from '@stacks/transactions';
 import { useSTXAddress } from '@common/use-stx-address';
 import { AuctionGroup } from '@components/auction-group';
@@ -41,6 +40,7 @@ export const Auctions: React.FC = () => {
               id: data['id'].value,
               'lot-id': index,
               'collateral-amount': parseFloat(data['collateral-amount'].value) / lotSize,
+              'collateral-token': data['collateral-token'].value,
               'debt': parseFloat(data['debt-to-raise'].value) / lotSize,
               'ends-at': data['ends-at'].value
             }); 
