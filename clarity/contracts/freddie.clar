@@ -284,11 +284,42 @@
 (define-read-only (get-stability-fee-for-vault (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
     (let ((days (/ (- block-height (get stability-fee-last-paid vault)) blocks-per-day)))
-      (let ((debt (/ (get debt vault) u10000))) ;; we can round to 2 numbers after comma, e.g. 1925000 uxUSD == 1.92 xUSD
+      (let ((debt (/ (get debt vault) u100000))) ;; we can round to 1 number after comma, e.g. 1925000 uxUSD == 1.9 xUSD
         (let ((daily-interest (/ (* debt (unwrap-panic (contract-call? .dao get-stability-fee (get collateral-type vault)))) u100)))
-          (ok (tuple (fee (* daily-interest days)) (decimals u8) (days days))) ;; 8 decimals so u5233 means 5233/10^8 xUSD daily interest
+          (ok (tuple (fee (* daily-interest days)) (decimals u12) (days days))) ;; 12 decimals so u5233 means 5233/10^12 xUSD daily interest
         )
       )
+    )
+  )
+)
+
+;; should be called ~daily per open (i.e. non-liquidated) vault
+(define-public (accrue-stability-fee (vault-id uint))
+  (let ((fee (unwrap-panic (get-stability-fee-for-vault vault-id))))
+    (if (> (get days fee) u7)
+      (begin
+        (let ((vault (get-vault-by-id vault-id)))
+          (map-set vaults
+            { id: vault-id }
+            {
+              id: vault-id,
+              owner: (get owner vault),
+              collateral: (get collateral vault),
+              collateral-type: (get collateral-type vault),
+              collateral-token: (get collateral-token vault),
+              debt: (+ (/ (get fee fee) (get decimals fee)) (get debt vault)),
+              created-at-block-height: (get created-at-block-height vault),
+              updated-at-block-height: block-height,
+              stability-fee-last-paid: (+ (get stability-fee-last-paid vault) (* (get days fee) blocks-per-day)),
+              is-liquidated: false,
+              auction-ended: false,
+              leftover-collateral: (get leftover-collateral vault)
+            }
+          )
+          (ok true)
+        )
+      )
+      (ok true) ;; nothing to accrue
     )
   )
 )
