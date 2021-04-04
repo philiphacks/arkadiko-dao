@@ -31,12 +31,13 @@
   debt: uint,
   created-at-block-height: uint,
   updated-at-block-height: uint,
+  stability-fee: uint,
   stability-fee-last-paid: uint, ;; indicates the block height at which the stability fee was last paid
   is-liquidated: bool,
   auction-ended: bool,
   leftover-collateral: uint
 })
-(define-map vault-entries { user: principal } { ids: (list 1500 uint) })
+(define-map vault-entries { user: principal } { ids: (list 1200 uint) })
 (define-data-var last-vault-id uint u0)
 
 ;; getters
@@ -52,6 +53,7 @@
       (debt u0)
       (created-at-block-height u0)
       (updated-at-block-height u0)
+      (stability-fee u0)
       (stability-fee-last-paid u0)
       (is-liquidated false)
       (leftover-collateral u0)
@@ -109,7 +111,7 @@
       (begin
         (let ((vault-id (+ (var-get last-vault-id) u1)))
           (let ((entries (get ids (get-vault-entries sender))))
-            (map-set vault-entries { user: sender } { ids: (unwrap-panic (as-max-len? (append entries vault-id) u1500)) })
+            (map-set vault-entries { user: sender } { ids: (unwrap-panic (as-max-len? (append entries vault-id) u1200)) })
             (map-set vaults
               { id: vault-id }
               {
@@ -121,6 +123,7 @@
                 debt: debt,
                 created-at-block-height: block-height,
                 updated-at-block-height: block-height,
+                stability-fee: u0,
                 stability-fee-last-paid: block-height,
                 is-liquidated: false,
                 auction-ended: false,
@@ -155,6 +158,7 @@
               debt: (get debt vault),
               created-at-block-height: (get created-at-block-height vault),
               updated-at-block-height: block-height,
+              stability-fee: (get stability-fee vault),
               stability-fee-last-paid: (get stability-fee-last-paid vault),
               is-liquidated: false,
               auction-ended: false,
@@ -192,6 +196,7 @@
                 debt: (get debt vault),
                 created-at-block-height: (get created-at-block-height vault),
                 updated-at-block-height: block-height,
+                stability-fee: (get stability-fee vault),
                 stability-fee-last-paid: (get stability-fee-last-paid vault),
                 is-liquidated: false,
                 auction-ended: false,
@@ -225,6 +230,7 @@
               debt: new-total-debt,
               created-at-block-height: (get created-at-block-height vault),
               updated-at-block-height: block-height,
+              stability-fee: (get stability-fee vault),
               stability-fee-last-paid: (get stability-fee-last-paid vault),
               is-liquidated: false,
               auction-ended: false,
@@ -258,6 +264,7 @@
                 debt: u0,
                 created-at-block-height: (get created-at-block-height vault),
                 updated-at-block-height: block-height,
+                stability-fee: (get stability-fee vault),
                 stability-fee-last-paid: (get stability-fee-last-paid vault),
                 is-liquidated: false,
                 auction-ended: false,
@@ -293,7 +300,7 @@
   )
 )
 
-;; should be called ~daily per open (i.e. non-liquidated) vault
+;; should be called ~weekly per open (i.e. non-liquidated) vault
 (define-public (accrue-stability-fee (vault-id uint))
   (let ((fee (unwrap-panic (get-stability-fee-for-vault vault-id))))
     (if (> (get days fee) u7)
@@ -307,9 +314,10 @@
               collateral: (get collateral vault),
               collateral-type: (get collateral-type vault),
               collateral-token: (get collateral-token vault),
-              debt: (+ (/ (get fee fee) (get decimals fee)) (get debt vault)),
+              debt: (get debt vault),
               created-at-block-height: (get created-at-block-height vault),
               updated-at-block-height: block-height,
+              stability-fee: (+ (/ (get fee fee) (get decimals fee)) (get stability-fee vault)),
               stability-fee-last-paid: (+ (get stability-fee-last-paid vault) (* (get days fee) blocks-per-day)),
               is-liquidated: false,
               auction-ended: false,
@@ -341,6 +349,7 @@
                 debt: (get debt vault),
                 created-at-block-height: (get created-at-block-height vault),
                 updated-at-block-height: block-height,
+                stability-fee: (get stability-fee vault),
                 stability-fee-last-paid: (get stability-fee-last-paid vault),
                 is-liquidated: true,
                 auction-ended: false,
@@ -374,6 +383,7 @@
               debt: (get debt vault),
               created-at-block-height: (get created-at-block-height vault),
               updated-at-block-height: block-height,
+              stability-fee: (get stability-fee vault),
               stability-fee-last-paid: (get stability-fee-last-paid vault),
               is-liquidated: true,
               auction-ended: true,
@@ -406,6 +416,7 @@
             debt: (get debt vault),
             created-at-block-height: (get created-at-block-height vault),
             updated-at-block-height: block-height,
+            stability-fee: (get stability-fee vault),
             stability-fee-last-paid: (get stability-fee-last-paid vault),
             is-liquidated: true,
             auction-ended: true,
