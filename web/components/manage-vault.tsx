@@ -28,6 +28,7 @@ export const ManageVault = ({ match }) => {
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [showMintModal, setShowMintModal] = useState(false);
+  const [showBurnModal, setShowBurnModal] = useState(false);
   const [extraCollateralDeposit, setExtraCollateralDeposit] = useState('');
   const [isLiquidated, setIsLiquidated] = useState(false);
   const [auctionEnded, setAuctionEnded] = useState(false);
@@ -36,6 +37,7 @@ export const ManageVault = ({ match }) => {
   const [collateralToWithdraw, setCollateralToWithdraw] = useState('');
   const [maximumCollateralToWithdraw, setMaximumCollateralToWithdraw] = useState(0);
   const [usdToMint, setUsdToMint] = useState('');
+  const [usdToBurn, setUsdToBurn] = useState('');
   const [reserveName, setReserveName] = useState('');
   const [vault, setVault] = useState<VaultProps>();
   const [price, setPrice] = useState(0);
@@ -177,6 +179,7 @@ export const ManageVault = ({ match }) => {
       functionName: 'burn',
       functionArgs: [
         uintCV(match.params.id),
+        uintCV(parseFloat(usdToBurn) * 1000000),
         contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', reserveName),
         contractPrincipalCV(process.env.REACT_APP_CONTRACT_ADDRESS || '', token)
       ],
@@ -185,6 +188,7 @@ export const ManageVault = ({ match }) => {
         console.log('finished burn!', data);
         setTxId(data.txId);
         setTxStatus('pending');
+        setShowBurnModal(false);
       },
     });
   };
@@ -278,6 +282,8 @@ export const ManageVault = ({ match }) => {
       setExtraCollateralDeposit(value);
     } else if (event.target.name === 'mintDebt') {
       setUsdToMint(value);
+    } else if (event.target.name === 'burnDebt') {
+      setUsdToBurn(value);
     } else {
       setCollateralToWithdraw(value);
     }
@@ -531,6 +537,55 @@ export const ManageVault = ({ match }) => {
         </div>
       </Modal>
 
+      <Modal isOpen={showBurnModal}>
+        <div className="flex pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+          <div className="inline-block align-bottom bg-white rounded-lg px-2 pt-5 pb-4 text-left overflow-hidden sm:my-8 sm:align-middle sm:max-w-sm sm:w-full sm:p-6" role="dialog" aria-modal="true" aria-labelledby="modal-headline">
+            <div>
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                <svg className="h-6 w-6 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <div className="mt-3 text-center sm:mt-5">
+                <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-headline">
+                  Burn xUSD
+                </h3>
+                <div className="mt-2">
+                  <p className="text-sm text-gray-500">
+                    Choose how much xUSD you want to burn. If you burn all xUSD, your vault will be closed.
+                  </p>
+
+                  <div className="mt-4 relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    </div>
+                    <input type="text" name="burnDebt" id="burnAmount"
+                           value={usdToBurn}
+                           onChange={onInputChange}
+                           className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md"
+                           placeholder="0.00" aria-describedby="collateral-burn-currency" />
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                      <span className="text-gray-500 sm:text-sm" id="collateral-burn-currency">
+                        {vault?.collateralToken.toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+            <div className="mt-5 sm:mt-6">
+              <button type="button" onClick={() => callBurn()} className="mb-5 inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm">
+                Burn
+              </button>
+
+              <button type="button" onClick={() => setShowBurnModal(false)} className="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-gray-600 text-base font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:text-sm">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </Modal>
+
       <Box py={6}>
         <main className="flex-1 relative pb-8 z-0 overflow-y-auto">
           <div className="mt-8">
@@ -759,7 +814,7 @@ export const ManageVault = ({ match }) => {
 
                       <div className="max-w-xl text-sm text-gray-500">
                         <p>
-                          <Text onClick={() => callBurn()}
+                          <Text onClick={() => setShowBurnModal(true)}
                                 _hover={{ cursor: 'pointer'}}
                                 className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                             Pay back
