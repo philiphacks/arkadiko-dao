@@ -5,7 +5,7 @@ import { callReadOnlyFunction, uintCV, cvToJSON } from '@stacks/transactions';
 import { getAuthOrigin, stacksNetwork as network } from '@common/utils';
 import { useSTXAddress } from '@common/use-stx-address';
 import { useConnect } from '@stacks/connect-react';
-import { typeToReadableName, deductTitle } from '@common/proposal-utils';
+import { typeToReadableName, deductTitle, changeKeyToHumanReadable } from '@common/proposal-utils';
 
 export const ViewProposal = ({ match }) => {
   const stxAddress = useSTXAddress();
@@ -54,14 +54,6 @@ export const ViewProposal = ({ match }) => {
 
     return () => { mounted = false; }
   }, []);
-
-  const changeKeyToHumanReadable = (keyName: string) => {
-    if (keyName === 'liquidation_penalty') {
-      return 'Liquidation Penalty';
-    }
-
-    return 'unknown';
-  };
 
   const addVoteFor = async () => {
     const authOrigin = getAuthOrigin();
@@ -218,7 +210,7 @@ export const ViewProposal = ({ match }) => {
                     </div>
                     {proposal.changes ? (
                       <div className="mt-2 sm:flex sm:items-start sm:justify-between">
-                        Changes: Change {changeKeyToHumanReadable(proposal.changes[0].key)} to {proposal.changes[0]['new-value']}%
+                        Changes: Change {changeKeyToHumanReadable(proposal.changes[0].key)} to {proposal.changes[0]['new-value']}
                       </div>
                     ): `` }
                   </div>
