@@ -100,6 +100,13 @@
   )
 )
 
+(define-private (resolve-stacking-amount (collateral-amount uint) (collateral-token (string-ascii 12)))
+  (if (is-eq collateral-token "stx")
+    collateral-amount
+    u0
+  )
+)
+
 (define-public (collateralize-and-mint
     (collateral-amount uint)
     (debt uint)
@@ -134,7 +141,7 @@
                 collateral: collateral-amount,
                 collateral-type: collateral-type,
                 collateral-token: collateral-token,
-                stacked-tokens: u0,
+                stacked-tokens: (resolve-stacking-amount collateral-amount collateral-token),
                 debt: debt,
                 created-at-block-height: block-height,
                 updated-at-block-height: block-height,
@@ -170,7 +177,7 @@
               collateral: new-collateral,
               collateral-type: (get collateral-type vault),
               collateral-token: (get collateral-token vault),
-              stacked-tokens: (get stacked-tokens vault),
+              stacked-tokens: (+ (get stacked-tokens vault) (resolve-stacking-amount uamount (get collateral-token vault))),
               debt: (get debt vault),
               created-at-block-height: (get created-at-block-height vault),
               updated-at-block-height: block-height,
@@ -194,6 +201,7 @@
     (asserts! (is-eq tx-sender (get owner vault)) (err err-unauthorized))
     (asserts! (> uamount u0) (err err-insufficient-collateral))
     (asserts! (<= uamount (get collateral vault)) (err err-insufficient-collateral))
+    (asserts! (is-eq u0 (get stacked-tokens vault)) (err err-unauthorized))
 
     (let ((ratio (unwrap-panic (contract-call? reserve calculate-current-collateral-to-debt-ratio (get collateral-token vault) (get debt vault) (- (get collateral vault) uamount)))))
       (asserts! (>= ratio (unwrap-panic (contract-call? .dao get-collateral-to-debt-ratio "stx"))) (err err-insufficient-collateral))
@@ -239,7 +247,6 @@
       )
       (err err-maximum-debt-reached)
     )
-    (asserts! (is-eq u0 (get stacked-tokens vault)) (err err-unauthorized))
 
     (if (unwrap! (contract-call? reserve mint (get collateral-token vault) (get owner vault) (get collateral vault) (get debt vault) extra-debt (get collateral-type vault)) (err u5))
       (begin
@@ -277,6 +284,7 @@
   (let ((vault (get-vault-by-id vault-id)))
     (asserts! (is-eq tx-sender (get owner vault)) (err err-unauthorized))
     (asserts! (is-eq u0 (get stability-fee vault)) (err err-unauthorized))
+     ;; TODO: only allow burn to burn a partial xUSD position
     (asserts! (is-eq u0 (get stacked-tokens vault)) (err err-unauthorized))
 
     (if (is-ok (contract-call? .xusd-token burn debt (get owner vault)))

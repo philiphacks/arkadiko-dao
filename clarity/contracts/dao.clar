@@ -40,7 +40,8 @@
 (define-data-var governance-token-yield uint u80)
 (define-data-var governance-reserve-yield uint u80)
 (define-data-var maximum-debt-surplus uint u100000000)
-(define-data-var tokens-for-stacking u0)
+(define-data-var tokens-to-stack uint u0)
+(define-data-var unlock-burn-height uint u0)
 
 (define-read-only (get-votes-by-member-by-id (proposal-id uint) (member principal))
   (unwrap!
@@ -170,11 +171,28 @@
   (ok (var-get maximum-debt-surplus))
 )
 
-(define-read-only (get-tokens-for-stacking)
-  (ok (var-get tokens-for-stacking))
+(define-read-only (get-tokens-to-stack)
+  (ok (var-get tokens-to-stack))
 )
 
 ;; setters accessible only by DAO contract
+
+;; TODO - add security!
+(define-public (add-tokens-to-stack (token-amount uint))
+  (if true
+    (ok (var-set tokens-to-stack (+ token-amount (var-get tokens-to-stack))))
+    (err u0)
+  )
+)
+
+;; TODO - add security!
+(define-public (subtract-tokens-to-stack (token-amount uint))
+  (if true
+    (ok (var-set tokens-to-stack (- (var-get tokens-to-stack) token-amount)))
+    (err u0)
+  )
+)
+
 (define-public (add-collateral-type (token (string-ascii 12)) (collateral-type (string-ascii 12)))
   (if (is-eq contract-caller .dao)
     (begin
@@ -548,9 +566,14 @@
   ;; 1. check `get-stacking-minimum` to see if we have > minimum tokens
   ;; 2. call `stack-stx` for 1 `lock-period` fixed
   (if (is-eq contract-caller .dao)
-    (if contract-call? .mock-pox can-stack-stx pox-addr amount-ustx start-burn-ht lock-period
-      (contract-call? .mock-pox stack-stx amount-ustx pox-addr start-burn-ht lock-period)
-      (ok true) ;; cannot stack yet - probably cause we have not reached the minimum with amount-ustx
+    (if (unwrap! (contract-call? .mock-pox can-stack-stx pox-addr amount-ustx start-burn-ht lock-period) (err u0))
+      (begin
+        (let ((result (unwrap-panic (contract-call? .mock-pox stack-stx amount-ustx pox-addr start-burn-ht lock-period))))
+          (var-set unlock-burn-height (get unlock-burn-height result))
+          (ok (get lock-amount result))
+        )
+      )
+      (err u0) ;; cannot stack yet - probably cause we have not reached the minimum with amount-ustx
     )
     (err err-unauthorized)
   )

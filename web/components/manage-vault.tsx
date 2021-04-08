@@ -67,6 +67,7 @@ export const ManageVault = ({ match }) => {
           auctionEnded: data['auction-ended'].value,
           leftoverCollateral: data['leftover-collateral'].value,
           debt: data['debt'].value,
+          stackedTokens: data['stacked-tokens'].value,
           collateralData: {}
         });
         setReserveName(resolveReserveName(data['collateral-token'].value));
@@ -106,7 +107,11 @@ export const ManageVault = ({ match }) => {
 
   useEffect(() => {
     if (vault && collateralType?.collateralToDebtRatio) {
-      setMaximumCollateralToWithdraw(availableCollateralToWithdraw(price, collateralLocked(), outstandingDebt(), collateralType?.collateralToDebtRatio));
+      if (vault.stackedTokens === 0) {
+        setMaximumCollateralToWithdraw(availableCollateralToWithdraw(price, collateralLocked(), outstandingDebt(), collateralType?.collateralToDebtRatio));
+      } else {
+        setMaximumCollateralToWithdraw(0);
+      }
     }
   }, [collateralType?.collateralToDebtRatio, price]);
 
@@ -768,7 +773,7 @@ export const ManageVault = ({ match }) => {
                     </div>
                     <hr/>
 
-                    <div className="mt-10 sm:flex sm:items-start sm:justify-between">
+                    <div className="mt-8 sm:flex sm:items-start sm:justify-between">
                       <div className="max-w-xl text-sm text-gray-500">
                         <p>
                           Able to withdraw
@@ -792,6 +797,26 @@ export const ManageVault = ({ match }) => {
                       </div>
                     </div>
 
+                    {vault?.stackedTokens > 0 ? (
+                      <div className="mt-8 sm:flex sm:items-start sm:justify-between">
+                        <div className="max-w-xl text-sm text-gray-500">
+                          <p>
+                            You cannot withdraw your collateral since it is stacked until block 678358. <br/>
+                            Unstack your collateral to unlock it for withdrawal.
+                          </p>
+                        </div>
+
+                        <div className="max-w-xl text-sm text-gray-500">
+                          <p>
+                            <Text onClick={() => setShowWithdrawModal(true)}
+                                  _hover={{ cursor: 'pointer'}}
+                                  className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                              Unstack
+                            </Text>
+                          </p>
+                        </div>
+                      </div>
+                    ): null }
                   </div>
                 </div>
               </li>
