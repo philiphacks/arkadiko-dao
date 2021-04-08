@@ -239,7 +239,7 @@
       )
       (err err-maximum-debt-reached)
     )
-    (asserts! (is-eq u0 (get stacked-token vault)) (err err-unauthorized))
+    (asserts! (is-eq u0 (get stacked-tokens vault)) (err err-unauthorized))
 
     (if (unwrap! (contract-call? reserve mint (get collateral-token vault) (get owner vault) (get collateral vault) (get debt vault) extra-debt (get collateral-type vault)) (err u5))
       (begin
