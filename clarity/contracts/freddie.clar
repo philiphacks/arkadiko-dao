@@ -29,6 +29,7 @@
   collateral: uint,
   collateral-type: (string-ascii 12), ;; e.g. STX-A, STX-B, BTC-A etc (represents the collateral class)
   collateral-token: (string-ascii 12), ;; e.g. STX, BTC etc (represents the symbol of the collateral)
+  stacked-tokens: uint,
   debt: uint,
   created-at-block-height: uint,
   updated-at-block-height: uint,
@@ -51,6 +52,7 @@
       (collateral u0)
       (collateral-type "")
       (collateral-token "")
+      (stacked-tokens u0)
       (debt u0)
       (created-at-block-height u0)
       (updated-at-block-height u0)
@@ -132,6 +134,7 @@
                 collateral: collateral-amount,
                 collateral-type: collateral-type,
                 collateral-token: collateral-token,
+                stacked-tokens: u0,
                 debt: debt,
                 created-at-block-height: block-height,
                 updated-at-block-height: block-height,
@@ -167,6 +170,7 @@
               collateral: new-collateral,
               collateral-type: (get collateral-type vault),
               collateral-token: (get collateral-token vault),
+              stacked-tokens: (get stacked-tokens vault),
               debt: (get debt vault),
               created-at-block-height: (get created-at-block-height vault),
               updated-at-block-height: block-height,
@@ -205,6 +209,7 @@
                 collateral: new-collateral,
                 collateral-type: (get collateral-type vault),
                 collateral-token: (get collateral-token vault),
+                stacked-tokens: (get stacked-tokens vault),
                 debt: (get debt vault),
                 created-at-block-height: (get created-at-block-height vault),
                 updated-at-block-height: block-height,
@@ -234,6 +239,7 @@
       )
       (err err-maximum-debt-reached)
     )
+    (asserts! (is-eq u0 (get stacked-token vault)) (err err-unauthorized))
 
     (if (unwrap! (contract-call? reserve mint (get collateral-token vault) (get owner vault) (get collateral vault) (get debt vault) extra-debt (get collateral-type vault)) (err u5))
       (begin
@@ -246,6 +252,7 @@
               collateral: (get collateral vault),
               collateral-type: (get collateral-type vault),
               collateral-token: (get collateral-token vault),
+              stacked-tokens: (get stacked-tokens vault),
               debt: new-total-debt,
               created-at-block-height: (get created-at-block-height vault),
               updated-at-block-height: block-height,
@@ -270,6 +277,7 @@
   (let ((vault (get-vault-by-id vault-id)))
     (asserts! (is-eq tx-sender (get owner vault)) (err err-unauthorized))
     (asserts! (is-eq u0 (get stability-fee vault)) (err err-unauthorized))
+    (asserts! (is-eq u0 (get stacked-tokens vault)) (err err-unauthorized))
 
     (if (is-ok (contract-call? .xusd-token burn debt (get owner vault)))
       (if (unwrap-panic (contract-call? reserve burn ft (get owner vault) (get collateral vault)))
@@ -285,6 +293,7 @@
                     collateral: u0,
                     collateral-type: (get collateral-type vault),
                     collateral-token: (get collateral-token vault),
+                    stacked-tokens: (get stacked-tokens vault),
                     debt: u0,
                     created-at-block-height: (get created-at-block-height vault),
                     updated-at-block-height: block-height,
@@ -311,6 +320,7 @@
                 collateral: (get collateral vault),
                 collateral-type: (get collateral-type vault),
                 collateral-token: (get collateral-token vault),
+                stacked-tokens: (get stacked-tokens vault),
                 debt: (- (get debt vault) debt),
                 created-at-block-height: (get created-at-block-height vault),
                 updated-at-block-height: block-height,
@@ -362,6 +372,7 @@
               collateral: (get collateral vault),
               collateral-type: (get collateral-type vault),
               collateral-token: (get collateral-token vault),
+              stacked-tokens: (get stacked-tokens vault),
               debt: (get debt vault),
               created-at-block-height: (get created-at-block-height vault),
               updated-at-block-height: block-height,
@@ -392,6 +403,7 @@
             collateral: (get collateral vault),
             collateral-type: (get collateral-type vault),
             collateral-token: (get collateral-token vault),
+            stacked-tokens: (get stacked-tokens vault),
             debt: (get debt vault),
             created-at-block-height: (get created-at-block-height vault),
             updated-at-block-height: block-height,
@@ -423,6 +435,7 @@
                 collateral: u0,
                 collateral-type: (get collateral-type vault),
                 collateral-token: (get collateral-token vault),
+                stacked-tokens: (get stacked-tokens vault),
                 debt: (get debt vault),
                 created-at-block-height: (get created-at-block-height vault),
                 updated-at-block-height: block-height,
@@ -457,6 +470,7 @@
               collateral: u0,
               collateral-type: (get collateral-type vault),
               collateral-token: (get collateral-token vault),
+              stacked-tokens: (get stacked-tokens vault),
               debt: (get debt vault),
               created-at-block-height: (get created-at-block-height vault),
               updated-at-block-height: block-height,
@@ -492,6 +506,7 @@
             collateral: (get collateral vault),
             collateral-type: (get collateral-type vault),
             collateral-token: (get collateral-token vault),
+            stacked-tokens: (get stacked-tokens vault),
             debt: (get debt vault),
             created-at-block-height: (get created-at-block-height vault),
             updated-at-block-height: block-height,
