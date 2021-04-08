@@ -606,12 +606,6 @@
     }
   )
   (map-set proposal-types
-    { type: "stacking_distribution" }
-    {
-      changes-keys: (list "stacker_yield" "governance_token_yield" "governance_reserve_yield")
-    }
-  )
-  (map-set proposal-types
     { type: "emergency_shutdown" }
     {
       changes-keys: (list "")

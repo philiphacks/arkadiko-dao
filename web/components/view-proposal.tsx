@@ -162,7 +162,7 @@ export const ViewProposal = ({ match }) => {
                   <div className="px-4 py-5 sm:p-6">
                     <h3 className="text-lg leading-6 font-medium text-gray-900">
                       {proposal.changes ? (
-                        `Change ${changeKeyToHumanReadable(proposal.changes[0].key)} ${deductTitle(proposal?.type)} ${proposal?.collateralType.toUpperCase()}`
+                        `${changeKeyToHumanReadable(proposal.changes[0].key)} ${deductTitle(proposal?.type)} ${proposal?.collateralType.toUpperCase()}`
                       ) : `` }
                     </h3>
                     <div className="mt-2 sm:flex sm:items-start sm:justify-between">

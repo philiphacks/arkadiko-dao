@@ -15,7 +15,7 @@ export const Proposal: React.FC<ProposalProps> = ({ id, changes, proposer, type,
               ) : type === 'new_collateral_type' ? (
                 `${deductTitle(type)} ${collateralType?.toUpperCase()}`
               ) : (
-                `bloe`
+                `${deductTitle(type)}`
               )}
             </p>
             <div className="ml-2 flex-shrink-0 flex">

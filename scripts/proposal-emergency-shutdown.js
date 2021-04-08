@@ -9,7 +9,7 @@ async function transact() {
   const list = tx.listCV([
     tx.tupleCV({
       key: tx.stringAsciiCV("emergency_shutdown"),
-      'new-value': tx.trueCV
+      'new-value': tx.uintCV(1)
     })
   ]);
   const txOptions = {

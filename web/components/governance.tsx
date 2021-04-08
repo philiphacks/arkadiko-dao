@@ -26,6 +26,7 @@ export const Governance = () => {
         senderAddress: stxAddress || '',
         network: network,
       });
+      const json = cvToJSON(proposals);
       let serializedProposals:Array<{
         id: string,
         proposer: string,
@@ -39,24 +40,22 @@ export const Governance = () => {
         startBlockHeight: number,
         endBlockHeight: number
       }> = [];
-      const data = proposals.value.list;
-      // console.log(data);
+      const data = json.value.value;
 
       data.forEach((element: object) => {
-        console.log(element.data['changes'].list[0].data['key']);
-        if (element.data['id'].value != 0) {
+        if (element.value['id'].value != 0) {
           serializedProposals.push({
-            id: element.data['id'].value,
-            proposer: element.data['proposer'].value,
-            forVotes: element.data['yes-votes'].value,
-            against: element.data['no-votes'].value,
-            token: element.data['token'].value,
-            collateralType: element.data['collateral-type'].value,
-            type: element.data['type'].value,
-            changes: extractChanges(element.data['changes']),
-            isOpen: element.data['is-open'].value,
-            startBlockHeight: element.data['start-block-height'].value,
-            endBlockHeight: element.data['end-block-height'].value
+            id: element.value['id'].value,
+            proposer: element.value['proposer'].value,
+            forVotes: element.value['yes-votes'].value,
+            against: element.value['no-votes'].value,
+            token: element.value['token'].value,
+            collateralType: element.value['collateral-type'].value,
+            type: element.value['type'].value,
+            changes: extractChanges(element.value['changes']),
+            isOpen: element.value['is-open'].value,
+            startBlockHeight: element.value['start-block-height'].value,
+            endBlockHeight: element.value['end-block-height'].value
           });
         }
       });

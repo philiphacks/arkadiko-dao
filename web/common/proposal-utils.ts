@@ -3,6 +3,10 @@ export const typeToReadableName = (type:string) => {
     return 'Change Risk Parameter';
   } else if (type === 'new_collateral_type') {
     return 'New Collateral Type';
+  } else if (type === 'emergency_shutdown') {
+    return 'Emergency Shutdown';
+  } else if (type === 'stacking_distribution') {
+    return 'Stacking Distribution';
   }
 
   return type;
@@ -13,6 +17,10 @@ export const deductTitle = (type:string) => {
     return 'on collateral type';
   } else if (type === 'new_collateral_type') {
     return 'Introduce new collateral type';
+  } else if (type === 'emergency_shutdown') {
+    return 'Toggle Emergency Shutdown';
+  } else if (type === 'stacking_distribution') {
+    return 'Stacking Distribution';
   }
 
   return type;
@@ -20,12 +28,16 @@ export const deductTitle = (type:string) => {
 
 export const changeKeyToHumanReadable = (keyName: string) => {
   if (keyName === 'liquidation_penalty') {
-    return 'Liquidation Penalty';
+    return 'Change Liquidation Penalty';
   } else if (keyName === 'maximum_debt') {
-    return 'Maximum Debt';
+    return 'Change Maximum Debt';
   } else if (keyName === 'liquidation_ratio') {
-    return 'Liquidation Ratio';
+    return 'Change Liquidation Ratio';
+  } else if (keyName === 'emergency_shutdown') {
+    return 'Emergency Shutdown: ';
+  } else if (keyName === 'stacking_distribution') {
+    return 'Stacking Distribution';
   }
 
-  return 'unknown';
+  return keyName;
 };

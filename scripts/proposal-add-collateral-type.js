@@ -11,6 +11,7 @@ const maximum_debt = process.argv.slice(2)[2];
 const liquidation_ratio = process.argv.slice(2)[3];
 const liquidation_penalty = process.argv.slice(2)[4];
 const stability_fee = process.argv.slice(2)[5];
+const minimum_vault_debt = process.argv.slice(2)[6];
 
 async function transact() {
   const list = tx.listCV([
@@ -29,6 +30,10 @@ async function transact() {
     tx.tupleCV({
       key: tx.stringAsciiCV("stability_fee"),
       'new-value': tx.uintCV(stability_fee)
+    }),
+    tx.tupleCV({
+      key: tx.stringAsciiCV("minimum_vault_debt"),
+      'new-value': tx.uintCV(minimum_vault_debt)
     })
   ]);
 
