@@ -148,6 +148,7 @@
     (asserts! (is-eq "stx" (get collateral-token vault)) (err err-unauthorized))
     (asserts! (is-eq false (get is-liquidated vault)) (err err-unauthorized))
 
+    (try! (contract-call? .dao add-tokens-to-stack (get collateral vault)))
     (map-set vaults
       { id: vault-id }
       {
