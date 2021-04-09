@@ -76,6 +76,7 @@ async function iterateAndCheck() {
   const lastId = await getLastVaultId();
   console.log('Last Vault ID is', lastId, ', iterating vaults');
   let vault;
+  let timeout = 1;
   for (let index = 1; index <= lastId; index++) {
     vault = await getVaultById(index);
     if (!vault['is-liquidated']['value']) {
@@ -86,7 +87,8 @@ async function iterateAndCheck() {
       // console.log(collRatio, liqRatio);
       if (collRatio < liqRatio) {
         console.log('Vault', index, 'is in danger... need to liquidate');
-        setTimeout(() => liquidateVault(index), 10000);
+        setTimeout(() => liquidateVault(index), timeout * 10000);
+        timeout += 1;
       }
     }
   }

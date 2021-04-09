@@ -218,7 +218,7 @@ describe("environment prep", () => {
       testnetKeyMap.forEach(async (element) => {
         setTimeout(async () => {
           let collateralAmount = randomNumber(300, 450);
-          let usdAmount = randomNumber(100, 0.2 * collateralAmount * stxPrice);
+          let usdAmount = randomNumber(100, 0.5 * collateralAmount * stxPrice);
           let collateralType = collateralTypes[randomNumber(0, 2)];
           let mintVaultArgs = [
             uintCV(collateralAmount * 1000000),
