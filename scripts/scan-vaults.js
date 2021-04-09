@@ -69,7 +69,7 @@ async function liquidateVault(vaultId) {
 
   const transaction = await tx.makeContractCall(txOptions);
   const result = tx.broadcastTransaction(transaction, network);
-  await utils.processing(result, transaction.txid(), 0);
+  return await utils.processing(result, transaction.txid(), 0);
 }
 
 async function iterateAndCheck() {
@@ -86,7 +86,7 @@ async function iterateAndCheck() {
       // console.log(collRatio, liqRatio);
       if (collRatio < liqRatio) {
         console.log('Vault', index, 'is in danger... need to liquidate');
-        liquidateVault(index);
+        setTimeout(() => await liquidateVault(index), 10000);
       }
     }
   }

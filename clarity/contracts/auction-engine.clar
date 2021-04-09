@@ -183,13 +183,21 @@
   )
 )
 
+(define-public (discounted-auction-price (price-in-cents uint))
+  ;; price * 3% = price * 3 / 100
+  (let ((discount (/ (* price-in-cents u3) u100)))
+    (ok (- price-in-cents discount))
+  )
+)
+
 ;; calculates the minimum collateral amount to sell
 ;; e.g. if we need to cover 10 xUSD debt, and we have 20 STX at $1/STX,
 ;; we only need to auction off 10 STX
+;; but we give a 3% discount to incentivise people TODO:
 (define-read-only (calculate-minimum-collateral-amount (auction-id uint))
   (let ((auction (get-auction-by-id auction-id)))
     (let ((price-in-cents (contract-call? .oracle get-price (get collateral-token auction))))
-      (let ((amount (/ (/ (get debt-to-raise auction) (get last-price-in-cents price-in-cents)) (get lots auction))))
+      (let ((amount (/ (/ (get debt-to-raise auction) (unwrap-panic (discounted-auction-price (get last-price-in-cents price-in-cents)))) (get lots auction))))
         (if (> (/ (get collateral-amount auction) (get lots auction)) (* u100 amount))
           (ok (* u100 amount))
           (ok (/ (get collateral-amount auction) (get lots auction)))

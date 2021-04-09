@@ -130,7 +130,7 @@ const addMocknetStx = async (address: string) => {
     senderKey: privateKeyToString(senderKey),
     network: network
   });
-  await handleTransaction(transaction);
+  return await handleTransaction(transaction);
 };
 
 describe("environment prep", () => {
@@ -169,28 +169,28 @@ describe("environment prep", () => {
       // });
 
       // 2. Set the price of STX
-      // const txOptions = {
-      //   contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
-      //   contractName: 'oracle',
-      //   functionName: 'update-price',
-      //   functionArgs: [stringAsciiCV('stx'), uintCV(stxPrice * 100)],
-      //   senderKey: secretDeployKey,
-      //   postConditionMode: 1,
-      //   network
-      // };
-      // handleTransaction(await makeContractCall(txOptions));
+      const txOptions = {
+        contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
+        contractName: 'oracle',
+        functionName: 'update-price',
+        functionArgs: [stringAsciiCV('stx'), uintCV(stxPrice * 100)],
+        senderKey: secretDeployKey,
+        postConditionMode: 1,
+        network
+      };
+      setTimeout(async () => handleTransaction(await makeContractCall(txOptions)), 10000);
 
       // 2b. Set the price of DIKO
-      // const dikoTxOptions = {
-      //   contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
-      //   contractName: 'oracle',
-      //   functionName: 'update-price',
-      //   functionArgs: [stringAsciiCV('diko'), uintCV(stxPrice * 100)],
-      //   senderKey: secretDeployKey,
-      //   postConditionMode: 1,
-      //   network
-      // };
-      // handleTransaction(await makeContractCall(dikoTxOptions));
+      const dikoTxOptions = {
+        contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
+        contractName: 'oracle',
+        functionName: 'update-price',
+        functionArgs: [stringAsciiCV('diko'), uintCV(stxPrice * 100)],
+        senderKey: secretDeployKey,
+        postConditionMode: 1,
+        network
+      };
+      setTimeout(async () => handleTransaction(await makeContractCall(dikoTxOptions)), 20000);
 
       // 3. Add at least one vault per address and collateral type
       const collateralTypes = [
@@ -217,8 +217,8 @@ describe("environment prep", () => {
       index = 1;
       testnetKeyMap.forEach(async (element) => {
         setTimeout(async () => {
-          let collateralAmount = randomNumber(100, 450);
-          let usdAmount = randomNumber(100, 0.70 * collateralAmount * stxPrice);
+          let collateralAmount = randomNumber(300, 450);
+          let usdAmount = randomNumber(100, 0.2 * collateralAmount * stxPrice);
           let collateralType = collateralTypes[randomNumber(0, 2)];
           let mintVaultArgs = [
             uintCV(collateralAmount * 1000000),
@@ -239,15 +239,13 @@ describe("environment prep", () => {
             network
           };
           handleTransaction(await makeContractCall(txMintOptions));
-          index += 1;
         }, index * 10000);
+        index += 1;
       });
 
       // 5. Make most STX vaults stacking, some not
       // toggle-stacking
-
       // Outside of this 6. Run scripts regularly: scan vaults, accrue stability fees, end auction, end proposal, update price
-
     });
   });
 });
