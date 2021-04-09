@@ -86,7 +86,7 @@ async function iterateAndCheck() {
       // console.log(collRatio, liqRatio);
       if (collRatio < liqRatio) {
         console.log('Vault', index, 'is in danger... need to liquidate');
-        setTimeout(() => await liquidateVault(index), 10000);
+        setTimeout(() => liquidateVault(index), 10000);
       }
     }
   }
