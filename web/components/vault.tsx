@@ -19,6 +19,7 @@ export interface VaultProps {
   leftoverCollateral: number;
   collateralData: object;
   stackedTokens: number;
+  revokedStacking: boolean;
 }
 
 export const debtClass = (liquidationRatio: number, ratio: number) => {

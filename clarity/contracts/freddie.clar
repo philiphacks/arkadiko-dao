@@ -30,6 +30,7 @@
   collateral-type: (string-ascii 12), ;; e.g. STX-A, STX-B, BTC-A etc (represents the collateral class)
   collateral-token: (string-ascii 12), ;; e.g. STX, BTC etc (represents the symbol of the collateral)
   stacked-tokens: uint,
+  revoked-stacking: bool,
   debt: uint,
   created-at-block-height: uint,
   updated-at-block-height: uint,
@@ -53,12 +54,14 @@
       (collateral-type "")
       (collateral-token "")
       (stacked-tokens u0)
+      (revoked-stacking false)
       (debt u0)
       (created-at-block-height u0)
       (updated-at-block-height u0)
       (stability-fee u0)
       (stability-fee-last-accrued u0)
       (is-liquidated false)
+      (auction-ended false)
       (leftover-collateral u0)
     )
   )
@@ -107,6 +110,104 @@
   )
 )
 
+(define-public (toggle-stacking (vault-id uint))
+  (let ((vault (get-vault-by-id vault-id)))
+    (asserts! (is-eq tx-sender (get owner vault)) (err err-unauthorized))
+    (asserts! (is-eq "stx" (get collateral-token vault)) (err err-unauthorized))
+
+    (if (is-eq true (get revoked-stacking vault))
+      (try! (contract-call? .dao add-tokens-to-stack (get collateral vault)))
+      (try! (contract-call? .dao subtract-tokens-to-stack (get collateral vault)))
+    )
+    (map-set vaults
+      { id: vault-id }
+      {
+        id: vault-id,
+        owner: (get owner vault),
+        collateral: (get collateral vault),
+        collateral-type: (get collateral-type vault),
+        collateral-token: (get collateral-token vault),
+        stacked-tokens: (get stacked-tokens vault),
+        revoked-stacking: (not (get revoked-stacking vault)),
+        debt: (get debt vault),
+        created-at-block-height: (get created-at-block-height vault),
+        updated-at-block-height: block-height,
+        stability-fee: (get stability-fee vault),
+        stability-fee-last-accrued: (get stability-fee-last-accrued vault),
+        is-liquidated: false,
+        auction-ended: false,
+        leftover-collateral: u0
+      }
+    )
+    (ok true)
+  )
+)
+
+(define-public (stack-collateral (vault-id uint))
+  (let ((vault (get-vault-by-id vault-id)))
+    (asserts! (is-eq "stx" (get collateral-token vault)) (err err-unauthorized))
+    (asserts! (is-eq false (get is-liquidated vault)) (err err-unauthorized))
+
+    (map-set vaults
+      { id: vault-id }
+      {
+        id: vault-id,
+        owner: (get owner vault),
+        collateral: (get collateral vault),
+        collateral-type: (get collateral-type vault),
+        collateral-token: (get collateral-token vault),
+        stacked-tokens: (get collateral vault),
+        revoked-stacking: false,
+        debt: (get debt vault),
+        created-at-block-height: (get created-at-block-height vault),
+        updated-at-block-height: block-height,
+        stability-fee: (get stability-fee vault),
+        stability-fee-last-accrued: (get stability-fee-last-accrued vault),
+        is-liquidated: (get is-liquidated vault),
+        auction-ended: (get auction-ended vault),
+        leftover-collateral: (get leftover-collateral vault)
+      }
+    )
+    (ok true)
+  )
+)
+
+;; This method should be ran after a stacking cycle ends to allow withdrawal of STX collateral
+;; Only mark vaults that have revoked stacking
+(define-public (enable-vault-withdrawals (vault-id uint))
+  (let ((vault (get-vault-by-id vault-id)))
+    ;; TODO: (asserts! (is-eq tx-sender smart-contract-owner) (err err-unauthorized))
+    (asserts! (is-eq "stx" (get collateral-token vault)) (err err-unauthorized))
+
+    (if (is-eq true (get revoked-stacking vault))
+      (begin
+        (map-set vaults
+          { id: vault-id }
+          {
+            id: vault-id,
+            owner: (get owner vault),
+            collateral: (get collateral vault),
+            collateral-type: (get collateral-type vault),
+            collateral-token: (get collateral-token vault),
+            stacked-tokens: u0,
+            revoked-stacking: (get revoked-stacking vault),
+            debt: (get debt vault),
+            created-at-block-height: (get created-at-block-height vault),
+            updated-at-block-height: block-height,
+            stability-fee: (get stability-fee vault),
+            stability-fee-last-accrued: (get stability-fee-last-accrued vault),
+            is-liquidated: (get is-liquidated vault),
+            auction-ended: (get auction-ended vault),
+            leftover-collateral: (get leftover-collateral vault)
+          }
+        )
+        (ok true)
+      )
+      (ok true)
+    )
+  )
+)
+
 (define-public (collateralize-and-mint
     (collateral-amount uint)
     (debt uint)
@@ -142,6 +243,7 @@
                 collateral-type: collateral-type,
                 collateral-token: collateral-token,
                 stacked-tokens: (resolve-stacking-amount collateral-amount collateral-token),
+                revoked-stacking: false,
                 debt: debt,
                 created-at-block-height: block-height,
                 updated-at-block-height: block-height,
@@ -178,6 +280,7 @@
               collateral-type: (get collateral-type vault),
               collateral-token: (get collateral-token vault),
               stacked-tokens: (+ (get stacked-tokens vault) (resolve-stacking-amount uamount (get collateral-token vault))),
+              revoked-stacking: (get revoked-stacking vault),
               debt: (get debt vault),
               created-at-block-height: (get created-at-block-height vault),
               updated-at-block-height: block-height,
@@ -218,6 +321,7 @@
                 collateral-type: (get collateral-type vault),
                 collateral-token: (get collateral-token vault),
                 stacked-tokens: (get stacked-tokens vault),
+                revoked-stacking: (get revoked-stacking vault),
                 debt: (get debt vault),
                 created-at-block-height: (get created-at-block-height vault),
                 updated-at-block-height: block-height,
@@ -260,6 +364,7 @@
               collateral-type: (get collateral-type vault),
               collateral-token: (get collateral-token vault),
               stacked-tokens: (get stacked-tokens vault),
+              revoked-stacking: (get revoked-stacking vault),
               debt: new-total-debt,
               created-at-block-height: (get created-at-block-height vault),
               updated-at-block-height: block-height,
@@ -302,6 +407,7 @@
                     collateral-type: (get collateral-type vault),
                     collateral-token: (get collateral-token vault),
                     stacked-tokens: (get stacked-tokens vault),
+                    revoked-stacking: (get revoked-stacking vault),
                     debt: u0,
                     created-at-block-height: (get created-at-block-height vault),
                     updated-at-block-height: block-height,
@@ -329,6 +435,7 @@
                 collateral-type: (get collateral-type vault),
                 collateral-token: (get collateral-token vault),
                 stacked-tokens: (get stacked-tokens vault),
+                revoked-stacking: (get revoked-stacking vault),
                 debt: (- (get debt vault) debt),
                 created-at-block-height: (get created-at-block-height vault),
                 updated-at-block-height: block-height,
@@ -381,6 +488,7 @@
               collateral-type: (get collateral-type vault),
               collateral-token: (get collateral-token vault),
               stacked-tokens: (get stacked-tokens vault),
+              revoked-stacking: (get revoked-stacking vault),
               debt: (get debt vault),
               created-at-block-height: (get created-at-block-height vault),
               updated-at-block-height: block-height,
@@ -412,6 +520,7 @@
             collateral-type: (get collateral-type vault),
             collateral-token: (get collateral-token vault),
             stacked-tokens: (get stacked-tokens vault),
+            revoked-stacking: (get revoked-stacking vault),
             debt: (get debt vault),
             created-at-block-height: (get created-at-block-height vault),
             updated-at-block-height: block-height,
@@ -444,6 +553,7 @@
                 collateral-type: (get collateral-type vault),
                 collateral-token: (get collateral-token vault),
                 stacked-tokens: (get stacked-tokens vault),
+                revoked-stacking: (get revoked-stacking vault),
                 debt: (get debt vault),
                 created-at-block-height: (get created-at-block-height vault),
                 updated-at-block-height: block-height,
@@ -479,6 +589,7 @@
               collateral-type: (get collateral-type vault),
               collateral-token: (get collateral-token vault),
               stacked-tokens: (get stacked-tokens vault),
+              revoked-stacking: (get revoked-stacking vault),
               debt: (get debt vault),
               created-at-block-height: (get created-at-block-height vault),
               updated-at-block-height: block-height,
@@ -515,6 +626,7 @@
             collateral-type: (get collateral-type vault),
             collateral-token: (get collateral-token vault),
             stacked-tokens: (get stacked-tokens vault),
+            revoked-stacking: (get revoked-stacking vault),
             debt: (get debt vault),
             created-at-block-height: (get created-at-block-height vault),
             updated-at-block-height: block-height,

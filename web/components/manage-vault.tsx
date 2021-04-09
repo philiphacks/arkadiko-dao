@@ -68,7 +68,8 @@ export const ManageVault = ({ match }) => {
           leftoverCollateral: data['leftover-collateral'].value,
           debt: data['debt'].value,
           stackedTokens: data['stacked-tokens'].value,
-          collateralData: {}
+          revokedStacking: data['revoked-stacking'].value,
+          collateralData: {},
         });
         setReserveName(resolveReserveName(data['collateral-token'].value));
         setIsLiquidated(data['is-liquidated'].value);
@@ -313,6 +314,42 @@ export const ManageVault = ({ match }) => {
         setTxId(data.txId);
         setTxStatus('pending');
         setShowMintModal(false);
+      },
+    });
+  };
+
+  const callToggleStacking = async () => {
+    const authOrigin = getAuthOrigin();
+    await doContractCall({
+      network,
+      authOrigin,
+      contractAddress,
+      contractName: 'freddie',
+      functionName: 'toggle-stacking',
+      functionArgs: [uintCV(match.params.id)],
+      postConditionMode: 0x01,
+      finished: data => {
+        console.log('finished toggling stacking!', data, data.txId);
+        setTxId(data.txId);
+        setTxStatus('pending');
+      },
+    });
+  };
+
+  const stackCollateral = async () => {
+    const authOrigin = getAuthOrigin();
+    await doContractCall({
+      network,
+      authOrigin,
+      contractAddress,
+      contractName: 'freddie',
+      functionName: 'stack-collateral',
+      functionArgs: [uintCV(match.params.id)],
+      postConditionMode: 0x01,
+      finished: data => {
+        console.log('finished stacking!', data, data.txId);
+        setTxId(data.txId);
+        setTxStatus('pending');
       },
     });
   };
@@ -788,27 +825,29 @@ export const ManageVault = ({ match }) => {
 
                       <div className="max-w-xl text-sm text-gray-500">
                         <p>
-                          <Text onClick={() => setShowWithdrawModal(true)}
-                                _hover={{ cursor: 'pointer'}}
-                                className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            Withdraw
-                          </Text>
+                          {maximumCollateralToWithdraw > 0 ? (
+                            <Text onClick={() => setShowWithdrawModal(true)}
+                                  _hover={{ cursor: 'pointer'}}
+                                  className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                              Withdraw
+                            </Text>
+                          ) : null}
                         </p>
                       </div>
                     </div>
 
-                    {vault?.stackedTokens > 0 ? (
+                    {vault?.stackedTokens > 0 && !vault?.revokedStacking ? (
                       <div className="mt-8 sm:flex sm:items-start sm:justify-between">
                         <div className="max-w-xl text-sm text-gray-500">
                           <p>
-                            You cannot withdraw your collateral since it is stacked until block 678358. <br/>
+                            You cannot withdraw your collateral since it is stacked until this 2-week cycle ends. <br/>
                             Unstack your collateral to unlock it for withdrawal.
                           </p>
                         </div>
 
                         <div className="max-w-xl text-sm text-gray-500">
                           <p>
-                            <Text onClick={() => setShowWithdrawModal(true)}
+                            <Text onClick={() => callToggleStacking()}
                                   _hover={{ cursor: 'pointer'}}
                                   className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                               Unstack
@@ -816,7 +855,44 @@ export const ManageVault = ({ match }) => {
                           </p>
                         </div>
                       </div>
-                    ): null }
+                    ) : vault?.stackedTokens > 0 && vault?.revokedStacking ? (
+                      <div className="mt-8 sm:flex sm:items-start sm:justify-between">
+                        <div className="max-w-xl text-sm text-gray-500">
+                          <p>
+                            You cannot withdraw your collateral since it is stacked until this 2-week cycle ends. <br/>
+                            You have unstacked your collateral, so it will be unlocked for withdrawal soon.
+                          </p>
+                        </div>
+
+                        <div className="max-w-xl text-sm text-gray-500">
+                          <p>
+                            <Text onClick={() => callToggleStacking()}
+                                  _hover={{ cursor: 'pointer'}}
+                                  className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                              Restack
+                            </Text>
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-8 sm:flex sm:items-start sm:justify-between">
+                        <div className="max-w-xl text-sm text-gray-500">
+                          <p>
+                            You are not stacking your collateral.
+                          </p>
+                        </div>
+
+                        <div className="max-w-xl text-sm text-gray-500">
+                          <p>
+                            <Text onClick={() => stackCollateral()}
+                                  _hover={{ cursor: 'pointer'}}
+                                  className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                              Stack
+                            </Text>
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </li>

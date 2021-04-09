@@ -176,23 +176,6 @@
 )
 
 ;; setters accessible only by DAO contract
-
-;; TODO - add security!
-(define-public (add-tokens-to-stack (token-amount uint))
-  (if true
-    (ok (var-set tokens-to-stack (+ token-amount (var-get tokens-to-stack))))
-    (err u0)
-  )
-)
-
-;; TODO - add security!
-(define-public (subtract-tokens-to-stack (token-amount uint))
-  (if true
-    (ok (var-set tokens-to-stack (- (var-get tokens-to-stack) token-amount)))
-    (err u0)
-  )
-)
-
 (define-public (add-collateral-type (token (string-ascii 12)) (collateral-type (string-ascii 12)))
   (if (is-eq contract-caller .dao)
     (begin
@@ -543,6 +526,22 @@
 ;;   (ok true)
 ;; )
 
+;; TODO - add security!
+(define-public (add-tokens-to-stack (token-amount uint))
+  (if true
+    (ok (var-set tokens-to-stack (+ token-amount (var-get tokens-to-stack))))
+    (err u0)
+  )
+)
+
+;; TODO - add security!
+(define-public (subtract-tokens-to-stack (token-amount uint))
+  (if true
+    (ok (var-set tokens-to-stack (- (var-get tokens-to-stack) token-amount)))
+    (err u0)
+  )
+)
+
 ;; DAO can initiate stacking for the STX reserve
 ;; Iterate over all vaults that are not initiated yet
 ;; to calculate the amount to stack
@@ -559,21 +558,20 @@
 ;; random addr to use for hashbytes
 ;; 0xf632e6f9d29bfb07bc8948ca6e0dd09358f003ac
 ;; 0x00
-(define-public (initiate-stacking (amount-ustx uint)
-                              (pox-addr (tuple (version (buff 1)) (hashbytes (buff 20))))
-                              (start-burn-ht uint)
-                              (lock-period uint))
+(define-public (initiate-stacking (pox-addr (tuple (version (buff 1)) (hashbytes (buff 20))))
+                                  (start-burn-ht uint)
+                                  (lock-period uint))
   ;; 1. check `get-stacking-minimum` to see if we have > minimum tokens
   ;; 2. call `stack-stx` for 1 `lock-period` fixed
   (if (is-eq contract-caller .dao)
-    (if (unwrap! (contract-call? .mock-pox can-stack-stx pox-addr amount-ustx start-burn-ht lock-period) (err u0))
+    (if (unwrap! (contract-call? .mock-pox can-stack-stx pox-addr (var-get tokens-to-stack) start-burn-ht lock-period) (err u0))
       (begin
-        (let ((result (unwrap-panic (contract-call? .mock-pox stack-stx amount-ustx pox-addr start-burn-ht lock-period))))
+        (let ((result (unwrap-panic (contract-call? .mock-pox stack-stx (var-get tokens-to-stack) pox-addr start-burn-ht lock-period))))
           (var-set unlock-burn-height (get unlock-burn-height result))
           (ok (get lock-amount result))
         )
       )
-      (err u0) ;; cannot stack yet - probably cause we have not reached the minimum with amount-ustx
+      (err u0) ;; cannot stack yet - probably cause we have not reached the minimum with (var-get tokens-to-stack)
     )
     (err err-unauthorized)
   )
