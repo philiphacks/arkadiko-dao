@@ -6,7 +6,7 @@ import {
   TxBroadcastResultRejected,
   makeContractCall
 } from "@stacks/transactions";
-import { StacksTestnet } from "@stacks/network";
+import { StacksTestnet, StacksMainnet } from "@stacks/network";
 
 import * as fs from "fs";
 const fetch = require("node-fetch");
@@ -78,7 +78,12 @@ export async function callContractFunction(contractName: string, functionName: s
 }
 
 export async function deployContract(contractName: string, changeCode: (str: string) => string = unchanged) {
-  const codeBody = fs.readFileSync(`./contracts/${contractName}.clar`).toString();
+  let codeBody;
+  if (env === 'mocknet') {
+    codeBody = fs.readFileSync(`./contracts/${contractName}.clar`).toString();
+  } else {
+    codeBody = fs.readFileSync(`./clarity/contracts/${contractName}.clar`).toString();
+  }
   var transaction = await makeContractDeploy({
     contractName,
     codeBody: changeCode(codeBody),

@@ -58,6 +58,13 @@ export const Mint = () => {
     await broadcastTransaction(transaction, network);
   };
 
+  const addTestnetStx = async () => {
+    const url = `https://stacks-node-api.testnet.stacks.co/extended/v1/debug/faucet?address=${address}`;
+    await fetch(url, {
+      method: 'POST',
+    });
+  };
+
   const callCollateralizeAndMint = async () => {
     const args = [
       uintCV(10 * 1000000),
@@ -94,8 +101,8 @@ export const Mint = () => {
                   </Link>
                 </Box>
               ) : (
-                <Link onClick={() => addMocknetStx()} color="blue" display="inline-block" my={3} ml={5}>
-                  Drain the faucet on testnet
+                <Link onClick={() => addTestnetStx()} color="blue" display="inline-block" my={3} ml={5}>
+                  (Get STX from testnet)
                 </Link>
               )}
             </h2>
