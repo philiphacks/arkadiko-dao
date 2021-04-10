@@ -321,7 +321,7 @@
                 )
                 ;; auction is over - close all bids
                 ;; send collateral to winning bidders
-                (ok (unwrap-panic (close-auction auction-id)))
+                (ok (unwrap! (close-auction auction-id) (err u666)))
                 (err u0)
               )
             )

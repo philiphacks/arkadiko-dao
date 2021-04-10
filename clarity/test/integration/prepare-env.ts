@@ -126,7 +126,7 @@ const addMocknetStx = async (address: string) => {
 
   const transaction = await makeSTXTokenTransfer({
     recipient: standardPrincipalCV(address),
-    amount: new BN(500000000),
+    amount: new BN(5000000000),
     senderKey: privateKeyToString(senderKey),
     network: network
   });
@@ -181,16 +181,16 @@ describe("environment prep", () => {
       // setTimeout(async () => handleTransaction(await makeContractCall(txOptions)), 10000);
 
       // 2b. Set the price of DIKO
-      const dikoTxOptions = {
-        contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
-        contractName: 'oracle',
-        functionName: 'update-price',
-        functionArgs: [stringAsciiCV('diko'), uintCV(stxPrice * 100)],
-        senderKey: secretDeployKey,
-        postConditionMode: 1,
-        network
-      };
-      setTimeout(async () => handleTransaction(await makeContractCall(dikoTxOptions)), 20000);
+      // const dikoTxOptions = {
+      //   contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
+      //   contractName: 'oracle',
+      //   functionName: 'update-price',
+      //   functionArgs: [stringAsciiCV('diko'), uintCV(stxPrice * 100)],
+      //   senderKey: secretDeployKey,
+      //   postConditionMode: 1,
+      //   network
+      // };
+      // setTimeout(async () => handleTransaction(await makeContractCall(dikoTxOptions)), 20000);
 
       // 3. Add at least one vault per address and collateral type
       const collateralTypes = [
@@ -217,8 +217,8 @@ describe("environment prep", () => {
       index = 1;
       testnetKeyMap.forEach(async (element) => {
         setTimeout(async () => {
-          let collateralAmount = randomNumber(300, 450);
-          let usdAmount = randomNumber(100, 0.5 * collateralAmount * stxPrice);
+          let collateralAmount = randomNumber(3000, 4500);
+          let usdAmount = randomNumber(0.1 * collateralAmount, 0.2 * collateralAmount * stxPrice);
           let collateralType = collateralTypes[randomNumber(0, 2)];
           let mintVaultArgs = [
             uintCV(collateralAmount * 1000000),

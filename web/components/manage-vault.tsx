@@ -844,7 +844,7 @@ export const ManageVault = ({ match }) => {
                       ) : null }
                     </div>
 
-                    {vault?.stackedTokens > 0 && !vault?.revokedStacking ? (
+                    {isVaultOwner && vault?.stackedTokens > 0 && !vault?.revokedStacking ? (
                       <div className="mt-8 sm:flex sm:items-start sm:justify-between">
                         <div className="max-w-xl text-sm text-gray-500">
                           <p>
@@ -865,7 +865,7 @@ export const ManageVault = ({ match }) => {
                            ) : null }
                         </div>
                       </div>
-                    ) : vault?.stackedTokens > 0 && vault?.revokedStacking ? (
+                    ) : isVaultOwner && vault?.stackedTokens > 0 && vault?.revokedStacking ? (
                       <div className="mt-8 sm:flex sm:items-start sm:justify-between">
                         <div className="max-w-xl text-sm text-gray-500">
                           <p>
@@ -886,7 +886,7 @@ export const ManageVault = ({ match }) => {
                           ) : null }
                         </div>
                       </div>
-                    ) : (
+                    ) : isVaultOwner ? (
                       <div className="mt-8 sm:flex sm:items-start sm:justify-between">
                         <div className="max-w-xl text-sm text-gray-500">
                           <p>
@@ -906,7 +906,7 @@ export const ManageVault = ({ match }) => {
                           ) : null }
                         </div>
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 </div>
               </li>
