@@ -99,7 +99,7 @@ export const Auction: React.FC<AuctionProps> = ({ id, lotId, collateralToken, de
         </span>
       </td>
       <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
-        <span className="text-gray-900 font-medium">${price / 100}</span>
+        <span className="text-gray-900 font-medium">${(price / 100).toFixed(2)}</span>
       </td>
       <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
         <span className="text-gray-900 font-medium">${(debt / 1000000).toFixed(4)}</span>
