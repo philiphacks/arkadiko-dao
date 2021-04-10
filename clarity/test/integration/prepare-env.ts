@@ -169,16 +169,16 @@ describe("environment prep", () => {
       // });
 
       // 2. Set the price of STX
-      const txOptions = {
-        contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
-        contractName: 'oracle',
-        functionName: 'update-price',
-        functionArgs: [stringAsciiCV('stx'), uintCV(stxPrice * 100)],
-        senderKey: secretDeployKey,
-        postConditionMode: 1,
-        network
-      };
-      setTimeout(async () => handleTransaction(await makeContractCall(txOptions)), 10000);
+      // const txOptions = {
+      //   contractAddress: 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP',
+      //   contractName: 'oracle',
+      //   functionName: 'update-price',
+      //   functionArgs: [stringAsciiCV('stx'), uintCV(stxPrice * 100)],
+      //   senderKey: secretDeployKey,
+      //   postConditionMode: 1,
+      //   network
+      // };
+      // setTimeout(async () => handleTransaction(await makeContractCall(txOptions)), 10000);
 
       // 2b. Set the price of DIKO
       const dikoTxOptions = {
