@@ -13,12 +13,13 @@ const fetch = require("node-fetch");
 
 import { ADDR1, ADDR4, testnetKeyMap } from "./mocknet";
 
-export const local = true;
-export const mocknet = true;
-export const noSidecar = false;
+const env = 'mocknet'; // mocknet, testnet or mainnet
+const mocknet = (env === 'mocknet');
 
-const STACKS_CORE_API_URL = local ? noSidecar ? "http://localhost:20443" : "http://localhost:3999" : "https://stacks-node-api.blockstack.org";
-export const STACKS_API_URL = local ? "http://localhost:3999" : "https://stacks-node-api.blockstack.org";
+const STACKS_CORE_API_URL =
+  (env === 'mocknet') ? "http://localhost:3999" :
+  (env === 'testnet') ? "https://stacks-node-api.testnet.stacks.co" :
+  "https://stacks-node-api.mainnet.stacks.co";
 export const network = new StacksTestnet();
 network.coreApiUrl = STACKS_CORE_API_URL;
 
@@ -96,24 +97,14 @@ function timeout(ms: number) {
 }
 
 async function processing(tx: String, count: number = 0): Promise<boolean> {
-  return noSidecar
-    ? processingWithoutSidecar(tx, count)
-    : processingWithSidecar(tx, count);
-}
-
-async function processingWithoutSidecar(
-  tx: String,
-  count: number = 0
-): Promise<boolean> {
-  await timeout(10000);
-  return true;
+  return processingWithSidecar(tx, count);
 }
 
 async function processingWithSidecar(
   tx: String,
   count: number = 0
 ): Promise<boolean> {
-  const url = `${STACKS_API_URL}/extended/v1/tx/${tx}`;
+  const url = `${STACKS_CORE_API_URL}/extended/v1/tx/${tx}`;
   var result = await fetch(url);
   var value = await result.json();
   console.log(count);

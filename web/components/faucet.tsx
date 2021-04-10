@@ -16,17 +16,20 @@ export const Faucet = ({ address: _address = '' }: { address: string }) => {
   const [success, setSuccess] = useState(false);
 
   const client = getRPCClient();
+  const env = process.env.REACT_APP_NETWORK_ENV || 'testnet';
 
   const handleInput = (evt: React.FormEvent<HTMLInputElement>) => {
     setAddress(evt.currentTarget.value || '');
   };
 
   const getServerURL = () => {
-    const { origin } = location;
-    if (origin.includes('localhost')) {
+    if (env.includes('localhost')) {
       return 'http://localhost:3999';
+    } else if (env.includes('testnet')) {
+      return 'https://stacks-node-api.testnet.stacks.co';
     }
-    return 'https://stacks-node-api.blockstack.org'; // https://stacks-node-api.testnet.stacks.co or mainnet
+
+    return 'https://stacks-node-api.mainnet.stacks.co';
   };
 
   const waitForBalance = async (currentBalance: number, attempts: number) => {

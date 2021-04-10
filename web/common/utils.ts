@@ -6,9 +6,11 @@ import { StacksTestnet } from '@stacks/network';
 dayjs.extend(relativeTime);
 const env = process.env.REACT_APP_NETWORK_ENV || 'testnet';
 
-let coreApiUrl = 'https://stacks-node-api.xenon.blockstack.org';
-if (location.origin.includes('localhost')) {
+let coreApiUrl = 'https://stacks-node-api.mainnet.stacks.co';
+if (env.includes('mocknet')) {
   coreApiUrl = 'http://localhost:3999';
+} else if (env.includes('testnet')) {
+  coreApiUrl = 'https://stacks-node-api.testnet.stacks.co';
 }
 
 export const getRPCClient = () => {
