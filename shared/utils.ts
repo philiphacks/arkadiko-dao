@@ -7,20 +7,21 @@ import {
   makeContractCall
 } from "@stacks/transactions";
 import { StacksTestnet, StacksMainnet } from "@stacks/network";
+require('dotenv').config();
 
 import * as fs from "fs";
 const fetch = require("node-fetch");
 
 import { ADDR1, ADDR4, testnetKeyMap } from "./mocknet";
 
-const env = 'mocknet'; // mocknet, testnet or mainnet
+const env = process.env.NETWORK_ENV || 'mocknet'; // mocknet, testnet or mainnet
 const mocknet = (env === 'mocknet');
 
 const STACKS_CORE_API_URL =
   (env === 'mocknet') ? "http://localhost:3999" :
   (env === 'testnet') ? "https://stacks-node-api.testnet.stacks.co" :
   "https://stacks-node-api.mainnet.stacks.co";
-export const network = new StacksTestnet();
+export const network = (env === 'mainnet') ? new StacksMainnet() : new StacksTestnet();
 network.coreApiUrl = STACKS_CORE_API_URL;
 
 const keys =

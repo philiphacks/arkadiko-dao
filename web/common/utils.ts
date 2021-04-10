@@ -1,7 +1,7 @@
 import { RPCClient } from '@stacks/rpc-client';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import { StacksTestnet } from '@stacks/network';
+import { StacksMainnet, StacksTestnet } from '@stacks/network';
 
 dayjs.extend(relativeTime);
 const env = process.env.REACT_APP_NETWORK_ENV || 'testnet';
@@ -19,5 +19,5 @@ export const getRPCClient = () => {
 
 export const toRelativeTime = (ts: number): string => dayjs().to(ts);
 
-export const stacksNetwork = new StacksTestnet();
+export const stacksNetwork = (env === 'mainnet') ? new StacksMainnet() : new StacksTestnet();
 stacksNetwork.coreApiUrl = coreApiUrl;
