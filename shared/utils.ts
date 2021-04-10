@@ -24,7 +24,7 @@ export const network = new StacksTestnet();
 network.coreApiUrl = STACKS_CORE_API_URL;
 
 const keys =
-  mocknet ? testnetKeyMap[ADDR1] :
+  (env === 'mocknet') ? testnetKeyMap[ADDR1] :
   (env === 'testnet') ? JSON.parse(fs.readFileSync("../keychain_testnet.json").toString()).keyInfo :
   JSON.parse(fs.readFileSync("../keychain_mainnet.json").toString()).keyInfo;
 
