@@ -4,14 +4,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import { StacksTestnet } from '@stacks/network';
 
 dayjs.extend(relativeTime);
-
-export const getAuthOrigin = () => {
-  if (location.port === '3001') {
-    return 'http://localhost:8081';
-  }
-  const authOrigin = process.env.AUTH_ORIGIN || 'http://localhost:8080';
-  return authOrigin;
-};
+const env = process.env.REACT_APP_NETWORK_ENV || 'testnet';
 
 let coreApiUrl = 'https://stacks-node-api.xenon.blockstack.org';
 if (location.origin.includes('localhost')) {

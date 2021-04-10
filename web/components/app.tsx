@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { ThemeProvider, theme, Flex, CSSReset } from '@blockstack/ui';
 import { Connect } from '@stacks/connect-react';
 import { AuthOptions } from '@stacks/connect';
-import { getAuthOrigin } from '@common/utils';
 import { UserSession, AppConfig } from '@stacks/auth';
 import { defaultState, AppContext, AppState } from '@common/context';
 import { Header } from '@components/header';
@@ -29,7 +28,6 @@ export const App: React.FC = () => {
     userSession.signUserOut();
     setState(defaultState());
   };
-  const authOrigin = getAuthOrigin();
   const fetchVaults = async (address: string) => {
     const vaults = await callReadOnlyFunction({
       contractAddress,
@@ -199,7 +197,6 @@ export const App: React.FC = () => {
     onCancel: () => {
       console.log('popup closed!');
     },
-    authOrigin,
     appDetails: {
       name: 'Arkadiko',
       icon,

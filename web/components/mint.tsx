@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
 import { Box } from '@blockstack/ui';
-import { getAuthOrigin, stacksNetwork as network } from '@common/utils';
+import { stacksNetwork as network } from '@common/utils';
 import { useSTXAddress } from '@common/use-stx-address';
 import BN from 'bn.js';
 import {
@@ -59,7 +59,6 @@ export const Mint = () => {
   };
 
   const callCollateralizeAndMint = async () => {
-    const authOrigin = getAuthOrigin();
     const args = [
       uintCV(10 * 1000000),
       uintCV(1000000),
@@ -70,7 +69,6 @@ export const Mint = () => {
     ];
     await doContractCall({
       network,
-      authOrigin,
       contractAddress,
       contractName: 'freddie',
       functionName: 'collateralize-and-mint',
