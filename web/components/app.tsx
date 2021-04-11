@@ -17,8 +17,6 @@ type TupleData = { [key: string]: ClarityValue };
 const icon = '/assets/logo.png';
 export const App: React.FC = () => {
   const [state, setState] = React.useState<AppState>(defaultState());
-  const [authResponse, setAuthResponse] = React.useState('');
-  const [appPrivateKey, setAppPrivateKey] = React.useState('');
   const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS || '';
 
   const appConfig = new AppConfig(['store_write', 'publish_data'], document.location.href);
@@ -171,9 +169,6 @@ export const App: React.FC = () => {
       fetchVaults(resolveSTXAddress(userData));
       fetchCollateralTypes(resolveSTXAddress(userData));
       setState(prevState => ({ ...prevState, userData, isStacker: false }));
-      setAppPrivateKey(userData.appPrivateKey);
-    } else if (userSession.isUserSignedIn()) {
-      setAppPrivateKey(userSession.loadUserData().appPrivateKey);
     }
   };
 
@@ -185,10 +180,8 @@ export const App: React.FC = () => {
     manifestPath: '/static/manifest.json',
     redirectTo: '/',
     userSession,
-    finished: ({ userSession, authResponse }) => {
+    finished: ({ userSession }) => {
       const userData = userSession.loadUserData();
-      setAppPrivateKey(userSession.loadUserData().appPrivateKey);
-      setAuthResponse(authResponse);
       fetchBalance(resolveSTXAddress(userData));
       fetchVaults(resolveSTXAddress(userData));
       fetchCollateralTypes(resolveSTXAddress(userData));
@@ -209,8 +202,6 @@ export const App: React.FC = () => {
         <AppContext.Provider value={state}>
           <CSSReset />
           <Flex direction="column" minHeight="100vh" bg="white">
-            {authResponse && <input type="hidden" id="auth-response" value={authResponse} />}
-            {appPrivateKey && <input type="hidden" id="app-private-key" value={appPrivateKey} />}
 
             <Header signOut={signOut} />
             <Routes />
