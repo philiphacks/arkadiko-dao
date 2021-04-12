@@ -1,6 +1,7 @@
 const network = require('@stacks/network');
 require('dotenv').config();
 const env = process.env.NETWORK_ENV;
+const request = require('request-promise');
 
 async function processing(broadcastedResult, tx, count) {
   const url = `${resolveUrl()}/extended/v1/tx/${tx}`;
@@ -27,6 +28,12 @@ async function processing(broadcastedResult, tx, count) {
   setTimeout(function() {
     return processing(broadcastedResult, tx, count + 1);
   }, 3000);
+}
+
+async function getNonce() {
+  const url = `${utils.resolveUrl()}/v2/accounts/${CONTRACT_ADDRESS}?proof=0`;
+  const result = await request(url, { json: true });
+  return result.nonce;
 }
 
 function resolveUrl() {
@@ -56,3 +63,4 @@ function resolveNetwork() {
 exports.resolveUrl = resolveUrl;
 exports.resolveNetwork = resolveNetwork;
 exports.processing = processing;
+exports.getNonce = getNonce;

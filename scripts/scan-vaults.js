@@ -3,14 +3,7 @@ const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS;
 const tx = require('@stacks/transactions');
 const utils = require('./utils');
 const network = utils.resolveNetwork();
-const request = require('request-promise');
 const BN = require('bn.js');
-
-async function getNonce() {
-  const url = `${utils.resolveUrl()}/v2/accounts/${CONTRACT_ADDRESS}?proof=0`;
-  const result = await request(url, { json: true });
-  return result.nonce;
-}
 
 async function getLastVaultId() {
   const lastVaultTx = await tx.callReadOnlyFunction({
@@ -65,7 +58,7 @@ async function getLiquidationRatio(collateralType) {
 }
 
 async function liquidateVault(vaultId) {
-  const nonce = await getNonce();
+  const nonce = await utils.getNonce();
   const txOptions = {
     contractAddress: CONTRACT_ADDRESS,
     contractName: "liquidator",
