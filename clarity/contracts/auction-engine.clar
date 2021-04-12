@@ -317,7 +317,8 @@
               (if
                 (or
                   (>= block-height (get ends-at auction))
-                  (>= (+ (unwrap-panic (is-lot-sold accepted-bid)) (get lots-sold auction)) (get lots auction))
+                  (>= (get total-debt-raised auction) (get debt-to-raise auction))
+                  ;; (>= (+ (unwrap-panic (is-lot-sold accepted-bid)) (get lots-sold auction)) (get lots auction))
                 )
                 ;; auction is over - close all bids
                 ;; send collateral to winning bidders
@@ -386,7 +387,7 @@
     (asserts!
       (or
         (>= block-height (get ends-at auction))
-        (is-eq (get lots-sold auction) (get lots auction))
+        (>= (get total-debt-raised auction) (get debt-to-raise auction))
       )
       (err err-not-authorized)
     )

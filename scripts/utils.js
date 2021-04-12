@@ -53,5 +53,6 @@ function resolveNetwork() {
   }
 }
 
+exports.resolveUrl = resolveUrl;
 exports.resolveNetwork = resolveNetwork;
 exports.processing = processing;
