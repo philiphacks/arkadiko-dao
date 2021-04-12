@@ -317,13 +317,12 @@
               (if
                 (or
                   (>= block-height (get ends-at auction))
-                  (>= (get total-debt-raised auction) (get debt-to-raise auction))
-                  ;; (>= (+ (unwrap-panic (is-lot-sold accepted-bid)) (get lots-sold auction)) (get lots auction))
+                  (>= (- (+ xusd (get total-debt-raised auction)) (get xusd last-bid)) (get debt-to-raise auction))
                 )
                 ;; auction is over - close all bids
                 ;; send collateral to winning bidders
                 (ok (unwrap! (close-auction auction-id) (err u666)))
-                (ok u0)
+                (ok false)
               )
             )
             (err err-xusd-transfer-failed)
@@ -420,10 +419,8 @@
         (get total-debt-raised auction)
       )
       (begin
-        (if (or
-          (<= (get lots-sold auction) (get lots auction)) ;; not all lots are sold
-          (<= (get total-collateral-auctioned auction) (get collateral-amount auction)) ;; we have some collateral left to auction
-        ) ;; if any collateral left to auction
+        (if (<= (get total-collateral-auctioned auction) (get collateral-amount auction)) ;; we have some collateral left to auction
+          ;; if any collateral left to auction
           (ok (unwrap-panic (start-auction
             (get vault-id auction)
             (- (get collateral-amount auction) (get total-collateral-auctioned auction))
