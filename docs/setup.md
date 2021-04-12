@@ -28,9 +28,15 @@ There is no separate CONTRIBUTING.md instructions for now, but you can use the f
 
 ## Creating a Testnet/Mainnet build
 
+### React app
 1. Set REACT_APP_CONTRACT_ADDRESS in .env to the correct address that deploys the smart contracts
 2. Set REACT_APP_NETWORK_ENV in .env to the correct environment (mocknet/testnet/mainnet)
-3. Add correct CONTRACT_PRIVATE_KEY in .env to deploy
-4. Change oracle-owner in oracle.clar to correct address
-5. Comment/Uncomment minting in arkadiko-token.clar
-6. Run deploy script (deploy-contracts.ts)
+
+### Smart Contracts
+1. Add correct CONTRACT_PRIVATE_KEY in .env to deploy
+2. Change oracle-owner in oracle.clar to correct address
+3. Comment/Uncomment minting in arkadiko-token.clar
+4. Run deploy script (deploy-contracts.ts)
+
+For testnet:
+Faucet: curl -X POST "https://stacks-node-api.testnet.stacks.co/extended/v1/faucets/stx?address=<ADDR>"
