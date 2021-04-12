@@ -104,3 +104,22 @@
     (contract-call? .xstx-token mint collateral (as-contract tx-sender))
   )
 )
+
+(define-private (max-of (i1 uint) (i2 uint))
+  (if (> i1 i2)
+      i1
+      i2))
+
+;; redeem stx (and burn xSTX)
+(define-public (redeem-stx (ustx-amount uint))
+  (let ((stx-redeemable (contract-call? .dao get-stx-redeemable)))
+    (if (> stx-redeemable u0)
+      (begin
+        (try! (contract-call? .xstx-token burn (max-of stx-redeemable ustx-amount) tx-sender))
+        (try! (stx-transfer? (max-of stx-redeemable ustx-amount) (as-contract tx-sender) tx-sender))
+        (ok true)
+      )
+      (ok false)
+    )
+  )
+)

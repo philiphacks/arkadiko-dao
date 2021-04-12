@@ -173,6 +173,10 @@
   (ok (var-get tokens-to-stack))
 )
 
+(define-read-only (get-stx-redeemable)
+  (ok (var-get stx-redeemable))
+)
+
 ;; setters accessible only by DAO contract
 (define-public (add-collateral-type (token (string-ascii 12)) (collateral-type (string-ascii 12)))
   (if (is-eq contract-caller .dao)
@@ -585,23 +589,6 @@
 ;; this means we will need to do this manually until some way exists to do this trustless (if ever?)
 (define-public (payout)
   (ok true)
-)
-
-(define-private (max-of (i1 uint) (i2 uint))
-  (if (> i1 i2)
-      i1
-      i2))
-
-;; redeem stx (and burn xSTX)
-(define-public (redeem-stx (ustx-amount uint))
-  (if (> (var-get stx-redeemable) u0)
-    (begin
-      (try! (contract-call? .xstx-token burn (max-of (var-get stx-redeemable) ustx-amount) tx-sender))
-      (try! (stx-transfer? (max-of (var-get stx-redeemable) ustx-amount) (as-contract tx-sender) tx-sender))
-      (ok true)
-    )
-    (ok false)
-  )
 )
 
 ;; Initialize the contract

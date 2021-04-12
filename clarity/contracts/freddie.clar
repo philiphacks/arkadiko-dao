@@ -179,7 +179,11 @@
     ;; TODO: (asserts! (is-eq tx-sender smart-contract-owner) (err err-unauthorized))
     (asserts! (is-eq "stx" (get collateral-token vault)) (err err-unauthorized))
 
-    (if (is-eq true (get revoked-stacking vault))
+    (if
+      (or
+        (is-eq true (get revoked-stacking vault))
+        (is-eq true (get is-liquidated vault))
+      )
       (begin
         (map-set vaults
           { id: vault-id }
