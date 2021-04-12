@@ -578,7 +578,6 @@
 (define-public (finalize-liquidation (vault-id uint) (leftover-collateral uint) (debt-raised uint))
   (if (is-eq contract-caller .auction-engine)
     (let ((vault (get-vault-by-id vault-id)))
-      ;; (try! (as-contract (contract-call? .xusd-token burn debt-raised (as-contract tx-sender))))
       (begin
         (map-set vaults
           { id: vault-id }

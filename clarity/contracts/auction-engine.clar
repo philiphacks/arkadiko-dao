@@ -411,12 +411,15 @@
       }
     )
     (if (>= (get total-debt-raised auction) (get debt-to-raise auction))
-      (contract-call?
-        .freddie
-        finalize-liquidation
-        (get vault-id auction)
-        (- (get collateral-amount auction) (get total-collateral-auctioned auction))
-        (get total-debt-raised auction)
+      (begin
+        (try! (contract-call? .xusd-token burn (get total-debt-raised auction) (as-contract tx-sender)))
+        (contract-call?
+          .freddie
+          finalize-liquidation
+          (get vault-id auction)
+          (- (get collateral-amount auction) (get total-collateral-auctioned auction))
+          (get total-debt-raised auction)
+        )
       )
       (begin
         (if (<= (get total-collateral-auctioned auction) (get collateral-amount auction)) ;; we have some collateral left to auction
