@@ -31,20 +31,18 @@
 )
 
 (define-public (transfer (amount uint) (sender principal) (recipient principal))
-  (begin
-    (ft-transfer? xstx amount sender recipient)
-  )
+  (ft-transfer? xstx amount sender recipient)
 )
 
 (define-public (mint (amount uint) (recipient principal))
   (begin
     (if
       (and
-        (is-eq contract-caller .freddie)
+        (is-eq contract-caller .sip10-reserve)
         (is-ok (ft-mint? xstx amount recipient))
       )
       (ok amount)
-      (err false)
+      (err u0)
     )
   )
 )

@@ -539,39 +539,69 @@
 )
 
 (define-public (liquidate (vault-id uint))
-  (if (is-eq contract-caller .liquidator)
-    (begin
-      (let ((vault (get-vault-by-id vault-id)))
+  ;; TODO: fix this (asserts! (is-eq contract-caller .liquidator) (err err-unauthorized))
+
+  (let ((vault (get-vault-by-id vault-id)))
+    (let ((collateral (get collateral vault)))
+      (if
+        (and
+          (is-eq "stx" (get collateral-token vault))
+          (> (get stacked-tokens vault) u0)
+        )
         (begin
-          (let ((collateral (get collateral vault)))
-            (map-set vaults
-              { id: vault-id }
-              {
-                id: vault-id,
-                owner: (get owner vault),
-                collateral: u0,
-                collateral-type: (get collateral-type vault),
-                collateral-token: (get collateral-token vault),
-                stacked-tokens: (get stacked-tokens vault),
-                revoked-stacking: (get revoked-stacking vault),
-                debt: (get debt vault),
-                created-at-block-height: (get created-at-block-height vault),
-                updated-at-block-height: block-height,
-                stability-fee: (get stability-fee vault),
-                stability-fee-last-accrued: (get stability-fee-last-accrued vault),
-                is-liquidated: true,
-                auction-ended: false,
-                leftover-collateral: u0
-              }
-            )
-            (let ((debt (/ (* (unwrap-panic (contract-call? .dao get-liquidation-penalty (get collateral-type vault))) (get debt vault)) u100)))
-              (ok (tuple (ustx-amount collateral) (debt (+ debt (get debt vault)))))
-            )
+          ;; mint xSTX and sell those until stacking cycle ends
+          (map-set vaults
+            { id: vault-id }
+            {
+              id: vault-id,
+              owner: (get owner vault),
+              collateral: u0,
+              collateral-type: (get collateral-type vault),
+              collateral-token: "xstx",
+              stacked-tokens: (get stacked-tokens vault),
+              revoked-stacking: (get revoked-stacking vault),
+              debt: (get debt vault),
+              created-at-block-height: (get created-at-block-height vault),
+              updated-at-block-height: block-height,
+              stability-fee: (get stability-fee vault),
+              stability-fee-last-accrued: (get stability-fee-last-accrued vault),
+              is-liquidated: true,
+              auction-ended: false,
+              leftover-collateral: u0
+            }
+          )
+          (try! (contract-call? .sip10-reserve mint-xstx collateral))
+          (let ((debt (/ (* (unwrap-panic (contract-call? .dao get-liquidation-penalty (get collateral-type vault))) (get debt vault)) u100)))
+            (ok (tuple (ustx-amount collateral) (debt (+ debt (get debt vault)))))
+          )
+        )
+        (begin
+          (map-set vaults
+            { id: vault-id }
+            {
+              id: vault-id,
+              owner: (get owner vault),
+              collateral: u0,
+              collateral-type: (get collateral-type vault),
+              collateral-token: (get collateral-token vault),
+              stacked-tokens: (get stacked-tokens vault),
+              revoked-stacking: (get revoked-stacking vault),
+              debt: (get debt vault),
+              created-at-block-height: (get created-at-block-height vault),
+              updated-at-block-height: block-height,
+              stability-fee: (get stability-fee vault),
+              stability-fee-last-accrued: (get stability-fee-last-accrued vault),
+              is-liquidated: true,
+              auction-ended: false,
+              leftover-collateral: u0
+            }
+          )
+          (let ((debt (/ (* (unwrap-panic (contract-call? .dao get-liquidation-penalty (get collateral-type vault))) (get debt vault)) u100)))
+            (ok (tuple (ustx-amount collateral) (debt (+ debt (get debt vault)))))
           )
         )
       )
     )
-    (err err-unauthorized)
   )
 )
 
@@ -606,6 +636,10 @@
     )
     (err err-unauthorized)
   )
+)
+
+(define-public (redeem-auction-collateral (ft <mock-ft-trait>) (reserve <vault-trait>) (collateral-amount uint) (sender principal))
+  (contract-call? reserve redeem-collateral ft collateral-amount sender)
 )
 
 (define-public (withdraw-leftover-collateral (vault-id uint) (reserve <vault-trait>) (ft <mock-ft-trait>))

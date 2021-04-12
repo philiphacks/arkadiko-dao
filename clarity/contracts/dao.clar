@@ -38,6 +38,7 @@
 (define-data-var governance-reserve-yield uint u5)
 (define-data-var maximum-debt-surplus uint u100000000)
 (define-data-var tokens-to-stack uint u0)
+(define-data-var stx-redeemable uint u0)
 (define-data-var unlock-burn-height uint u0)
 
 (define-read-only (get-votes-by-member-by-id (proposal-id uint) (member principal))
@@ -584,6 +585,23 @@
 ;; this means we will need to do this manually until some way exists to do this trustless (if ever?)
 (define-public (payout)
   (ok true)
+)
+
+(define-private (max-of (i1 uint) (i2 uint))
+  (if (> i1 i2)
+      i1
+      i2))
+
+;; redeem stx (and burn xSTX)
+(define-public (redeem-stx (ustx-amount uint))
+  (if (> (var-get stx-redeemable) u0)
+    (begin
+      (try! (contract-call? .xstx-token burn (max-of (var-get stx-redeemable) ustx-amount) tx-sender))
+      (try! (stx-transfer? (max-of (var-get stx-redeemable) ustx-amount) (as-contract tx-sender) tx-sender))
+      (ok true)
+    )
+    (ok false)
+  )
 )
 
 ;; Initialize the contract

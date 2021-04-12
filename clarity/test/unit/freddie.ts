@@ -5,6 +5,7 @@ describe("freddie test suite", () => {
   let vaultTrait: Client;
   let daoClient: Client;
   let arkadikoToken: Client;
+  let xstxTokenClient: Client;
   let mockPox: Client;
   let stxReserveClient: Client;
   let oracleClient: Client;
@@ -20,6 +21,7 @@ describe("freddie test suite", () => {
     mockPox = new Client("SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.mock-pox", "mock-pox", provider);
     daoClient = new Client("SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.dao", "dao", provider);
     arkadikoToken = new Client("SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.arkadiko-token", "arkadiko-token", provider);
+    xstxTokenClient = new Client("SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.xstx-token", "xstx-token", provider);
     tokenClient = new Client("SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.xusd-token", "xusd-token", provider);
     stxReserveClient = new Client("SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.stx-reserve", "stx-reserve", provider);
     freddieClient = new Client("SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.freddie", "freddie", provider);
@@ -30,6 +32,7 @@ describe("freddie test suite", () => {
     await vaultTrait.deployContract();
     await tokenClient.deployContract();
     await arkadikoToken.deployContract();
+    await xstxTokenClient.deployContract();
     await mockPox.deployContract();
     await daoClient.deployContract();
     await oracleClient.deployContract();
