@@ -323,7 +323,7 @@
                 ;; auction is over - close all bids
                 ;; send collateral to winning bidders
                 (ok (unwrap! (close-auction auction-id) (err u666)))
-                (err u0)
+                (ok u0)
               )
             )
             (err err-xusd-transfer-failed)
