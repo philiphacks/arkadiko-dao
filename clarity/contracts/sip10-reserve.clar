@@ -112,7 +112,7 @@
 
 ;; redeem stx (and burn xSTX)
 (define-public (redeem-stx (ustx-amount uint))
-  (let ((stx-redeemable (contract-call? .dao get-stx-redeemable)))
+  (let ((stx-redeemable (unwrap-panic (contract-call? .dao get-stx-redeemable))))
     (if (> stx-redeemable u0)
       (begin
         (try! (contract-call? .xstx-token burn (max-of stx-redeemable ustx-amount) tx-sender))

@@ -16,6 +16,7 @@ export const Auctions: React.FC = () => {
   const stxAddress = useSTXAddress();
   const [auctions, setAuctions] = useState([]);
   const [lots, setLots] = useState([]);
+  const [redeemableStx, setRedeemableStx] = useState(0);
   const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS || '';
 
   useEffect(() => {
@@ -109,7 +110,7 @@ export const Auctions: React.FC = () => {
       contractName: 'sip10-reserve',
       functionName: 'redeem-stx',
       functionArgs: [
-        uintCV(200000000)
+        uintCV(state.balance['xstx'])
       ],
       postConditionMode: 0x01,
       finished: data => {
@@ -132,8 +133,8 @@ export const Auctions: React.FC = () => {
 
                   {state.balance['xstx'] > 0 ? (
                     <p className="mt-2">
-                      There are X STX redeemable in the pool. <br/>
-                      You have Y xSTX. <br/>
+                      There are {redeemableStx} STX redeemable in the pool. <br/>
+                      You have {state.balance['xstx'] / 1000000} xSTX. <br/>
 
                       <button type="button" onClick={() => redeemStx()} className="mt-2 px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                         Redeem
