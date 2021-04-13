@@ -259,6 +259,7 @@
       (begin
         (try! (contract-call? .sip10-reserve burn-xstx (min-of stx-redeemable ustx-amount) tx-sender))
         (try! (contract-call? .stx-reserve redeem-xstx (min-of stx-redeemable ustx-amount) tx-sender))
+        (try! (contract-call? .dao subtract-stx-redeemable (min-of stx-redeemable ustx-amount)))
         (ok true)
       )
       (ok false)
