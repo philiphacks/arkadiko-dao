@@ -37,17 +37,14 @@ export const Auctions: React.FC = () => {
         const vault = tupleCV(e);
         const data = vault.data.value;
         if (data['is-open'].value) {
-          const lotSize = parseInt(data['lots'].value, 10);
-          // for (let index = 0; index < lotSize; index++) {
-            serializedAuctions.push({
-              id: data['id'].value,
-              'lot-id': data['lots-sold'].value,
-              'collateral-amount': parseFloat(data['collateral-amount'].value) / lotSize,
-              'collateral-token': data['collateral-token'].value,
-              'debt': parseFloat(data['debt-to-raise'].value) / lotSize,
-              'ends-at': data['ends-at'].value
-            }); 
-          // }
+          serializedAuctions.push({
+            id: data['id'].value,
+            'lot-id': data['lots-sold'].value,
+            'collateral-amount': parseFloat(data['collateral-amount'].value),
+            'collateral-token': data['collateral-token'].value,
+            'debt': parseFloat(data['debt-to-raise'].value),
+            'ends-at': data['ends-at'].value
+          });
         }
       });
 
