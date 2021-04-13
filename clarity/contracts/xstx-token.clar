@@ -3,7 +3,8 @@
 ;; Defines an STX derivative according to the SRC20 Standard
 (define-fungible-token xstx)
 
-(define-constant err-burn-failed u1)
+(define-constant err-burn-failed u1234)
+(define-constant err-unauthorized u403)
 
 (define-read-only (get-total-supply)
   (ok (ft-get-supply xstx))
@@ -48,8 +49,8 @@
 )
 
 (define-public (burn (amount uint) (sender principal))
-  (if (is-eq contract-caller .freddie)
-    (ok (unwrap! (ft-burn? xstx amount sender) (err err-burn-failed)))
-    (err err-burn-failed)
+  (if (is-eq contract-caller .sip10-reserve)
+    (ft-burn? xstx amount sender)
+    (err err-unauthorized)
   )
 )

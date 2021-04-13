@@ -247,8 +247,8 @@
   )
 )
 
-(define-private (max-of (i1 uint) (i2 uint))
-  (if (> i1 i2)
+(define-private (min-of (i1 uint) (i2 uint))
+  (if (< i1 i2)
       i1
       i2))
 
@@ -257,8 +257,8 @@
   (let ((stx-redeemable (unwrap-panic (contract-call? .dao get-stx-redeemable))))
     (if (> stx-redeemable u0)
       (begin
-        (try! (contract-call? .sip10-reserve burn-xstx (max-of stx-redeemable ustx-amount) tx-sender))
-        (try! (contract-call? .stx-reserve redeem-xstx (max-of stx-redeemable ustx-amount) tx-sender))
+        (try! (contract-call? .sip10-reserve burn-xstx (min-of stx-redeemable ustx-amount) tx-sender))
+        (try! (contract-call? .stx-reserve redeem-xstx (min-of stx-redeemable ustx-amount) tx-sender))
         (ok true)
       )
       (ok false)
