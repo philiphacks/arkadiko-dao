@@ -42,6 +42,11 @@
   leftover-collateral: uint
 })
 (define-map vault-entries { user: principal } { ids: (list 1200 uint) })
+(define-map closing-vault
+  { user: principal }
+  { vault-id: uint }
+)
+
 (define-data-var last-vault-id uint u0)
 (define-data-var unlock-burn-height uint u0)
 (define-data-var stx-redeemable uint u0)
@@ -497,6 +502,15 @@
   )
 )
 
+(define-private (remove-burned-vault (vault-id uint))
+  (let ((current-vault (unwrap-panic (map-get? closing-vault { user: tx-sender }))))
+    (if (is-eq vault-id (get vault-id current-vault))
+      false
+      true
+    )
+  )
+)
+
 (define-public (burn (vault-id uint) (debt uint) (reserve <vault-trait>) (ft <mock-ft-trait>))
   (let ((vault (get-vault-by-id vault-id)))
     (asserts! (is-eq tx-sender (get owner vault)) (err err-unauthorized))
@@ -530,10 +544,12 @@
                     leftover-collateral: u0
                   }
                 )
-                ;; TODO: remove vault ID from vault entries
-                ;; (map-set vault-entries { user: tx-sender } { () })
 
-                (ok (map-delete vaults { id: vault-id }))
+                (map-set closing-vault { user: (get owner vault) } { vault-id: vault-id })
+                (if (map-set vault-entries { user: tx-sender } { ids: (filter remove-burned-vault entries) })
+                  (ok (map-delete vaults { id: vault-id }))
+                  (err u0)
+                )
               )
             )
           )
