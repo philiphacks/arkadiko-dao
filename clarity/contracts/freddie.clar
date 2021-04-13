@@ -5,6 +5,9 @@
 ;; Freddie is an abstraction layer that interacts with collateral type reserves (initially only STX)
 ;; Ideally, collateral reserves should never be called from outside. Only manager layers should be interacted with from clients
 
+(define-constant vault-owner 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP) ;; mocknet
+;; (define-constant vault-owner 'ST2YP83431YWD9FNWTTDCQX8B3K0NDKPCV3B1R30H) ;; testnet
+
 ;; errors
 (define-constant err-unauthorized u1)
 (define-constant err-transfer-failed u2)
@@ -176,7 +179,7 @@
 ;; Only mark vaults that have revoked stacking
 (define-public (enable-vault-withdrawals (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
-    ;; TODO: (asserts! (is-eq tx-sender smart-contract-owner) (err err-unauthorized))
+    (asserts! (is-eq tx-sender vault-owner) (err err-unauthorized))
     (asserts! (is-eq "stx" (get collateral-token vault)) (err err-unauthorized))
 
     (if
@@ -208,6 +211,57 @@
         (ok true)
       )
       (ok true)
+    )
+  )
+)
+
+(define-public (enable-redeemable-stx (vault-id uint))
+  (let ((vault (get-vault-by-id vault-id)))
+    (asserts! (is-eq tx-sender vault-owner) (err err-unauthorized))
+    (asserts! (is-eq "xstx" (get collateral-token vault)) (err err-unauthorized))
+    (asserts! (is-eq true (get is-liquidated vault)) (err err-unauthorized))
+    (asserts! (> (get stacked-tokens vault) u0) (err err-unauthorized))
+
+    (try! (contract-call? .dao add-stx-redeemable (get stacked-tokens vault)))
+    (map-set vaults
+      { id: vault-id }
+      {
+        id: vault-id,
+        owner: (get owner vault),
+        collateral: (get collateral vault),
+        collateral-type: (get collateral-type vault),
+        collateral-token: (get collateral-token vault),
+        stacked-tokens: u0,
+        revoked-stacking: (get revoked-stacking vault),
+        debt: (get debt vault),
+        created-at-block-height: (get created-at-block-height vault),
+        updated-at-block-height: block-height,
+        stability-fee: (get stability-fee vault),
+        stability-fee-last-accrued: (get stability-fee-last-accrued vault),
+        is-liquidated: (get is-liquidated vault),
+        auction-ended: (get auction-ended vault),
+        leftover-collateral: (get leftover-collateral vault)
+      }
+    )
+    (ok true)
+  )
+)
+
+(define-private (max-of (i1 uint) (i2 uint))
+  (if (> i1 i2)
+      i1
+      i2))
+
+;; redeem stx (and burn xSTX)
+(define-public (redeem-stx (ustx-amount uint))
+  (let ((stx-redeemable (unwrap-panic (contract-call? .dao get-stx-redeemable))))
+    (if (> stx-redeemable u0)
+      (begin
+        (try! (contract-call? .sip10-reserve burn-xstx (max-of stx-redeemable ustx-amount) tx-sender))
+        (try! (contract-call? .stx-reserve redeem-xstx (max-of stx-redeemable ustx-amount) tx-sender))
+        (ok true)
+      )
+      (ok false)
     )
   )
 )

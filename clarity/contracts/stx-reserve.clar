@@ -130,3 +130,14 @@
     (as-contract (stx-transfer? stx-collateral (as-contract tx-sender) owner))
   )
 )
+
+(define-public (redeem-xstx (ustx-amount uint) (sender principal))
+  (begin
+    (asserts! (is-eq contract-caller .freddie) (err err-unauthorized))
+
+    (match (print (as-contract (stx-transfer? ustx-amount (as-contract tx-sender) sender)))
+      transferred (ok true)
+      error (err err-transfer-failed)
+    )
+  )
+)

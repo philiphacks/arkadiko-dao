@@ -94,7 +94,19 @@ export const Auctions: React.FC = () => {
           }
         }
       });
+
       setAuctions(serializedAuctions);
+
+      const stxRedeemable = await callReadOnlyFunction({
+        contractAddress,
+        contractName: "dao",
+        functionName: "get-stx-redeemable",
+        functionArgs: [],
+        senderAddress: stxAddress || '',
+        network: network,
+      });
+      const jsonStxRedeemable = cvToJSON(stxRedeemable);
+      setRedeemableStx(jsonStxRedeemable.value.value);
     };
     if (mounted) {
       void getData();
@@ -107,7 +119,7 @@ export const Auctions: React.FC = () => {
     await doContractCall({
       network,
       contractAddress,
-      contractName: 'sip10-reserve',
+      contractName: 'freddie',
       functionName: 'redeem-stx',
       functionArgs: [
         uintCV(state.balance['xstx'])
@@ -133,7 +145,7 @@ export const Auctions: React.FC = () => {
 
                   {state.balance['xstx'] > 0 ? (
                     <p className="mt-2">
-                      There are {redeemableStx} STX redeemable in the pool. <br/>
+                      There are {redeemableStx / 1000000} STX redeemable in the pool. <br/>
                       You have {state.balance['xstx'] / 1000000} xSTX. <br/>
 
                       <button type="button" onClick={() => redeemStx()} className="mt-2 px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">

@@ -544,6 +544,22 @@
   )
 )
 
+;; TODO - add security!
+(define-public (add-stx-redeemable (token-amount uint))
+  (if true
+    (ok (var-set stx-redeemable (+ token-amount (var-get stx-redeemable))))
+    (err u0)
+  )
+)
+
+;; TODO - add security!
+(define-public (subtract-stx-redeemable (token-amount uint))
+  (if true
+    (ok (var-set stx-redeemable (- (var-get stx-redeemable) token-amount)))
+    (err u0)
+  )
+)
+
 ;; DAO can initiate stacking for the STX reserve
 ;; Iterate over all vaults that are not initiated yet
 ;; to calculate the amount to stack
