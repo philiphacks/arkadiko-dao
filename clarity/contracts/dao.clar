@@ -11,6 +11,9 @@
 (define-constant err-unauthorized u401)
 (define-constant status-ok u200)
 
+(define-constant dao-owner 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP) ;; mocknet
+;; (define-constant dao-owner 'ST2YP83431YWD9FNWTTDCQX8B3K0NDKPCV3B1R30H) ;; testnet
+
 ;; proposal variables
 (define-map proposals
   { id: uint }
@@ -167,207 +170,217 @@
 )
 
 ;; setters accessible only by DAO contract
-(define-public (add-collateral-type (token (string-ascii 12)) (collateral-type (string-ascii 12)))
-  (if (is-eq contract-caller .dao)
-    (begin
-      (map-set collateral-types
-        { token: collateral-type }
-        {
-          name: "Stacks",
-          token: token,
-          token-type: collateral-type,
-          url: "https://www.stacks.co/",
-          total-debt: u0,
-          liquidation-ratio: u150,
-          collateral-to-debt-ratio: u200,
-          maximum-debt: u100000000000000,
-          liquidation-penalty: u13,
-          stability-fee: u1363, ;; 0.001363077% daily percentage == 1% APY
-          stability-fee-apy: u50 ;; 50 basis points
-        }
-      )
-      (ok true)
+(define-public (add-collateral-type (name (string-ascii 12))
+                                    (token (string-ascii 12))
+                                    (url (string-ascii 256))
+                                    (collateral-type (string-ascii 12))
+                                    (liquidation-ratio uint)
+                                    (liquidation-penalty uint)
+                                    (stability-fee uint)
+                                    (stability-fee-apy uint)
+                                    (maximum-debt uint))
+  (begin
+    (asserts! (is-eq dao-owner tx-sender) (err err-unauthorized))
+
+    (map-set collateral-types
+      { token: collateral-type }
+      {
+        name: name,
+        token: token,
+        token-type: collateral-type,
+        url: url,
+        total-debt: u0,
+        liquidation-ratio: liquidation-ratio,
+        collateral-to-debt-ratio: u200,
+        maximum-debt: maximum-debt,
+        liquidation-penalty: liquidation-penalty,
+        stability-fee: stability-fee,
+        stability-fee-apy: stability-fee-apy
+      }
     )
-    (err false)
+    (ok true)
   )
 )
 
 (define-public (add-debt-to-collateral-type (token (string-ascii 12)) (debt uint))
-  (let ((collateral-type (get-collateral-type-by-token token)))
-    (map-set collateral-types
-      { token: token }
-      {
-        name: (get name collateral-type),
-        token: (get token collateral-type),
-        token-type: (get token-type collateral-type),
-        url: (get url collateral-type),
-        total-debt: (+ debt (get total-debt collateral-type)),
-        liquidation-ratio: (get liquidation-ratio collateral-type),
-        collateral-to-debt-ratio: (get collateral-to-debt-ratio collateral-type),
-        maximum-debt: (get maximum-debt collateral-type),
-        liquidation-penalty: (get liquidation-penalty collateral-type),
-        stability-fee: (get stability-fee collateral-type),
-        stability-fee-apy: (get stability-fee-apy collateral-type)
-      }
+  (begin
+    (asserts! (is-eq contract-caller .freddie) (err err-unauthorized))
+
+    (let ((collateral-type (get-collateral-type-by-token token)))
+      (map-set collateral-types
+        { token: token }
+        {
+          name: (get name collateral-type),
+          token: (get token collateral-type),
+          token-type: (get token-type collateral-type),
+          url: (get url collateral-type),
+          total-debt: (+ debt (get total-debt collateral-type)),
+          liquidation-ratio: (get liquidation-ratio collateral-type),
+          collateral-to-debt-ratio: (get collateral-to-debt-ratio collateral-type),
+          maximum-debt: (get maximum-debt collateral-type),
+          liquidation-penalty: (get liquidation-penalty collateral-type),
+          stability-fee: (get stability-fee collateral-type),
+          stability-fee-apy: (get stability-fee-apy collateral-type)
+        }
+      )
+      (ok debt)
     )
-    (ok debt)
   )
 )
 
 (define-public (subtract-debt-from-collateral-type (token (string-ascii 12)) (debt uint))
-  (let ((collateral-type (get-collateral-type-by-token token)))
-    (map-set collateral-types
-      { token: token }
-      {
-        name: (get name collateral-type),
-        token: (get token collateral-type),
-        token-type: (get token-type collateral-type),
-        url: (get url collateral-type),
-        total-debt: (- debt (get total-debt collateral-type)),
-        liquidation-ratio: (get liquidation-ratio collateral-type),
-        collateral-to-debt-ratio: (get collateral-to-debt-ratio collateral-type),
-        maximum-debt: (get maximum-debt collateral-type),
-        liquidation-penalty: (get liquidation-penalty collateral-type),
-        stability-fee: (get stability-fee collateral-type),
-        stability-fee-apy: (get stability-fee-apy collateral-type)
-      }
+  (begin
+    (asserts! (is-eq contract-caller .freddie) (err err-unauthorized))
+
+    (let ((collateral-type (get-collateral-type-by-token token)))
+      (map-set collateral-types
+        { token: token }
+        {
+          name: (get name collateral-type),
+          token: (get token collateral-type),
+          token-type: (get token-type collateral-type),
+          url: (get url collateral-type),
+          total-debt: (- debt (get total-debt collateral-type)),
+          liquidation-ratio: (get liquidation-ratio collateral-type),
+          collateral-to-debt-ratio: (get collateral-to-debt-ratio collateral-type),
+          maximum-debt: (get maximum-debt collateral-type),
+          liquidation-penalty: (get liquidation-penalty collateral-type),
+          stability-fee: (get stability-fee collateral-type),
+          stability-fee-apy: (get stability-fee-apy collateral-type)
+        }
+      )
+      (ok debt)
     )
-    (ok debt)
   )
 )
 
 (define-public (set-liquidation-ratio (token (string-ascii 12)) (ratio uint))
-  (if (is-eq contract-caller .dao)
-    (begin
-      (let ((params (get-collateral-type-by-token token)))
-        (map-set collateral-types
-          { token: token }
-          {
-            name: (get name params),
-            token: (get token params),
-            token-type: (get token-type params),
-            url: (get url params),
-            total-debt: (get total-debt params),
-            liquidation-ratio: ratio,
-            collateral-to-debt-ratio: (get collateral-to-debt-ratio params),
-            maximum-debt: (get maximum-debt params),
-            liquidation-penalty: (get liquidation-penalty params),
-            stability-fee: (get stability-fee params),
-            stability-fee-apy: (get stability-fee-apy params)
-          }
-        )
-        (ok (get-liquidation-ratio token))
+  (begin
+    (asserts! (is-eq dao-owner tx-sender) (err err-unauthorized))
+
+    (let ((params (get-collateral-type-by-token token)))
+      (map-set collateral-types
+        { token: token }
+        {
+          name: (get name params),
+          token: (get token params),
+          token-type: (get token-type params),
+          url: (get url params),
+          total-debt: (get total-debt params),
+          liquidation-ratio: ratio,
+          collateral-to-debt-ratio: (get collateral-to-debt-ratio params),
+          maximum-debt: (get maximum-debt params),
+          liquidation-penalty: (get liquidation-penalty params),
+          stability-fee: (get stability-fee params),
+          stability-fee-apy: (get stability-fee-apy params)
+        }
       )
+      (ok (get-liquidation-ratio token))
     )
-    (ok (get-liquidation-ratio token))
   )
 )
 
 (define-public (set-collateral-to-debt-ratio (token (string-ascii 12)) (ratio uint))
-  (if (is-eq contract-caller .dao)
-    (begin
-      (let ((params (get-collateral-type-by-token token)))
-        (map-set collateral-types
-          { token: token }
-          {
-            name: (get name params),
-            token: (get token params),
-            token-type: (get token-type params),
-            url: (get url params),
-            total-debt: (get total-debt params),
-            liquidation-ratio: (get liquidation-ratio params),
-            collateral-to-debt-ratio: ratio,
-            maximum-debt: (get maximum-debt params),
-            liquidation-penalty: (get liquidation-penalty params),
-            stability-fee: (get stability-fee params),
-            stability-fee-apy: (get stability-fee-apy params)
-          }
-        )
-        (ok (get-liquidation-ratio token))
+  (begin
+    (asserts! (is-eq dao-owner tx-sender) (err err-unauthorized))
+
+    (let ((params (get-collateral-type-by-token token)))
+      (map-set collateral-types
+        { token: token }
+        {
+          name: (get name params),
+          token: (get token params),
+          token-type: (get token-type params),
+          url: (get url params),
+          total-debt: (get total-debt params),
+          liquidation-ratio: (get liquidation-ratio params),
+          collateral-to-debt-ratio: ratio,
+          maximum-debt: (get maximum-debt params),
+          liquidation-penalty: (get liquidation-penalty params),
+          stability-fee: (get stability-fee params),
+          stability-fee-apy: (get stability-fee-apy params)
+        }
       )
+      (ok (get-liquidation-ratio token))
     )
-    (ok (get-liquidation-ratio token))
   )
 )
 
 (define-public (set-maximum-debt (token (string-ascii 12)) (debt uint))
-  (if (is-eq contract-caller .dao)
-    (begin
-      (let ((params (get-collateral-type-by-token token)))
-        (map-set collateral-types
-          { token: token }
-          {
-            name: (get name params),
-            token: (get token params),
-            token-type: (get token-type params),
-            url: (get url params),
-            total-debt: (get total-debt params),
-            liquidation-ratio: (get liquidation-ratio params),
-            collateral-to-debt-ratio: (get collateral-to-debt-ratio params),
-            maximum-debt: debt,
-            liquidation-penalty: (get liquidation-penalty params),
-            stability-fee: (get stability-fee params),
-            stability-fee-apy: (get stability-fee-apy params)
-          }
-        )
-        (ok (get-liquidation-ratio token))
+  (begin
+    (asserts! (is-eq dao-owner tx-sender) (err err-unauthorized))
+
+    (let ((params (get-collateral-type-by-token token)))
+      (map-set collateral-types
+        { token: token }
+        {
+          name: (get name params),
+          token: (get token params),
+          token-type: (get token-type params),
+          url: (get url params),
+          total-debt: (get total-debt params),
+          liquidation-ratio: (get liquidation-ratio params),
+          collateral-to-debt-ratio: (get collateral-to-debt-ratio params),
+          maximum-debt: debt,
+          liquidation-penalty: (get liquidation-penalty params),
+          stability-fee: (get stability-fee params),
+          stability-fee-apy: (get stability-fee-apy params)
+        }
       )
+      (ok (get-liquidation-ratio token))
     )
-    (ok (get-liquidation-ratio token))
   )
 )
 
 (define-public (set-liquidation-penalty (token (string-ascii 12)) (penalty uint))
-  (if (is-eq contract-caller .dao)
-    (begin
-      (let ((params (get-collateral-type-by-token token)))
-        (map-set collateral-types
-          { token: token }
-          {
-            name: (get name params),
-            token: (get token params),
-            token-type: (get token-type params),
-            url: (get url params),
-            total-debt: (get total-debt params),
-            liquidation-ratio: (get liquidation-ratio params),
-            collateral-to-debt-ratio: (get collateral-to-debt-ratio params),
-            maximum-debt: (get maximum-debt params),
-            liquidation-penalty: penalty,
-            stability-fee: (get stability-fee params),
-            stability-fee-apy: (get stability-fee-apy params)
-          }
-        )
-        (ok (get-liquidation-ratio token))
+  (begin
+    (asserts! (is-eq dao-owner tx-sender) (err err-unauthorized))
+
+    (let ((params (get-collateral-type-by-token token)))
+      (map-set collateral-types
+        { token: token }
+        {
+          name: (get name params),
+          token: (get token params),
+          token-type: (get token-type params),
+          url: (get url params),
+          total-debt: (get total-debt params),
+          liquidation-ratio: (get liquidation-ratio params),
+          collateral-to-debt-ratio: (get collateral-to-debt-ratio params),
+          maximum-debt: (get maximum-debt params),
+          liquidation-penalty: penalty,
+          stability-fee: (get stability-fee params),
+          stability-fee-apy: (get stability-fee-apy params)
+        }
       )
+      (ok (get-liquidation-ratio token))
     )
-    (ok (get-liquidation-ratio token))
   )
 )
 
 (define-public (set-stability-fee (token (string-ascii 12)) (fee uint) (fee-apy uint))
-  (if (is-eq contract-caller .dao)
-    (begin
-      (let ((params (get-collateral-type-by-token token)))
-        (map-set collateral-types
-          { token: token }
-          {
-            name: (get name params),
-            token: (get token params),
-            token-type: (get token-type params),
-            url: (get url params),
-            total-debt: (get total-debt params),
-            liquidation-ratio: (get liquidation-ratio params),
-            collateral-to-debt-ratio: (get collateral-to-debt-ratio params),
-            maximum-debt: (get maximum-debt params),
-            liquidation-penalty: (get liquidation-penalty params),
-            stability-fee: fee,
-            stability-fee-apy: fee-apy
-          }
-        )
-        (ok (get-liquidation-ratio token))
+  (begin
+    (asserts! (is-eq dao-owner tx-sender) (err err-unauthorized))
+
+    (let ((params (get-collateral-type-by-token token)))
+      (map-set collateral-types
+        { token: token }
+        {
+          name: (get name params),
+          token: (get token params),
+          token-type: (get token-type params),
+          url: (get url params),
+          total-debt: (get total-debt params),
+          liquidation-ratio: (get liquidation-ratio params),
+          collateral-to-debt-ratio: (get collateral-to-debt-ratio params),
+          maximum-debt: (get maximum-debt params),
+          liquidation-penalty: (get liquidation-penalty params),
+          stability-fee: fee,
+          stability-fee-apy: fee-apy
+        }
       )
+      (ok (get-liquidation-ratio token))
     )
-    (ok (get-liquidation-ratio token))
   )
 )
 

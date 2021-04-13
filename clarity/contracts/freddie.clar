@@ -309,7 +309,7 @@
                                   (lock-period uint))
   ;; 1. check `get-stacking-minimum` to see if we have > minimum tokens
   ;; 2. call `stack-stx` for 1 `lock-period` fixed
-  (if (is-eq contract-caller .dao)
+  (if (is-eq tx-sender vault-owner)
     (let ((tokens-to-stack (unwrap! (contract-call? .stx-reserve get-tokens-to-stack) (ok u0))))
       (if (unwrap! (contract-call? .mock-pox can-stack-stx pox-addr tokens-to-stack start-burn-ht lock-period) (err u0))
         (begin
