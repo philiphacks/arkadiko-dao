@@ -10,10 +10,6 @@
 (define-constant err-withdraw-failed u6)
 (define-constant err-mint-failed u7)
 
-(define-read-only (get-risk-parameters)
-  (ok (contract-call? .dao get-collateral-type-by-token "stx"))
-)
-
 ;; MAIN LOGIC
 
 ;; calculate the amount of stablecoins to mint, based on posted STX amount
