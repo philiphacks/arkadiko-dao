@@ -515,72 +515,80 @@
   (let ((vault (get-vault-by-id vault-id)))
     (asserts! (is-eq tx-sender (get owner vault)) (err err-unauthorized))
     (asserts! (is-eq u0 (get stability-fee vault)) (err err-unauthorized))
-     ;; TODO: only allow burn to burn a partial xUSD position
-    (asserts! (is-eq u0 (get stacked-tokens vault)) (err err-unauthorized))
+    (asserts! (<= debt (get debt vault)) (err err-unauthorized))
 
-    (if (is-ok (contract-call? .xusd-token burn debt (get owner vault)))
-      (if (unwrap-panic (contract-call? reserve burn ft (get owner vault) (get collateral vault)))
-        (if (is-eq debt (get debt vault))
-          (begin
-            (let ((entries (get ids (get-vault-entries (get owner vault)))))
-              (let ((result (contract-call? .dao subtract-debt-from-collateral-type (get collateral-type vault) (get debt vault))))
-                (map-set vaults
-                  { id: vault-id }
-                  {
-                    id: vault-id,
-                    owner: (get owner vault),
-                    collateral: u0,
-                    collateral-type: (get collateral-type vault),
-                    collateral-token: (get collateral-token vault),
-                    stacked-tokens: (get stacked-tokens vault),
-                    revoked-stacking: (get revoked-stacking vault),
-                    debt: u0,
-                    created-at-block-height: (get created-at-block-height vault),
-                    updated-at-block-height: block-height,
-                    stability-fee: (get stability-fee vault),
-                    stability-fee-last-accrued: (get stability-fee-last-accrued vault),
-                    is-liquidated: false,
-                    auction-ended: false,
-                    leftover-collateral: u0
-                  }
-                )
-
-                (map-set closing-vault { user: (get owner vault) } { vault-id: vault-id })
-                (if (map-set vault-entries { user: tx-sender } { ids: (filter remove-burned-vault entries) })
-                  (ok (map-delete vaults { id: vault-id }))
-                  (err u0)
-                )
-              )
-            )
-          )
-          (begin
-            (map-set vaults
-              { id: vault-id }
-              {
-                id: vault-id,
-                owner: (get owner vault),
-                collateral: (get collateral vault),
-                collateral-type: (get collateral-type vault),
-                collateral-token: (get collateral-token vault),
-                stacked-tokens: (get stacked-tokens vault),
-                revoked-stacking: (get revoked-stacking vault),
-                debt: (- (get debt vault) debt),
-                created-at-block-height: (get created-at-block-height vault),
-                updated-at-block-height: block-height,
-                stability-fee: (get stability-fee vault),
-                stability-fee-last-accrued: (get stability-fee-last-accrued vault),
-                is-liquidated: false,
-                auction-ended: false,
-                leftover-collateral: u0
-              }
-            )
-            (ok true)
-          )
-        )
-        (err err-burn-failed)
-      )
-      (err err-burn-failed)
+    (if (is-eq debt (get debt vault))
+      (close-vault vault-id reserve ft)
+      (burn-partial-debt vault-id debt reserve ft)
     )
+  )
+)
+
+(define-private (close-vault (vault-id uint) (reserve <vault-trait>) (ft <mock-ft-trait>))
+  (let ((vault (get-vault-by-id vault-id)))
+    (asserts! (is-eq u0 (get stacked-tokens vault)) (err err-unauthorized))
+    (try! (contract-call? .xusd-token burn (get debt vault) (get owner vault)))
+    (try! (contract-call? reserve burn ft (get owner vault) (get collateral vault)))
+
+    (let ((entries (get ids (get-vault-entries (get owner vault)))))
+      (let ((result (contract-call? .dao subtract-debt-from-collateral-type (get collateral-type vault) (get debt vault))))
+        (map-set vaults
+          { id: vault-id }
+          {
+            id: vault-id,
+            owner: (get owner vault),
+            collateral: u0,
+            collateral-type: (get collateral-type vault),
+            collateral-token: (get collateral-token vault),
+            stacked-tokens: (get stacked-tokens vault),
+            revoked-stacking: (get revoked-stacking vault),
+            debt: u0,
+            created-at-block-height: (get created-at-block-height vault),
+            updated-at-block-height: block-height,
+            stability-fee: (get stability-fee vault),
+            stability-fee-last-accrued: (get stability-fee-last-accrued vault),
+            is-liquidated: false,
+            auction-ended: false,
+            leftover-collateral: u0
+          }
+        )
+
+        (map-set closing-vault { user: (get owner vault) } { vault-id: vault-id })
+        (if (map-set vault-entries { user: tx-sender } { ids: (filter remove-burned-vault entries) })
+          (ok (map-delete vaults { id: vault-id }))
+          (err u0)
+        )
+      )
+    )
+  )
+)
+
+(define-private (burn-partial-debt (vault-id uint) (debt uint) (reserve <vault-trait>) (ft <mock-ft-trait>))
+  (let ((vault (get-vault-by-id vault-id)))
+    (try! (contract-call? .xusd-token burn debt (get owner vault)))
+    (try! (contract-call? reserve burn ft (get owner vault) (get collateral vault)))
+
+    (map-set vaults
+      { id: vault-id }
+      {
+        id: vault-id,
+        owner: (get owner vault),
+        collateral: (get collateral vault),
+        collateral-type: (get collateral-type vault),
+        collateral-token: (get collateral-token vault),
+        stacked-tokens: (get stacked-tokens vault),
+        revoked-stacking: (get revoked-stacking vault),
+        debt: (- (get debt vault) debt),
+        created-at-block-height: (get created-at-block-height vault),
+        updated-at-block-height: block-height,
+        stability-fee: (get stability-fee vault),
+        stability-fee-last-accrued: (get stability-fee-last-accrued vault),
+        is-liquidated: false,
+        auction-ended: false,
+        leftover-collateral: u0
+      }
+    )
+    (ok true)
   )
 )
 
