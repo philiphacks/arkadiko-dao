@@ -94,7 +94,7 @@
             vault-id: vault-id,
             lot-size: (var-get lot-size),
             lots-sold: u0,
-            ends-at: (+ block-height u10000),
+            ends-at: (+ block-height u144),
             total-collateral-sold: u0,
             total-debt-raised: u0,
             is-open: true
@@ -115,24 +115,23 @@
 (define-private (start-debt-auction (vault-id uint) (debt-to-raise uint))
   (let ((vault (contract-call? .freddie get-vault-by-id vault-id)))
     (asserts! (is-eq (get is-liquidated vault) true) (err err-auction-not-allowed))
-    (let ((collateral-uamount u5))
-      (let ((auction-id (+ (var-get last-auction-id) u1)))
-        (map-set auctions
-          { id: auction-id }
-          {
-            id: auction-id,
-            collateral-amount: collateral-uamount,
-            collateral-token: "diko",
-            debt-to-raise: debt-to-raise,
-            vault-id: vault-id,
-            lot-size: (var-get lot-size),
-            lots-sold: u0,
-            ends-at: (+ block-height u10000),
-            total-collateral-sold: u0,
-            total-debt-raised: u0,
-            is-open: true
-          }
-        )
+
+    (let ((auction-id (+ (var-get last-auction-id) u1)))
+      (map-set auctions
+        { id: auction-id }
+        {
+          id: auction-id,
+          collateral-amount: u0,
+          collateral-token: "diko",
+          debt-to-raise: debt-to-raise,
+          vault-id: vault-id,
+          lot-size: (var-get lot-size),
+          lots-sold: u0,
+          ends-at: (+ block-height u10000),
+          total-collateral-sold: u0,
+          total-debt-raised: u0,
+          is-open: true
+        }
       )
     )
     (ok true)
@@ -196,7 +195,7 @@
   (let ((auction (get-auction-by-id auction-id)))
     (if
       (and
-        (< lot-index (get lots-sold auction))
+        (is-eq lot-index (get lots-sold auction))
         (is-eq (get is-open auction) true)
         (<= collateral-amount (get collateral-amount auction))
       )
@@ -230,7 +229,7 @@
 (define-private (accept-bid (auction-id uint) (lot-index uint) (xusd uint) (collateral-amount uint))
   (let ((auction (get-auction-by-id auction-id)))
     (let ((last-bid (get-last-bid auction-id lot-index)))
-      (let ((accepted-bid true))
+      (let ((accepted-bid (is-eq xusd (get lot-size auction))))
         ;; if this bid is at least (total debt to raise / lot-size) amount, accept it as final - we don't need to be greedy
         (begin
           (if (> (get xusd last-bid) u0)
@@ -339,8 +338,7 @@
 )
 
 ;; DONE     1. flag auction on map as closed
-;; SCRIPT   2a. go over each lot (0 to lot-size) and send collateral to winning address
-;; DONE     2b. OR allow person to collect collateral from reserve manually
+;; DONE     2. allow person to collect collateral from reserve manually
 ;; DONE     3. check if vault debt is covered (sum of xUSD in lots >= debt-to-raise)
 ;; DONE     4. update vault to allow vault owner to withdraw leftover collateral (if any)
 ;; DONE     5. if not all vault debt is covered: auction off collateral again (if any left)
@@ -372,9 +370,9 @@
         is-open: false
       }
     )
+    (try! (contract-call? .xusd-token burn (get total-debt-raised auction) (as-contract tx-sender)))
     (if (>= (get total-debt-raised auction) (get debt-to-raise auction))
       (begin
-        (try! (contract-call? .xusd-token burn (get total-debt-raised auction) (as-contract tx-sender)))
         (contract-call?
           .freddie
           finalize-liquidation
@@ -385,14 +383,14 @@
       )
       (begin
         (if (<= (get total-collateral-sold auction) (get collateral-amount auction)) ;; we have some collateral left to auction
-          ;; if any collateral left to auction
+          ;; start new auction with collateral that is left
           (ok (unwrap-panic (start-auction
             (get vault-id auction)
             (- (get collateral-amount auction) (get total-collateral-sold auction))
             (- (get debt-to-raise auction) (get total-debt-raised auction))
           )))
           (begin
-            ;; no collateral left and/or all current lots are sold. Need to sell governance token to raise more xUSD
+            ;; no collateral left. Need to sell governance token to raise more xUSD
             (ok (unwrap-panic (start-debt-auction
               (get vault-id auction)
               (get debt-to-raise auction)

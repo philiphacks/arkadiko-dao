@@ -10,7 +10,7 @@ export const Auction: React.FC<AuctionProps> = ({ id, lotId, collateralToken, de
   const [currentBid, setCurrentBid] = useState(0);
   const [isClosed, setIsClosed] = useState(false);
   const [acceptedCollateral, setAcceptedCollateral] = useState(0);
-  const [debtToRaise, setDebtToRaise] = useState(debt);
+  const [debtToRaise, setDebtToRaise] = useState(0);
   const [price, setPrice] = useState(0.0);
   const stxAddress = useSTXAddress();
   const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS || '';
@@ -39,10 +39,7 @@ export const Auction: React.FC<AuctionProps> = ({ id, lotId, collateralToken, de
 
       const collJson = cvToJSON(minimumCollateralAmount);
       setMinimumCollateralAmount(collJson.value.value);
-      // const debtNeeded = collJson.value.value * (price / 100);
-      // if (debtToRaise > debtNeeded) {
-      //   setDebtToRaise(debtNeeded);
-      // }
+      setDebtToRaise(collJson.value.value * price / 100);
 
       const currentBid = await callReadOnlyFunction({
         contractAddress,
@@ -102,7 +99,7 @@ export const Auction: React.FC<AuctionProps> = ({ id, lotId, collateralToken, de
         <span className="text-gray-900 font-medium">${(price / 100).toFixed(2)}</span>
       </td>
       <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
-        <span className="text-gray-900 font-medium">${(debt / 1000000).toFixed(4)}</span>
+        <span className="text-gray-900 font-medium">${(debtToRaise / 1000000).toFixed(4)}</span>
       </td>
       <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
         <span className="text-gray-900 font-medium">${currentBid / 1000000}</span>
