@@ -136,6 +136,10 @@
           is-open: true
         }
       )
+
+      (print "Added new open auction")
+      (var-set auction-ids (unwrap-panic (as-max-len? (append (var-get auction-ids) auction-id) u1800)))
+      (var-set last-auction-id auction-id)
     )
     (ok true)
   )
@@ -248,7 +252,8 @@
     (auction (get-auction-by-id auction-id))
     (last-bid (get-last-bid auction-id lot-index))
     (collateral-amount (unwrap-panic (calculate-minimum-collateral-amount auction-id)))
-    (accepted-bid (or
+    (accepted-bid
+      (or
         (is-eq xusd (get lot-size auction))
         (>= xusd (- (get debt-to-raise auction) (get total-debt-raised auction)))
       )
@@ -404,22 +409,66 @@
         )
       )
       (begin
-        (if (<= (get total-collateral-sold auction) (get collateral-amount auction)) ;; we have some collateral left to auction
+        (if (< (get total-collateral-sold auction) (get collateral-amount auction)) ;; we have some collateral left to auction
           ;; start new auction with collateral that is left
-          (ok (unwrap-panic (start-auction
+          (start-auction
             (get vault-id auction)
             (- (get collateral-amount auction) (get total-collateral-sold auction))
             (- (get debt-to-raise auction) (get total-debt-raised auction))
-          )))
-          (begin
-            ;; no collateral left. Need to sell governance token to raise more xUSD
-            (ok (unwrap-panic (start-debt-auction
-              (get vault-id auction)
-              (get debt-to-raise auction)
-            )))
+          )
+          ;; no collateral left. Need to sell governance token to raise more xUSD
+          (start-debt-auction
+            (get vault-id auction)
+            (get debt-to-raise auction)
           )
         )
       )
     )
+  )
+)
+
+(define-public (unlock-winning-lots (auction-id uint) (lot-index uint))
+  (let (
+    (auction (get-auction-by-id auction-id))
+    (last-bid (get-last-bid auction-id lot-index))
+    (lots (get-winning-lots (get owner last-bid)))
+  )
+    (asserts! (is-eq (get is-open auction) false) (err err-not-authorized))
+    (asserts! (> (get xusd last-bid) u0) (err err-not-authorized))
+    (asserts! (is-eq (get is-accepted last-bid) false) (err err-not-authorized))
+
+    (map-set auctions
+      { id: auction-id }
+      {
+        id: auction-id,
+        collateral-amount: (get collateral-amount auction),
+        collateral-token: (get collateral-token auction),
+        debt-to-raise: (get debt-to-raise auction),
+        vault-id: (get vault-id auction),
+        lot-size: (get lot-size auction),
+        lots-sold: (+ u1 (get lots-sold auction)),
+        ends-at: (get ends-at auction),
+        total-collateral-sold: (get total-collateral-sold auction),
+        total-debt-raised: (get total-debt-raised auction),
+        is-open: (get is-open auction)
+      }
+    )
+    (map-set bids
+      { auction-id: auction-id, lot-index: lot-index }
+      {
+        xusd: (get xusd last-bid),
+        collateral-amount: (get collateral-amount last-bid),
+        collateral-token: (get collateral-token auction),
+        owner: (get owner last-bid),
+        is-accepted: true
+      }
+    )
+    (map-set winning-lots
+      { user: (get owner last-bid) }
+      {
+        ids: (unwrap-panic (as-max-len? (append (get ids lots) (tuple (auction-id auction-id) (lot-index lot-index))) u100))
+      }
+    )
+    (ok true)
   )
 )
