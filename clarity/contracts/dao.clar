@@ -198,8 +198,8 @@
 
 (define-public (add-debt-to-collateral-type (token (string-ascii 12)) (debt uint))
   (begin
-    ;; DAO should be calling this method
-    (asserts! (is-eq dao-owner tx-sender) (err err-unauthorized))
+    ;; freddie should be calling this method
+    (asserts! (is-eq contract-caller .freddie) (err err-unauthorized))
     (let ((collateral-type (get-collateral-type-by-token token)))
       (map-set collateral-types
         { token: token }
