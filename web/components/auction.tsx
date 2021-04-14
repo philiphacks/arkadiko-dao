@@ -5,7 +5,7 @@ import { stacksNetwork as network } from '@common/utils';
 import { useSTXAddress } from '@common/use-stx-address';
 import { getPrice } from '@common/get-price';
 
-export const Auction: React.FC<AuctionProps> = ({ id, lotId, collateralToken, debt, endsAt, setShowBidModal, setBidAuctionId, setBidLotId, setPreferredBid, setCollateralAmount }) => {
+export const Auction: React.FC<AuctionProps> = ({ id, lotId, collateralToken, debt, endsAt, setShowBidModal, setBidAuctionId, setBidLotId, setPreferredBid }) => {
   const [minimumCollateralAmount, setMinimumCollateralAmount] = useState(0);
   const [currentBid, setCurrentBid] = useState(0);
   const [isClosed, setIsClosed] = useState(false);
@@ -39,7 +39,8 @@ export const Auction: React.FC<AuctionProps> = ({ id, lotId, collateralToken, de
 
       const collJson = cvToJSON(minimumCollateralAmount);
       setMinimumCollateralAmount(collJson.value.value);
-      setDebtToRaise(collJson.value.value * price / 100);
+      const debtMax = 100000000;
+      setDebtToRaise(Math.min(debtMax, collJson.value.value * price / 100));
 
       const currentBid = await callReadOnlyFunction({
         contractAddress,
@@ -68,7 +69,6 @@ export const Auction: React.FC<AuctionProps> = ({ id, lotId, collateralToken, de
     setBidLotId(lotId);
     setPreferredBid(debtToRaise / 1000000);
     setShowBidModal(true);
-    setCollateralAmount(minimumCollateralAmount);
   };
 
   const rowBg = () => {
@@ -112,9 +112,15 @@ export const Auction: React.FC<AuctionProps> = ({ id, lotId, collateralToken, de
           {isClosed ? (
             <p>Bidding Closed</p>
           ) : (
-            <button type="button" onClick={() => setBidParams()} className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-              Bid
-            </button>
+            <div>
+              <button type="button" onClick={() => setBidParams()} className="mr-2 px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Bid
+              </button>
+
+              <button type="button" onClick={() => setBidParams()} className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Buy lot
+              </button>
+            </div>
           )}
         </span>
       </td>
