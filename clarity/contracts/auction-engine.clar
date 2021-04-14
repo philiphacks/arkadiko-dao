@@ -11,6 +11,7 @@
 (define-constant err-not-authorized u7)
 (define-constant ERR-AUCTION-NOT-ENDED u8)
 (define-constant ERR-BLOCK-HEIGHT-NOT-REACHED u9)
+(define-constant ERR-COULD-NOT-REDEEM u10)
 
 (define-map auctions
   { id: uint }
@@ -96,7 +97,7 @@
             vault-id: vault-id,
             lot-size: (var-get lot-size),
             lots-sold: u0,
-            ends-at: (+ block-height u144),
+            ends-at: (+ block-height u14),
             total-collateral-sold: u0,
             total-debt-raised: u0,
             is-open: true
@@ -132,7 +133,7 @@
           vault-id: vault-id,
           lot-size: (var-get lot-size),
           lots-sold: u0,
-          ends-at: (+ block-height u144),
+          ends-at: (+ block-height u14),
           total-collateral-sold: u0,
           total-debt-raised: u0,
           is-open: true
@@ -347,12 +348,12 @@
         (let ((lots (get-winning-lots tx-sender)))
           (map-set redeeming-lot { user: tx-sender } { auction-id: auction-id, lot-index: lot-index})
           (if (map-set winning-lots { user: tx-sender } { ids: (filter remove-winning-lot (get ids lots)) })
-            (ok (contract-call? .freddie redeem-auction-collateral ft reserve (get collateral-amount last-bid) tx-sender))
-            (err false)
+            (contract-call? .freddie redeem-auction-collateral ft reserve (get collateral-amount last-bid) tx-sender)
+            (err ERR-COULD-NOT-REDEEM)
           )
         )
       )
-      (err false)
+      (err ERR-COULD-NOT-REDEEM)
     )
   )
 )
