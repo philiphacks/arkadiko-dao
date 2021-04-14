@@ -52,7 +52,11 @@ export const Auction: React.FC<AuctionProps> = ({ id, lotId, collateralToken, de
       });
 
       const json = cvToJSON(currentBid);
-      setCurrentBid(json.value.xusd.value);
+      if (json.value.xusd.value > 0) {
+        setCurrentBid(json.value.xusd.value);
+        setMinimumCollateralAmount(json.value['collateral-amount'].value);
+        setDebtToRaise(json.value['collateral-amount'].value * price / 100);
+      }
       setAcceptedCollateral(json.value['collateral-amount'].value);
       setIsClosed(json.value['is-accepted'].value);
     };
@@ -90,7 +94,7 @@ export const Auction: React.FC<AuctionProps> = ({ id, lotId, collateralToken, de
         <span className="text-gray-900 font-medium">
           {isClosed ? (
             <span>{acceptedCollateral / 1000000} {collateralToken.toUpperCase()}</span>
-            ) : (
+          ) : (
             <span>{minimumCollateralAmount / 1000000} {collateralToken.toUpperCase()}</span>
           )}
         </span>

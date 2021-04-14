@@ -116,18 +116,21 @@
   (let ((vault (contract-call? .freddie get-vault-by-id vault-id)))
     (asserts! (is-eq (get is-liquidated vault) true) (err err-auction-not-allowed))
 
-    (let ((auction-id (+ (var-get last-auction-id) u1)))
+    (let (
+      (auction-id (+ (var-get last-auction-id) u1))
+      (price-in-cents u10)
+    )
       (map-set auctions
         { id: auction-id }
         {
           id: auction-id,
-          collateral-amount: u0,
+          collateral-amount: (/ (* u100 debt-to-raise) price-in-cents),
           collateral-token: "diko",
           debt-to-raise: debt-to-raise,
           vault-id: vault-id,
           lot-size: (var-get lot-size),
           lots-sold: u0,
-          ends-at: (+ block-height u10000),
+          ends-at: (+ block-height u144),
           total-collateral-sold: u0,
           total-debt-raised: u0,
           is-open: true
@@ -244,8 +247,12 @@
   (let (
     (auction (get-auction-by-id auction-id))
     (last-bid (get-last-bid auction-id lot-index))
-    (accepted-bid (or (is-eq xusd (get lot-size auction)) (>= xusd (- (get debt-to-raise auction) (get total-debt-raised auction)))))
     (collateral-amount (unwrap-panic (calculate-minimum-collateral-amount auction-id)))
+    (accepted-bid (or
+        (is-eq xusd (get lot-size auction))
+        (>= xusd (- (get debt-to-raise auction) (get total-debt-raised auction)))
+      )
+    )
   )
     ;; if this bid is at least (total debt to raise / lot-size) amount, accept it as final - we don't need to be greedy
     (begin
