@@ -10,11 +10,42 @@
 (define-constant err-withdraw-failed u6)
 (define-constant err-mint-failed u7)
 
-(define-read-only (get-risk-parameters)
-  (ok (contract-call? .dao get-collateral-type-by-token "stx"))
-)
+(define-data-var tokens-to-stack uint u0)
 
 ;; MAIN LOGIC
+
+(define-read-only (get-tokens-to-stack)
+  (ok (var-get tokens-to-stack))
+)
+
+(define-public (add-tokens-to-stack (token-amount uint))
+  (begin
+    (asserts! (is-eq contract-caller .freddie) (err err-unauthorized))
+
+    (var-set tokens-to-stack (+ (var-get tokens-to-stack) token-amount))
+    (ok u200)
+  )
+)
+
+(define-public (subtract-tokens-to-stack (token-amount uint))
+  (begin
+    (asserts! (is-eq contract-caller .freddie) (err err-unauthorized))
+
+    (var-set tokens-to-stack (- (var-get tokens-to-stack) token-amount))
+    (ok u200)
+  )
+)
+
+(define-public (toggle-stacking (revoked-stacking bool) (ustx-collateral uint))
+  (begin
+    (asserts! (is-eq contract-caller .freddie) (err err-unauthorized))
+
+    (if (is-eq true revoked-stacking)
+      (ok (try! (add-tokens-to-stack ustx-collateral)))
+      (ok (try! (subtract-tokens-to-stack ustx-collateral)))
+    )
+  )
+)
 
 ;; calculate the amount of stablecoins to mint, based on posted STX amount
 ;; ustx-amount * stx-price-in-cents == dollar-collateral-posted-in-cents
@@ -46,7 +77,7 @@
 (define-public (collateralize-and-mint (token <mock-ft-trait>) (ustx-amount uint) (debt uint) (sender principal))
   (match (print (stx-transfer? ustx-amount sender (as-contract tx-sender)))
     success (begin
-      (try! (contract-call? .dao add-tokens-to-stack ustx-amount))
+      (try! (add-tokens-to-stack ustx-amount))
       (ok debt)
     )
     error (err err-transfer-failed)
@@ -57,7 +88,7 @@
 (define-public (deposit (token <mock-ft-trait>) (additional-ustx-amount uint))
   (match (print (stx-transfer? additional-ustx-amount tx-sender (as-contract tx-sender)))
     success (begin
-      (try! (contract-call? .dao add-tokens-to-stack additional-ustx-amount))
+      (try! (add-tokens-to-stack additional-ustx-amount))
       (ok true)
     )
     error (err err-deposit-failed)
@@ -128,5 +159,16 @@
   (begin
     (asserts! (is-eq contract-caller .auction-engine) (err err-unauthorized))
     (as-contract (stx-transfer? stx-collateral (as-contract tx-sender) owner))
+  )
+)
+
+(define-public (redeem-xstx (ustx-amount uint) (sender principal))
+  (begin
+    (asserts! (is-eq contract-caller .freddie) (err err-unauthorized))
+
+    (match (print (as-contract (stx-transfer? ustx-amount (as-contract tx-sender) sender)))
+      transferred (ok true)
+      error (err err-transfer-failed)
+    )
   )
 )

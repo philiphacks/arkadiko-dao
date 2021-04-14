@@ -11,6 +11,9 @@
 (define-constant err-unauthorized u401)
 (define-constant status-ok u200)
 
+(define-constant dao-owner 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP) ;; mocknet
+;; (define-constant dao-owner 'ST2YP83431YWD9FNWTTDCQX8B3K0NDKPCV3B1R30H) ;; testnet
+
 ;; proposal variables
 (define-map proposals
   { id: uint }
@@ -37,8 +40,6 @@
 (define-data-var governance-token-yield uint u5)
 (define-data-var governance-reserve-yield uint u5)
 (define-data-var maximum-debt-surplus uint u100000000)
-(define-data-var tokens-to-stack uint u0)
-(define-data-var unlock-burn-height uint u0)
 
 (define-read-only (get-votes-by-member-by-id (proposal-id uint) (member principal))
   (default-to 
@@ -162,29 +163,33 @@
   (ok (var-get maximum-debt-surplus))
 )
 
-(define-read-only (get-tokens-to-stack)
-  (ok (var-get tokens-to-stack))
-)
-
 ;; setters accessible only by DAO contract
-(define-public (add-collateral-type (token (string-ascii 12)) (collateral-type (string-ascii 12)))
+(define-public (add-collateral-type (name (string-ascii 12))
+                                    (token (string-ascii 12))
+                                    (url (string-ascii 256))
+                                    (collateral-type (string-ascii 12))
+                                    (liquidation-ratio uint)
+                                    (liquidation-penalty uint)
+                                    (stability-fee uint)
+                                    (stability-fee-apy uint)
+                                    (maximum-debt uint))
   (begin
     ;; DAO should be calling this method
-    (asserts! (is-eq contract-caller .dao) (err err-unauthorized))
+    (asserts! (is-eq dao-owner tx-sender) (err err-unauthorized))
     (map-set collateral-types
       { token: collateral-type }
       {
-        name: "Stacks",
+        name: name,
         token: token,
         token-type: collateral-type,
-        url: "https://www.stacks.co/",
+        url: url,
         total-debt: u0,
-        liquidation-ratio: u150,
+        liquidation-ratio: liquidation-ratio,
         collateral-to-debt-ratio: u200,
-        maximum-debt: u100000000000000,
-        liquidation-penalty: u13,
-        stability-fee: u1363, ;; 0.001363077% daily percentage == 1% APY
-        stability-fee-apy: u50 ;; 50 basis points
+        maximum-debt: maximum-debt,
+        liquidation-penalty: liquidation-penalty,
+        stability-fee: stability-fee,
+        stability-fee-apy: stability-fee-apy
       }
     )
     (ok true)
@@ -192,27 +197,35 @@
 )
 
 (define-public (add-debt-to-collateral-type (token (string-ascii 12)) (debt uint))
-  (let ((collateral-type (get-collateral-type-by-token token)))
-    (map-set collateral-types
-      { token: token }
-      (merge collateral-type { total-debt: (+ debt (get total-debt collateral-type)) }))
-    (ok debt)
+  (begin
+    ;; DAO should be calling this method
+    (asserts! (is-eq dao-owner tx-sender) (err err-unauthorized))
+    (let ((collateral-type (get-collateral-type-by-token token)))
+      (map-set collateral-types
+        { token: token }
+        (merge collateral-type { total-debt: (+ debt (get total-debt collateral-type)) }))
+      (ok debt)
+    )
   )
 )
 
 (define-public (subtract-debt-from-collateral-type (token (string-ascii 12)) (debt uint))
-  (let ((collateral-type (get-collateral-type-by-token token)))
-    (map-set collateral-types
-      { token: token }
-      (merge collateral-type { total-debt: (- debt (get total-debt collateral-type)) }))
-    (ok debt)
+  (begin
+    ;; freddie should be calling this method
+    (asserts! (is-eq contract-caller .freddie) (err err-unauthorized))
+    (let ((collateral-type (get-collateral-type-by-token token)))
+      (map-set collateral-types
+        { token: token }
+        (merge collateral-type { total-debt: (- debt (get total-debt collateral-type)) }))
+      (ok debt)
+    )
   )
 )
 
 (define-public (set-liquidation-ratio (token (string-ascii 12)) (ratio uint))
   (begin
     ;; DAO should be calling this method
-    (asserts! (is-eq contract-caller .dao) (err err-unauthorized))
+    (asserts! (is-eq dao-owner tx-sender) (err err-unauthorized))
     ;; Update liquidation-ratio
     (let ((collateral-type (get-collateral-type-by-token token)))
       (map-set collateral-types
@@ -225,7 +238,7 @@
 (define-public (set-collateral-to-debt-ratio (token (string-ascii 12)) (ratio uint))
   (begin
     ;; DAO should be calling this method
-    (asserts! (is-eq contract-caller .dao) (err err-unauthorized))
+    (asserts! (is-eq dao-owner tx-sender) (err err-unauthorized))
     ;; Update collateral-to-debt-ratio
     (let ((collateral-type (get-collateral-type-by-token token)))
       (map-set collateral-types
@@ -238,7 +251,7 @@
 (define-public (set-maximum-debt (token (string-ascii 12)) (debt uint))
   (begin
     ;; DAO should be calling this method
-    (asserts! (is-eq contract-caller .dao) (err err-unauthorized))
+    (asserts! (is-eq dao-owner tx-sender) (err err-unauthorized))
     ;; Update maximum-debt
     (let ((collateral-type (get-collateral-type-by-token token)))
       (map-set collateral-types
@@ -251,7 +264,7 @@
 (define-public (set-liquidation-penalty (token (string-ascii 12)) (penalty uint))
   (begin
     ;; DAO should be calling this method
-    (asserts! (is-eq contract-caller .dao) (err err-unauthorized))
+    (asserts! (is-eq dao-owner tx-sender) (err err-unauthorized))
     ;; Update liquidation-penalty
     (let ((collateral-type (get-collateral-type-by-token token)))
       (map-set collateral-types
@@ -264,7 +277,7 @@
 (define-public (set-stability-fee (token (string-ascii 12)) (fee uint) (fee-apy uint))
   (begin
     ;; DAO should be calling this method
-    (asserts! (is-eq contract-caller .dao) (err err-unauthorized))
+    (asserts! (is-eq dao-owner tx-sender) (err err-unauthorized))
     ;; Update stability-fee and stability-fee-apy
     (let ((collateral-type (get-collateral-type-by-token token)))
       (map-set collateral-types
@@ -376,56 +389,6 @@
 ;;   (ok true)
 ;; )
 
-;; TODO - add security!
-(define-public (add-tokens-to-stack (token-amount uint))
-  (if true
-    (ok (var-set tokens-to-stack (+ token-amount (var-get tokens-to-stack))))
-    (err u0)
-  )
-)
-
-;; TODO - add security!
-(define-public (subtract-tokens-to-stack (token-amount uint))
-  (if true
-    (ok (var-set tokens-to-stack (- (var-get tokens-to-stack) token-amount)))
-    (err u0)
-  )
-)
-
-;; DAO can initiate stacking for the STX reserve
-;; Iterate over all vaults that are not initiated yet
-;; to calculate the amount to stack
-;; Stacks the STX tokens in POX
-;; pox contract: SP000000000000000000002Q6VF78.pox
-;; https://explorer.stacks.co/txid/0x41356e380d164c5233dd9388799a5508aae929ee1a7e6ea0c18f5359ce7b8c33?chain=mainnet
-;; v1
-;;  Stack for 1 cycle a time
-;;  This way we miss each other cycle (i.e. we stack 1/2) but we can stack everyone's STX.
-;;  We cannot stack continuously right now
-;; v2
-;;  Ideally we can stack more tokens on the same principal
-;;  to stay eligible for future increases of reward slot thresholds.
-;; random addr to use for hashbytes
-;; 0xf632e6f9d29bfb07bc8948ca6e0dd09358f003ac
-;; 0x00
-(define-public (initiate-stacking (pox-addr (tuple (version (buff 1)) (hashbytes (buff 20))))
-                                  (start-burn-ht uint)
-                                  (lock-period uint))
-  ;; 1. check `get-stacking-minimum` to see if we have > minimum tokens
-  ;; 2. call `stack-stx` for 1 `lock-period` fixed
-  (begin
-    ;; DAO should be calling this method
-    (asserts! (is-eq contract-caller .dao) (err err-unauthorized))
-    ;; Provided address should be eligible to stacking
-    (unwrap! (contract-call? .mock-pox can-stack-stx pox-addr (var-get tokens-to-stack) start-burn-ht lock-period) (err u0))
-    ;; Stack STX
-    (let ((result (unwrap-panic (contract-call? .mock-pox stack-stx (var-get tokens-to-stack) pox-addr start-burn-ht lock-period))))
-      (var-set unlock-burn-height (get unlock-burn-height result))
-      (ok (get lock-amount result))
-    )
-  )
-)
-
 ;; Pay all parties:
 ;; - Owners of vaults
 ;; - DAO Reserve
@@ -459,7 +422,7 @@
       liquidation-ratio: u150,
       collateral-to-debt-ratio: u200,
       maximum-debt: u100000000000000,
-      liquidation-penalty: u13,
+      liquidation-penalty: u10,
       stability-fee: u1363, ;; 0.001363077% daily percentage == 1% APY
       stability-fee-apy: u50 ;; 50 basis points
     }
@@ -472,10 +435,10 @@
       token-type: "STX-B",
       url: "https://www.stacks.co/",
       total-debt: u0,
-      liquidation-ratio: u110,
+      liquidation-ratio: u115,
       collateral-to-debt-ratio: u200,
       maximum-debt: u10000000000000,
-      liquidation-penalty: u25,
+      liquidation-penalty: u10,
       stability-fee: u2726, ;; 0.002726155% daily percentage == 1% APY
       stability-fee-apy: u100 ;; 100 basis points
     }
