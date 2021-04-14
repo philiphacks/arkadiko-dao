@@ -57,6 +57,7 @@
 
 ;; TESTNET ONLY:
 (begin
-  ;; mint 1 billion tokens
-  (try! (ft-mint? diko u1000000000000000 'ST2YP83431YWD9FNWTTDCQX8B3K0NDKPCV3B1R30H))
-)
+  ;; Testnet only.
+  (asserts! is-in-regtest (ok u0))
+  ;; Seed wallet_1 with 1 billion tokens 
+  (try! (ft-mint? diko u1000000000000000 'ST1J4G6RR643BCG8G8SR6M2D9Z9KXT2NJDRK3FBTK)))

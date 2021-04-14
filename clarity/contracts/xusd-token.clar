@@ -65,6 +65,7 @@
 
 ;; Initialize the contract
 (begin
-  (try! (ft-mint? xusd u20 'SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7)) ;; alice
-  (try! (ft-mint? xusd u10 'S02J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKPVKG2CE)) ;; bob
-)
+  ;; Testnet only: seed wallet_2 and wallet_3
+  (asserts! is-in-regtest (ok u0))
+  (try! (ft-mint? xusd u20 'ST20ATRN26N9P05V2F1RHFRV24X8C8M3W54E427B2))
+  (try! (ft-mint? xusd u10 'ST21HMSJATHZ888PD0S0SSTWP4J61TCRJYEVQ0STB)))

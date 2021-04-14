@@ -440,6 +440,14 @@
 
 ;; Initialize the contract
 (begin
+  ;; Testnet only.
+  (asserts! is-in-regtest (ok u0))
+  ;; Create:
+  ;; - 2 collateral types stx-a and stx-b,
+  ;; - 1 proposal type change_risk_parameter
+  ;; - 1 proposal type add_collateral_type
+  ;; - 1 proposal type stacking_distribution
+  ;; - 1 proposal type emergency_shutdown
   (map-set collateral-types
     { token: "stx-a" }
     {

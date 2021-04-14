@@ -6,7 +6,7 @@
 (define-data-var last-block uint u0)
 
 ;; (define-constant oracle-owner 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP) ;; mocknet
-(define-constant oracle-owner 'ST2YP83431YWD9FNWTTDCQX8B3K0NDKPCV3B1R30H) ;; testnet
+(define-constant oracle-owner 'ST1J4G6RR643BCG8G8SR6M2D9Z9KXT2NJDRK3FBTK) ;; testnet
 
 (define-map prices
   { token: (string-ascii 12) }
