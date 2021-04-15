@@ -411,8 +411,8 @@
 ;; Initialize the contract
 ;; Test environments
 (begin
-  (if is-in-regtest
-    (begin
+  ;; (if is-in-regtest
+    ;; (begin
       ;; Create:
       ;; - 2 collateral types stx-a and stx-b,
       ;; - 1 proposal type change_risk_parameter
@@ -500,7 +500,7 @@
           changes-keys: (list "")
         }
       )
-    )
-    true
-  )
+    ;; )
+    ;; true
+  ;; )
 )
