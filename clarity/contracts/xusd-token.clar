@@ -67,5 +67,5 @@
 (begin
   ;; Testnet only: seed wallet_2 and wallet_3
   ;; (asserts! is-in-regtest (ok u0))
-  (try! (ft-mint? xusd u20 'ST20ATRN26N9P05V2F1RHFRV24X8C8M3W54E427B2))
-  (try! (ft-mint? xusd u10 'ST21HMSJATHZ888PD0S0SSTWP4J61TCRJYEVQ0STB)))
+  (try! (ft-mint? xusd u20 'ST3KCNDSWZSFZCC6BE4VA9AXWXC9KEB16FBTRK36T))
+  (try! (ft-mint? xusd u10 'STB2BWB0K5XZGS3FXVTG3TKS46CQVV66NAK3YVN8)))
