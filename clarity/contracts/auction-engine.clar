@@ -361,11 +361,10 @@
               (if (is-eq (get auction-type auction) "debt")
                 ;; request "collateral-amount" gov tokens from the DAO
                 (begin
-                  (contract-call? .dao request-diko-tokens ft (get collateral-amount auction))
-                  ;; (contract-call? .freddie redeem-auction-collateral ft reserve (get collateral-amount last-bid) tx-sender)
+                  (try! (contract-call? .dao request-diko-tokens ft (get collateral-amount auction)))
+                  (contract-call? .freddie redeem-auction-collateral ft reserve (get collateral-amount last-bid) tx-sender)
                 )
-                (err u1234642)
-                ;; (contract-call? .freddie redeem-auction-collateral ft reserve (get collateral-amount last-bid) tx-sender)
+                (contract-call? .freddie redeem-auction-collateral ft reserve (get collateral-amount last-bid) tx-sender)
               )
             )
             (err ERR-COULD-NOT-REDEEM)

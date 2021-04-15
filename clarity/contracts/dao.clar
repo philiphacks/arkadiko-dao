@@ -544,6 +544,7 @@
 )
 
 (define-public (request-diko-tokens (ft <mock-ft-trait>) (collateral-amount uint))
+  ;; TODO: fix this method
   (contract-call? ft transfer collateral-amount 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP (as-contract .sip10-reserve))
 )
 
