@@ -153,6 +153,40 @@
   )
 )
 
+(define-public (start-surplus-auction (xusd-amount uint))
+  (let (
+    (auction-id (+ (var-get last-auction-id) u1))
+    (maximum-surplus (unwrap-panic (contract-call? .dao get-maximum-debt-surplus)))
+    (current-balance (unwrap-panic (contract-call? .freddie get-xusd-balance)))
+  )
+    (asserts! (>= current-balance maximum-surplus) (err err-auction-not-allowed))
+    ;; TODO: add assert to run only 1 surplus auction at once
+
+    (map-set auctions
+      { id: auction-id }
+      {
+        id: auction-id,
+        auction-type: "surplus",
+        collateral-amount: xusd-amount,
+        collateral-token: "xusd",
+        debt-to-raise: u0, ;; no specific amount of debt should be raised
+        vault-id: u0,
+        lot-size: (var-get lot-size),
+        lots-sold: u0,
+        ends-at: (+ block-height u14),
+        total-collateral-sold: u0,
+        total-debt-raised: u0,
+        is-open: true
+      }
+    )
+
+    (print "Added new open auction")
+    (var-set auction-ids (unwrap-panic (as-max-len? (append (var-get auction-ids) auction-id) u1800)))
+    (var-set last-auction-id auction-id)
+    (ok true)
+  )
+)
+
 (define-read-only (discounted-auction-price (price-in-cents uint))
   ;; price * 3% = price * 3 / 100
   (let ((discount (* price-in-cents u3)))

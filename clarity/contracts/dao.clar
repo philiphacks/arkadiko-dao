@@ -37,10 +37,10 @@
 (define-data-var proposal-ids (list 220 uint) (list u0))
 (define-map votes-by-member { proposal-id: uint, member: principal } { vote-count: uint })
 (define-data-var emergency-shutdown-activated bool false)
-(define-data-var stacker-yield uint u90)
-(define-data-var governance-token-yield uint u5)
-(define-data-var governance-reserve-yield uint u5)
-(define-data-var maximum-debt-surplus uint u100000000)
+(define-data-var stacker-yield uint u9000) ;; 90%
+(define-data-var governance-token-yield uint u500) ;; 5%
+(define-data-var governance-reserve-yield uint u500) ;; 5%
+(define-data-var maximum-debt-surplus uint u10000000000000) ;; 10 million default
 
 (define-read-only (get-votes-by-member-by-id (proposal-id uint) (member principal))
   (unwrap!

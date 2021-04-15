@@ -643,6 +643,10 @@
   )
 )
 
+(define-public (get-xusd-balance)
+  (contract-call? .xusd-token get-balance-of (as-contract tx-sender))
+)
+
 (define-public (pay-stability-fee (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
     (if (is-ok (contract-call? .xusd-token transfer (get stability-fee vault) tx-sender (as-contract tx-sender)))
