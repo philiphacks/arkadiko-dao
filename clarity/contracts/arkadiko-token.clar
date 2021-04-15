@@ -48,6 +48,7 @@
 
 ;; Test environments
 (begin
+  ;; TODO: fix manual mocknet/testnet/mainnet switch
   ;; (if is-in-regtest
   ;;   (if (is-eq (unwrap-panic (get-block-info? header-hash u1)) 0xd2454d24b49126f7f47c986b06960d7f5b70812359084197a200d691e67a002e)
   ;;     (begin ;; Testnet only
