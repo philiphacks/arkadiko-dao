@@ -1,10 +1,9 @@
 import { Clarinet, Tx, Chain, Account, types } from 'https://deno.land/x/clarinet@v0.5.2/index.ts';
 
-import { assertEquals } from "https://deno.land/std@0.90.0/testing/asserts.ts";
-
 Clarinet.test({
   name: "freddy: basic flow",
   async fn(chain: Chain, accounts: Map<string, Account>) {
+    let deployer = accounts.get("deployer")!;
     let wallet_1 = accounts.get("wallet_1")!;
     let block = chain.mineBlock([
       // Initialize price of STX to 77 cents in the oracle
@@ -15,19 +14,19 @@ Clarinet.test({
           types.ascii("STX"), 
           types.uint(77)
         ],
-        wallet_1.address),
+        deployer.address),
       // Provide a collateral of 5000000 STX, so 1925000 stx-a can be minted
       // Q: why do we need to provide sender in the arguments?
       Tx.contractCall("freddie", "collateralize-and-mint", [
           types.uint(5000000),
           types.uint(1925000),
-          types.principal(wallet_1.address),
+          types.principal(deployer.address),
           types.ascii("stx-a"),
           types.ascii("STX"),
-          types.principal("ST000000000000000000002AMW42H.stx-reserve"),
-          types.principal("ST000000000000000000002AMW42H.arkadiko-token"),
+          types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+          types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
         ], 
-        wallet_1.address),
+        deployer.address),
     ]);
 
     block.receipts[0].result
@@ -44,13 +43,13 @@ Clarinet.test({
           types.ascii("STX"), 
           types.uint(55)
         ],
-        wallet_1.address),
+        deployer.address),
       // Notify liquidator
       // Q: How are we supposed to guess the vault-id?
       Tx.contractCall("liquidator", "notify-risky-vault", [
           types.uint(1),
         ], 
-        wallet_1.address),
+        deployer.address),
     ]);
     block.receipts[0].result
       .expectOk()
