@@ -70,7 +70,23 @@ export const Mint = () => {
       ],
       postConditionMode: 0x01,
       finished: data => {
-        console.log('finished redeeming lot!', data.txId);
+        console.log('finished redeeming diko!', data.txId);
+      },
+    });
+  };
+
+  const redeemStabilityFees = async () => {
+    await doContractCall({
+      network,
+      contractAddress,
+      contractName: 'freddie',
+      functionName: 'redeem-xusd',
+      functionArgs: [
+        uintCV(1502707),
+      ],
+      postConditionMode: 0x01,
+      finished: data => {
+        console.log('finished redeeming xUSD!', data.txId);
       },
     });
   };
@@ -97,6 +113,10 @@ export const Mint = () => {
 
                   <Link onClick={() => requestDikoTokens()} color="blue" display="inline-block" my={3} ml={5}>
                     (Test Request DIKO)
+                  </Link>
+
+                  <Link onClick={() => redeemStabilityFees()} color="blue" display="inline-block" my={3} ml={5}>
+                    (Redeem Stability Fees)
                   </Link>
                 </Box>
               ) : (

@@ -643,10 +643,6 @@
   )
 )
 
-(define-public (get-xusd-balance)
-  (contract-call? .xusd-token get-balance-of (as-contract tx-sender))
-)
-
 (define-public (pay-stability-fee (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
     (if (is-ok (contract-call? .xusd-token transfer (get stability-fee vault) tx-sender (as-contract tx-sender)))
@@ -813,4 +809,15 @@
       (err err-withdraw-failed)
     )
   )
+)
+
+(define-read-only (get-xusd-balance)
+  (contract-call? .xusd-token get-balance-of (as-contract tx-sender))
+)
+
+;; redeem xUSD working capital for the foundation
+;; taken from stability fees paid by vault owners
+;; TODO: redeem maximum 10% per month
+(define-public (redeem-xusd (xusd-amount uint))
+  (contract-call? .xusd-token transfer xusd-amount (as-contract tx-sender) vault-owner)
 )
