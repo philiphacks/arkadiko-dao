@@ -16,8 +16,8 @@
         ((amounts (unwrap-panic (as-contract (contract-call? .freddie liquidate vault-id)))))
           (unwrap! 
             (contract-call? .auction-engine start-auction vault-id (get ustx-amount amounts) (get debt amounts)) 
-            (err err-liquidation-failed))            
-          (ok confirm-action) 
+            (err err-liquidation-failed))
+          (ok confirm-action)
       )
   )
 )

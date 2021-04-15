@@ -11,8 +11,15 @@
 (define-constant err-unauthorized u401)
 (define-constant status-ok u200)
 
-(define-constant dao-owner 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP) ;; mocknet
-;; (define-constant dao-owner 'ST2YP83431YWD9FNWTTDCQX8B3K0NDKPCV3B1R30H) ;; testnet
+(define-private (get-dao-owner)
+  (if is-in-regtest
+    (if (is-eq (unwrap-panic (get-block-info? header-hash u1)) 0xd2454d24b49126f7f47c986b06960d7f5b70812359084197a200d691e67a002e)
+      'ST2YP83431YWD9FNWTTDCQX8B3K0NDKPCV3B1R30H ;; Testnet only
+      'ST1HTBVD3JG9C05J7HBJTHGR0GGW7KXW28M5JS8QE ;; Other test environments
+    )
+    'SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7 ;; Mainnet (TODO)
+  )
+)
 
 ;; proposal variables
 (define-map proposals
@@ -175,7 +182,7 @@
                                     (maximum-debt uint))
   (begin
     ;; DAO should be calling this method
-    (asserts! (is-eq dao-owner tx-sender) (err err-unauthorized))
+    (asserts! (is-eq (get-dao-owner) tx-sender) (err err-unauthorized))
     (map-set collateral-types
       { token: collateral-type }
       {
@@ -225,7 +232,7 @@
 (define-public (set-liquidation-ratio (token (string-ascii 12)) (ratio uint))
   (begin
     ;; DAO should be calling this method
-    (asserts! (is-eq dao-owner tx-sender) (err err-unauthorized))
+    (asserts! (is-eq (get-dao-owner) tx-sender) (err err-unauthorized))
     ;; Update liquidation-ratio
     (let ((collateral-type (get-collateral-type-by-token token)))
       (map-set collateral-types
@@ -238,7 +245,7 @@
 (define-public (set-collateral-to-debt-ratio (token (string-ascii 12)) (ratio uint))
   (begin
     ;; DAO should be calling this method
-    (asserts! (is-eq dao-owner tx-sender) (err err-unauthorized))
+    (asserts! (is-eq (get-dao-owner) tx-sender) (err err-unauthorized))
     ;; Update collateral-to-debt-ratio
     (let ((collateral-type (get-collateral-type-by-token token)))
       (map-set collateral-types
@@ -251,7 +258,7 @@
 (define-public (set-maximum-debt (token (string-ascii 12)) (debt uint))
   (begin
     ;; DAO should be calling this method
-    (asserts! (is-eq dao-owner tx-sender) (err err-unauthorized))
+    (asserts! (is-eq (get-dao-owner) tx-sender) (err err-unauthorized))
     ;; Update maximum-debt
     (let ((collateral-type (get-collateral-type-by-token token)))
       (map-set collateral-types
@@ -264,7 +271,7 @@
 (define-public (set-liquidation-penalty (token (string-ascii 12)) (penalty uint))
   (begin
     ;; DAO should be calling this method
-    (asserts! (is-eq dao-owner tx-sender) (err err-unauthorized))
+    (asserts! (is-eq (get-dao-owner) tx-sender) (err err-unauthorized))
     ;; Update liquidation-penalty
     (let ((collateral-type (get-collateral-type-by-token token)))
       (map-set collateral-types
@@ -277,7 +284,7 @@
 (define-public (set-stability-fee (token (string-ascii 12)) (fee uint) (fee-apy uint))
   (begin
     ;; DAO should be calling this method
-    (asserts! (is-eq dao-owner tx-sender) (err err-unauthorized))
+    (asserts! (is-eq (get-dao-owner) tx-sender) (err err-unauthorized))
     ;; Update stability-fee and stability-fee-apy
     (let ((collateral-type (get-collateral-type-by-token token)))
       (map-set collateral-types
@@ -402,95 +409,98 @@
 )
 
 ;; Initialize the contract
+;; Test environments
 (begin
-  ;; Testnet only.
-  (asserts! is-in-regtest (ok u0))
-  ;; Create:
-  ;; - 2 collateral types stx-a and stx-b,
-  ;; - 1 proposal type change_risk_parameter
-  ;; - 1 proposal type add_collateral_type
-  ;; - 1 proposal type stacking_distribution
-  ;; - 1 proposal type emergency_shutdown
-  (map-set collateral-types
-    { token: "stx-a" }
-    {
-      name: "Stacks",
-      token: "STX",
-      token-type: "STX-A",
-      url: "https://www.stacks.co/",
-      total-debt: u0,
-      liquidation-ratio: u150,
-      collateral-to-debt-ratio: u200,
-      maximum-debt: u100000000000000,
-      liquidation-penalty: u10,
-      stability-fee: u1363, ;; 0.001363077% daily percentage == 1% APY
-      stability-fee-apy: u50 ;; 50 basis points
-    }
-  )
-  (map-set collateral-types
-    { token: "stx-b" }
-    {
-      name: "Stacks",
-      token: "STX",
-      token-type: "STX-B",
-      url: "https://www.stacks.co/",
-      total-debt: u0,
-      liquidation-ratio: u115,
-      collateral-to-debt-ratio: u200,
-      maximum-debt: u10000000000000,
-      liquidation-penalty: u10,
-      stability-fee: u2726, ;; 0.002726155% daily percentage == 1% APY
-      stability-fee-apy: u100 ;; 100 basis points
-    }
-  )
-  (map-set collateral-types
-    { token: "diko-a" }
-    {
-      name: "Arkadiko",
-      token: "DIKO",
-      token-type: "DIKO-A",
-      url: "https://www.arkadiko.finance/",
-      total-debt: u0,
-      liquidation-ratio: u200,
-      collateral-to-debt-ratio: u300,
-      maximum-debt: u10000000000000,
-      liquidation-penalty: u13,
-      stability-fee: u2726, ;; 0.002726155% daily percentage == 1% APY
-      stability-fee-apy: u100
-    }
-  )
-  (map-set proposal-types
-    { type: "change_risk_parameter" }
-    {
-      changes-keys: (list "liquidation-ratio" "collateral-to-debt-ratio" "maximum-debt" "liquidation-penalty" "stability-fee-apy" "minimum-vault-debt")
-    }
-  )
-  (map-set proposal-types
-    { type: "add_collateral_type" }
-    {
-      changes-keys: (list
-        "collateral_token"
-        "collateral_name"
-        "liquidation-ratio"
-        "collateral-to-debt-ratio"
-        "maximum-debt"
-        "liquidation-penalty"
-        "stability-fee-apy"
-        "minimum-vault-debt"
+  (if is-in-regtest
+    (begin
+      ;; Create:
+      ;; - 2 collateral types stx-a and stx-b,
+      ;; - 1 proposal type change_risk_parameter
+      ;; - 1 proposal type add_collateral_type
+      ;; - 1 proposal type stacking_distribution
+      ;; - 1 proposal type emergency_shutdown
+      (map-set collateral-types
+        { token: "stx-a" }
+        {
+          name: "Stacks",
+          token: "STX",
+          token-type: "STX-A",
+          url: "https://www.stacks.co/",
+          total-debt: u0,
+          liquidation-ratio: u150,
+          collateral-to-debt-ratio: u200,
+          maximum-debt: u100000000000000,
+          liquidation-penalty: u10,
+          stability-fee: u1363, ;; 0.001363077% daily percentage == 1% APY
+          stability-fee-apy: u50 ;; 50 basis points
+        }
       )
-    }
+      (map-set collateral-types
+        { token: "stx-b" }
+        {
+          name: "Stacks",
+          token: "STX",
+          token-type: "STX-B",
+          url: "https://www.stacks.co/",
+          total-debt: u0,
+          liquidation-ratio: u115,
+          collateral-to-debt-ratio: u200,
+          maximum-debt: u10000000000000,
+          liquidation-penalty: u10,
+          stability-fee: u2726, ;; 0.002726155% daily percentage == 1% APY
+          stability-fee-apy: u100 ;; 100 basis points
+        }
+      )
+      (map-set collateral-types
+        { token: "diko-a" }
+        {
+          name: "Arkadiko",
+          token: "DIKO",
+          token-type: "DIKO-A",
+          url: "https://www.arkadiko.finance/",
+          total-debt: u0,
+          liquidation-ratio: u200,
+          collateral-to-debt-ratio: u300,
+          maximum-debt: u10000000000000,
+          liquidation-penalty: u13,
+          stability-fee: u2726, ;; 0.002726155% daily percentage == 1% APY
+          stability-fee-apy: u100
+        }
+      )
+      (map-set proposal-types
+        { type: "change_risk_parameter" }
+        {
+          changes-keys: (list "liquidation-ratio" "collateral-to-debt-ratio" "maximum-debt" "liquidation-penalty" "stability-fee-apy" "minimum-vault-debt")
+        }
+      )
+      (map-set proposal-types
+        { type: "add_collateral_type" }
+        {
+          changes-keys: (list
+            "collateral_token"
+            "collateral_name"
+            "liquidation-ratio"
+            "collateral-to-debt-ratio"
+            "maximum-debt"
+            "liquidation-penalty"
+            "stability-fee-apy"
+            "minimum-vault-debt"
+          )
+        }
+      )
+      (map-set proposal-types
+        { type: "stacking_distribution" }
+        {
+          changes-keys: (list "stacker_yield" "governance_token_yield" "governance_reserve_yield")
+        }
+      )
+      (map-set proposal-types
+        { type: "emergency_shutdown" }
+        {
+          changes-keys: (list "")
+        }
+      )
+    )
+    true
   )
-  (map-set proposal-types
-    { type: "stacking_distribution" }
-    {
-      changes-keys: (list "stacker_yield" "governance_token_yield" "governance_reserve_yield")
-    }
-  )
-  (map-set proposal-types
-    { type: "emergency_shutdown" }
-    {
-      changes-keys: (list "")
-    }
-  )
-  (print (get-liquidation-ratio "stx"))
 )
