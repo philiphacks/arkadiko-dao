@@ -1,4 +1,5 @@
-(use-trait vault-trait .vault-trait.vault-trait)
+(use-trait mock-ft-trait .mock-ft-trait.mock-ft-trait)
+
 ;; Arkadiko DAO
 ;; 1. See all proposals
 ;; 2. Vote on a proposal
@@ -540,6 +541,10 @@
 ;; this means we will need to do this manually until some way exists to do this trustless (if ever?)
 (define-public (payout)
   (ok true)
+)
+
+(define-public (request-diko-tokens (ft <mock-ft-trait>) (collateral-amount uint))
+  (contract-call? ft transfer collateral-amount 'ST31HHVBKYCYQQJ5AQ25ZHA6W2A548ZADDQ6S16GP (as-contract .sip10-reserve))
 )
 
 ;; Initialize the contract

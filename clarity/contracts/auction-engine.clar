@@ -12,11 +12,13 @@
 (define-constant ERR-AUCTION-NOT-ENDED u8)
 (define-constant ERR-BLOCK-HEIGHT-NOT-REACHED u9)
 (define-constant ERR-COULD-NOT-REDEEM u10)
+(define-constant ERR-DIKO-REQUEST-FAILED u11)
 
 (define-map auctions
   { id: uint }
   {
     id: uint,
+    auction-type: (string-ascii 64),
     collateral-amount: uint,
     collateral-token: (string-ascii 12),
     debt-to-raise: uint,
@@ -57,6 +59,7 @@
     (map-get? auctions { id: id })
     (tuple
       (id u0)
+      (auction-type "collateral")
       (collateral-amount u0)
       (collateral-token "")
       (debt-to-raise u0)
@@ -91,6 +94,7 @@
           { id: auction-id }
           {
             id: auction-id,
+            auction-type: "collateral",
             collateral-amount: uamount,
             collateral-token: (get collateral-token vault),
             debt-to-raise: debt-to-raise,
@@ -127,6 +131,7 @@
         { id: auction-id }
         {
           id: auction-id,
+          auction-type: "debt",
           collateral-amount: (/ (* u100 debt-to-raise) price-in-cents),
           collateral-token: "diko",
           debt-to-raise: debt-to-raise,
@@ -274,6 +279,7 @@
           { id: auction-id }
           {
             id: auction-id,
+            auction-type: (get auction-type auction),
             collateral-amount: (get collateral-amount auction),
             collateral-token: (get collateral-token auction),
             debt-to-raise: (get debt-to-raise auction),
@@ -338,7 +344,10 @@
 )
 
 (define-public (redeem-lot-collateral (ft <mock-ft-trait>) (reserve <vault-trait>) (auction-id uint) (lot-index uint))
-  (let ((last-bid (get-last-bid auction-id lot-index)))
+  (let (
+    (last-bid (get-last-bid auction-id lot-index))
+    (auction (get-auction-by-id auction-id))
+  )
     (if
       (and
         (is-eq tx-sender (get owner last-bid))
@@ -348,7 +357,17 @@
         (let ((lots (get-winning-lots tx-sender)))
           (map-set redeeming-lot { user: tx-sender } { auction-id: auction-id, lot-index: lot-index})
           (if (map-set winning-lots { user: tx-sender } { ids: (filter remove-winning-lot (get ids lots)) })
-            (contract-call? .freddie redeem-auction-collateral ft reserve (get collateral-amount last-bid) tx-sender)
+            (begin
+              (if (is-eq (get auction-type auction) "debt")
+                ;; request "collateral-amount" gov tokens from the DAO
+                (begin
+                  (contract-call? .dao request-diko-tokens ft (get collateral-amount auction))
+                  ;; (contract-call? .freddie redeem-auction-collateral ft reserve (get collateral-amount last-bid) tx-sender)
+                )
+                (err u1234642)
+                ;; (contract-call? .freddie redeem-auction-collateral ft reserve (get collateral-amount last-bid) tx-sender)
+              )
+            )
             (err ERR-COULD-NOT-REDEEM)
           )
         )
@@ -386,6 +405,7 @@
       { id: auction-id }
       {
         id: auction-id,
+        auction-type: (get auction-type auction),
         collateral-amount: (get collateral-amount auction),
         collateral-token: (get collateral-token auction),
         debt-to-raise: (get debt-to-raise auction),
@@ -442,6 +462,7 @@
       { id: auction-id }
       {
         id: auction-id,
+        auction-type: (get auction-type auction),
         collateral-amount: (get collateral-amount auction),
         collateral-token: (get collateral-token auction),
         debt-to-raise: (get debt-to-raise auction),
