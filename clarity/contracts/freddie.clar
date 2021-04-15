@@ -20,13 +20,15 @@
 ;; constants
 (define-constant blocks-per-day u144)
 (define-private (get-vault-owner)
-  (if is-in-regtest
-    (if (is-eq (unwrap-panic (get-block-info? header-hash u1)) 0xd2454d24b49126f7f47c986b06960d7f5b70812359084197a200d691e67a002e)
-      'ST2YP83431YWD9FNWTTDCQX8B3K0NDKPCV3B1R30H ;; Testnet only
-      'ST1HTBVD3JG9C05J7HBJTHGR0GGW7KXW28M5JS8QE ;; Other test environments
-    )
-    'SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7 ;; Mainnet (TODO)
-  )
+  ;; TODO: fix manual mocknet/testnet/mainnet switch
+  ;; (if is-in-regtest
+  ;;   (if (is-eq (unwrap-panic (get-block-info? header-hash u1)) 0xd2454d24b49126f7f47c986b06960d7f5b70812359084197a200d691e67a002e)
+  ;;     'ST2YP83431YWD9FNWTTDCQX8B3K0NDKPCV3B1R30H ;; Testnet only
+  ;;     'ST1HTBVD3JG9C05J7HBJTHGR0GGW7KXW28M5JS8QE ;; Other test environments
+  ;;   )
+  ;;   'SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7 ;; Mainnet (TODO)
+  ;; )
+  'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7
 )
 
 ;; Map of vault entries
