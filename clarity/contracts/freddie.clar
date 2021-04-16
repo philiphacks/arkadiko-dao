@@ -399,12 +399,11 @@
        (updated-vault (merge vault {
           stacked-tokens: (+ (get stacked-tokens vault) (resolve-stacking-amount uamount (get collateral-token vault))),
           collateral: new-collateral,
-          updated-at-block-height: block-height,
-          is-liquidated: false,
-          auction-ended: false,
-          leftover-collateral: u0
+          updated-at-block-height: block-height
         })))
     (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
+    (asserts! (is-eq (get is-liquidated vault) false) (err ERR-NOT-AUTHORIZED))
+
     (unwrap! (contract-call? reserve deposit ft uamount) (err ERR-DEPOSIT-FAILED))
     (map-set vaults { id: vault-id } updated-vault)
     (print { type: "vault", action: "deposit", data: updated-vault })
@@ -415,6 +414,7 @@
 (define-public (withdraw (vault-id uint) (uamount uint) (reserve <vault-trait>) (ft <mock-ft-trait>))
   (let ((vault (get-vault-by-id vault-id)))
     (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
+    (asserts! (is-eq (get is-liquidated vault) false) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq tx-sender (get owner vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (> uamount u0) (err ERR-INSUFFICIENT-COLLATERAL))
     (asserts! (<= uamount (get collateral vault)) (err ERR-INSUFFICIENT-COLLATERAL))
@@ -430,10 +430,7 @@
           (new-collateral (- (get collateral vault) uamount))
           (updated-vault (merge vault {
             collateral: new-collateral,
-            updated-at-block-height: block-height,
-            is-liquidated: false,
-            auction-ended: false,
-            leftover-collateral: u0
+            updated-at-block-height: block-height
           })))
       (asserts! (>= ratio (unwrap-panic (contract-call? .dao get-collateral-to-debt-ratio "stx"))) (err ERR-INSUFFICIENT-COLLATERAL))
       (unwrap! (contract-call? reserve withdraw ft (get owner vault) uamount) (err ERR-WITHDRAW-FAILED))
@@ -449,12 +446,10 @@
        (new-total-debt (+ extra-debt (get debt vault)))
        (updated-vault (merge vault {
           debt: new-total-debt,
-          updated-at-block-height: block-height,
-          is-liquidated: false,
-          auction-ended: false,
-          leftover-collateral: u0
+          updated-at-block-height: block-height
         })))
     (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
+    (asserts! (is-eq (get is-liquidated vault) false) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq tx-sender (get owner vault)) (err ERR-NOT-AUTHORIZED))
     (asserts!
       (<
@@ -492,6 +487,7 @@
 (define-public (burn (vault-id uint) (debt uint) (reserve <vault-trait>) (ft <mock-ft-trait>))
   (let ((vault (get-vault-by-id vault-id)))
     (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
+    (asserts! (is-eq (get is-liquidated vault) false) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq tx-sender (get owner vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq u0 (get stability-fee vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (<= debt (get debt vault)) (err ERR-NOT-AUTHORIZED))
@@ -509,12 +505,11 @@
        (updated-vault (merge vault {
           collateral: u0,
           debt: u0,
-          updated-at-block-height: block-height,
-          is-liquidated: false,
-          auction-ended: false,
-          leftover-collateral: u0
+          updated-at-block-height: block-height
         })))
     (asserts! (is-eq u0 (get stacked-tokens vault)) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq (get is-liquidated vault) false) (err ERR-NOT-AUTHORIZED))
+
     (try! (contract-call? .xusd-token burn (get debt vault) (get owner vault)))
     (try! (contract-call? reserve burn ft (get owner vault) (get collateral vault)))
     (try! (contract-call? .dao subtract-debt-from-collateral-type (get collateral-type vault) (get debt vault)))
