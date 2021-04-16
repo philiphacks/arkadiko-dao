@@ -828,5 +828,5 @@
 ;; taken from stability fees paid by vault owners
 ;; TODO: redeem maximum 10% per month
 (define-public (redeem-xusd (xusd-amount uint))
-  (contract-call? .xusd-token transfer xusd-amount (as-contract tx-sender) vault-owner)
+  (contract-call? .xusd-token transfer xusd-amount (as-contract tx-sender) (get-vault-owner))
 )
