@@ -9,7 +9,7 @@
     (liquidation-ratio (unwrap-panic (contract-call? .dao get-liquidation-ratio collateral-type))))
       ;; Vault only at risk when liquidation ratio is < collateral-to-debt-ratio
       (asserts! 
-        (>= liquidation-ratio collateral-to-debt-ratio) (err confirm-action))
+        (>= liquidation-ratio collateral-to-debt-ratio) (err STATUS-OK))
       ;; Start auction
       (print "Vault is in danger. Time to liquidate.")
       (let 
