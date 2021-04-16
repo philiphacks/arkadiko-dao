@@ -16,6 +16,7 @@
 (define-constant ERR-LIQUIDATION-FAILED u48)
 (define-constant ERR-INSUFFICIENT-COLLATERAL u49)
 (define-constant ERR-MAXIMUM-DEBT-REACHED u410)
+(define-constant ERR-EMERGENCY-SHUTDOWN-ACTIVATED u411)
 
 ;; constants
 (define-constant blocks-per-day u144)
@@ -147,6 +148,7 @@
 
 (define-public (toggle-stacking (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
+    (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
     (asserts! (is-eq tx-sender (get owner vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq "stx" (get collateral-token vault)) (err ERR-NOT-AUTHORIZED))
     (try! (contract-call? .stx-reserve toggle-stacking (get revoked-stacking vault) (get collateral vault)))
@@ -177,6 +179,7 @@
 
 (define-public (stack-collateral (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
+    (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
     (asserts! (is-eq "stx" (get collateral-token vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq false (get is-liquidated vault)) (err ERR-NOT-AUTHORIZED))
 
@@ -209,6 +212,7 @@
 ;; Only mark vaults that have revoked stacking
 (define-public (enable-vault-withdrawals (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
+    (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
     (asserts! (is-eq tx-sender (get-vault-owner)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq "stx" (get collateral-token vault)) (err ERR-NOT-AUTHORIZED))
 
@@ -247,6 +251,7 @@
 
 (define-public (enable-redeemable-stx (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
+    (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
     (asserts! (is-eq tx-sender (get-vault-owner)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq "xstx" (get collateral-token vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq true (get is-liquidated vault)) (err ERR-NOT-AUTHORIZED))
@@ -344,6 +349,7 @@
     (ft <mock-ft-trait>)
   )
   (let ((ratio (unwrap-panic (contract-call? reserve calculate-current-collateral-to-debt-ratio collateral-token debt collateral-amount))))
+    (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
     (asserts! (is-eq tx-sender sender) (err ERR-NOT-AUTHORIZED))
     (asserts! (>= ratio (unwrap-panic (contract-call? .dao get-liquidation-ratio collateral-type))) (err ERR-INSUFFICIENT-COLLATERAL))
     (asserts!
@@ -398,6 +404,7 @@
           auction-ended: false,
           leftover-collateral: u0
         })))
+    (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
     (unwrap! (contract-call? reserve deposit ft uamount) (err ERR-DEPOSIT-FAILED))
     (map-set vaults { id: vault-id } updated-vault)
     (print { type: "vault", action: "deposit", data: updated-vault })
@@ -407,6 +414,7 @@
 
 (define-public (withdraw (vault-id uint) (uamount uint) (reserve <vault-trait>) (ft <mock-ft-trait>))
   (let ((vault (get-vault-by-id vault-id)))
+    (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
     (asserts! (is-eq tx-sender (get owner vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (> uamount u0) (err ERR-INSUFFICIENT-COLLATERAL))
     (asserts! (<= uamount (get collateral vault)) (err ERR-INSUFFICIENT-COLLATERAL))
@@ -446,6 +454,7 @@
           auction-ended: false,
           leftover-collateral: u0
         })))
+    (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
     (asserts! (is-eq tx-sender (get owner vault)) (err ERR-NOT-AUTHORIZED))
     (asserts!
       (<
@@ -482,6 +491,7 @@
 
 (define-public (burn (vault-id uint) (debt uint) (reserve <vault-trait>) (ft <mock-ft-trait>))
   (let ((vault (get-vault-by-id vault-id)))
+    (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
     (asserts! (is-eq tx-sender (get owner vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq u0 (get stability-fee vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (<= debt (get debt vault)) (err ERR-NOT-AUTHORIZED))
@@ -631,6 +641,7 @@
 
 (define-public (liquidate (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
+    (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
     (asserts! (is-eq contract-caller .liquidator) (err ERR-NOT-AUTHORIZED))
 
     (let ((collateral (get collateral vault)))
@@ -699,6 +710,8 @@
 (define-public (finalize-liquidation (vault-id uint) (leftover-collateral uint) (debt-raised uint))
   (if (is-eq contract-caller .auction-engine)
     (let ((vault (get-vault-by-id vault-id)))
+      (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
+
       (begin
         (map-set vaults
           { id: vault-id }
