@@ -101,7 +101,7 @@
             vault-id: vault-id,
             lot-size: (var-get lot-size),
             lots-sold: u0,
-            ends-at: (+ block-height u14),
+            ends-at: (+ block-height u144),
             total-collateral-sold: u0,
             total-debt-raised: u0,
             is-open: true
@@ -138,7 +138,7 @@
           vault-id: vault-id,
           lot-size: (var-get lot-size),
           lots-sold: u0,
-          ends-at: (+ block-height u14),
+          ends-at: (+ block-height u144),
           total-collateral-sold: u0,
           total-debt-raised: u0,
           is-open: true
