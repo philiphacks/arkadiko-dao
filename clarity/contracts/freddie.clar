@@ -2,20 +2,20 @@
 (use-trait mock-ft-trait .mock-ft-trait.mock-ft-trait)
 
 ;; Freddie - The Vault Manager
-;; Freddie is an abstraction layer that interacts with collateral type reserves (initially only STX)
+;; Freddie is an abstraction layer that interacts with collateral type reserves
 ;; Ideally, collateral reserves should never be called from outside. Only manager layers should be interacted with from clients
 
 ;; errors
-(define-constant err-unauthorized u1)
-(define-constant err-transfer-failed u2)
-(define-constant err-minter-failed u3)
-(define-constant err-burn-failed u4)
-(define-constant err-deposit-failed u5)
-(define-constant err-withdraw-failed u6)
-(define-constant err-mint-failed u7)
-(define-constant err-liquidation-failed u8)
-(define-constant err-insufficient-collateral u9)
-(define-constant err-maximum-debt-reached u10)
+(define-constant ERR-NOT-AUTHORIZED u4401)
+(define-constant ERR-TRANSFER-FAILED u42)
+(define-constant ERR-MINTER-FAILED u43)
+(define-constant ERR-BURN-FAILED u44)
+(define-constant ERR-DEPOSIT-FAILED u45)
+(define-constant ERR-WITHDRAW-FAILED u46)
+(define-constant ERR-MINT-FAILED u47)
+(define-constant ERR-LIQUIDATION-FAILED u48)
+(define-constant ERR-INSUFFICIENT-COLLATERAL u49)
+(define-constant ERR-MAXIMUM-DEBT-REACHED u410)
 
 ;; constants
 (define-constant blocks-per-day u144)
@@ -147,8 +147,8 @@
 
 (define-public (toggle-stacking (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
-    (asserts! (is-eq tx-sender (get owner vault)) (err err-unauthorized))
-    (asserts! (is-eq "stx" (get collateral-token vault)) (err err-unauthorized))
+    (asserts! (is-eq tx-sender (get owner vault)) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq "stx" (get collateral-token vault)) (err ERR-NOT-AUTHORIZED))
     (try! (contract-call? .stx-reserve toggle-stacking (get revoked-stacking vault) (get collateral vault)))
 
     (map-set vaults
@@ -177,8 +177,8 @@
 
 (define-public (stack-collateral (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
-    (asserts! (is-eq "stx" (get collateral-token vault)) (err err-unauthorized))
-    (asserts! (is-eq false (get is-liquidated vault)) (err err-unauthorized))
+    (asserts! (is-eq "stx" (get collateral-token vault)) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq false (get is-liquidated vault)) (err ERR-NOT-AUTHORIZED))
 
     (try! (contract-call? .stx-reserve add-tokens-to-stack (get collateral vault)))
     (map-set vaults
@@ -209,8 +209,8 @@
 ;; Only mark vaults that have revoked stacking
 (define-public (enable-vault-withdrawals (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
-    (asserts! (is-eq tx-sender (get-vault-owner)) (err err-unauthorized))
-    (asserts! (is-eq "stx" (get collateral-token vault)) (err err-unauthorized))
+    (asserts! (is-eq tx-sender (get-vault-owner)) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq "stx" (get collateral-token vault)) (err ERR-NOT-AUTHORIZED))
 
     (if
       (or
@@ -247,10 +247,10 @@
 
 (define-public (enable-redeemable-stx (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
-    (asserts! (is-eq tx-sender (get-vault-owner)) (err err-unauthorized))
-    (asserts! (is-eq "xstx" (get collateral-token vault)) (err err-unauthorized))
-    (asserts! (is-eq true (get is-liquidated vault)) (err err-unauthorized))
-    (asserts! (> (get stacked-tokens vault) u0) (err err-unauthorized))
+    (asserts! (is-eq tx-sender (get-vault-owner)) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq "xstx" (get collateral-token vault)) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq true (get is-liquidated vault)) (err ERR-NOT-AUTHORIZED))
+    (asserts! (> (get stacked-tokens vault) u0) (err ERR-NOT-AUTHORIZED))
 
     (try! (add-stx-redeemable (get stacked-tokens vault)))
     (map-set vaults
@@ -330,7 +330,7 @@
         (err u0) ;; cannot stack yet - probably cause we have not reached the minimum with (var-get tokens-to-stack)
       )
     )
-    (err err-unauthorized)
+    (err ERR-NOT-AUTHORIZED)
   )
 )
 
@@ -344,14 +344,14 @@
     (ft <mock-ft-trait>)
   )
   (let ((ratio (unwrap-panic (contract-call? reserve calculate-current-collateral-to-debt-ratio collateral-token debt collateral-amount))))
-    (asserts! (is-eq tx-sender sender) (err err-unauthorized))
-    (asserts! (>= ratio (unwrap-panic (contract-call? .dao get-liquidation-ratio collateral-type))) (err err-insufficient-collateral))
+    (asserts! (is-eq tx-sender sender) (err ERR-NOT-AUTHORIZED))
+    (asserts! (>= ratio (unwrap-panic (contract-call? .dao get-liquidation-ratio collateral-type))) (err ERR-INSUFFICIENT-COLLATERAL))
     (asserts!
       (<
         (unwrap-panic (contract-call? .dao get-total-debt collateral-type))
         (unwrap-panic (contract-call? .dao get-maximum-debt collateral-type))
       )
-      (err err-maximum-debt-reached)
+      (err ERR-MAXIMUM-DEBT-REACHED)
     )
     (try! (contract-call? reserve collateralize-and-mint ft collateral-amount debt sender))
 
@@ -382,7 +382,7 @@
         (print { type: "vault", action: "created", data: vault })
         (ok debt)
       )
-      (err err-minter-failed)
+      (err ERR-MINTER-FAILED)
     )
   )
 )
@@ -398,7 +398,7 @@
           auction-ended: false,
           leftover-collateral: u0
         })))
-    (unwrap! (contract-call? reserve deposit ft uamount) (err err-deposit-failed))
+    (unwrap! (contract-call? reserve deposit ft uamount) (err ERR-DEPOSIT-FAILED))
     (map-set vaults { id: vault-id } updated-vault)
     (print { type: "vault", action: "deposit", data: updated-vault })
     (ok true)
@@ -407,10 +407,10 @@
 
 (define-public (withdraw (vault-id uint) (uamount uint) (reserve <vault-trait>) (ft <mock-ft-trait>))
   (let ((vault (get-vault-by-id vault-id)))
-    (asserts! (is-eq tx-sender (get owner vault)) (err err-unauthorized))
-    (asserts! (> uamount u0) (err err-insufficient-collateral))
-    (asserts! (<= uamount (get collateral vault)) (err err-insufficient-collateral))
-    (asserts! (is-eq u0 (get stacked-tokens vault)) (err err-unauthorized))
+    (asserts! (is-eq tx-sender (get owner vault)) (err ERR-NOT-AUTHORIZED))
+    (asserts! (> uamount u0) (err ERR-INSUFFICIENT-COLLATERAL))
+    (asserts! (<= uamount (get collateral vault)) (err ERR-INSUFFICIENT-COLLATERAL))
+    (asserts! (is-eq u0 (get stacked-tokens vault)) (err ERR-NOT-AUTHORIZED))
 
     (let ((ratio (unwrap-panic 
             (contract-call? 
@@ -427,8 +427,8 @@
             auction-ended: false,
             leftover-collateral: u0
           })))
-      (asserts! (>= ratio (unwrap-panic (contract-call? .dao get-collateral-to-debt-ratio "stx"))) (err err-insufficient-collateral))
-      (unwrap! (contract-call? reserve withdraw ft (get owner vault) uamount) (err err-withdraw-failed))
+      (asserts! (>= ratio (unwrap-panic (contract-call? .dao get-collateral-to-debt-ratio "stx"))) (err ERR-INSUFFICIENT-COLLATERAL))
+      (unwrap! (contract-call? reserve withdraw ft (get owner vault) uamount) (err ERR-WITHDRAW-FAILED))
       (map-set vaults { id: vault-id } updated-vault)
       (print { type: "vault", action: "withdraw", data: updated-vault })
       (ok true)
@@ -446,13 +446,13 @@
           auction-ended: false,
           leftover-collateral: u0
         })))
-    (asserts! (is-eq tx-sender (get owner vault)) (err err-unauthorized))
+    (asserts! (is-eq tx-sender (get owner vault)) (err ERR-NOT-AUTHORIZED))
     (asserts!
       (<
         (unwrap-panic (contract-call? .dao get-total-debt (get collateral-type vault)))
         (unwrap-panic (contract-call? .dao get-maximum-debt (get collateral-type vault)))
       )
-      (err err-maximum-debt-reached)
+      (err ERR-MAXIMUM-DEBT-REACHED)
     )
     (unwrap! (contract-call? 
                 reserve 
@@ -482,9 +482,9 @@
 
 (define-public (burn (vault-id uint) (debt uint) (reserve <vault-trait>) (ft <mock-ft-trait>))
   (let ((vault (get-vault-by-id vault-id)))
-    (asserts! (is-eq tx-sender (get owner vault)) (err err-unauthorized))
-    (asserts! (is-eq u0 (get stability-fee vault)) (err err-unauthorized))
-    (asserts! (<= debt (get debt vault)) (err err-unauthorized))
+    (asserts! (is-eq tx-sender (get owner vault)) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq u0 (get stability-fee vault)) (err ERR-NOT-AUTHORIZED))
+    (asserts! (<= debt (get debt vault)) (err ERR-NOT-AUTHORIZED))
 
     (if (is-eq debt (get debt vault))
       (close-vault vault-id reserve ft)
@@ -504,7 +504,7 @@
           auction-ended: false,
           leftover-collateral: u0
         })))
-    (asserts! (is-eq u0 (get stacked-tokens vault)) (err err-unauthorized))
+    (asserts! (is-eq u0 (get stacked-tokens vault)) (err ERR-NOT-AUTHORIZED))
     (try! (contract-call? .xusd-token burn (get debt vault) (get owner vault)))
     (try! (contract-call? reserve burn ft (get owner vault) (get collateral vault)))
     (try! (contract-call? .dao subtract-debt-from-collateral-type (get collateral-type vault) (get debt vault)))
@@ -631,7 +631,7 @@
 
 (define-public (liquidate (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
-    (asserts! (is-eq contract-caller .liquidator) (err err-unauthorized))
+    (asserts! (is-eq contract-caller .liquidator) (err ERR-NOT-AUTHORIZED))
 
     (let ((collateral (get collateral vault)))
       (if
@@ -725,7 +725,7 @@
         )
       )
     )
-    (err err-unauthorized)
+    (err ERR-NOT-AUTHORIZED)
   )
 )
 
@@ -735,7 +735,7 @@
 
 (define-public (withdraw-leftover-collateral (vault-id uint) (reserve <vault-trait>) (ft <mock-ft-trait>))
   (let ((vault (get-vault-by-id vault-id)))
-    (asserts! (is-eq tx-sender (get owner vault)) (err err-unauthorized))
+    (asserts! (is-eq tx-sender (get owner vault)) (err ERR-NOT-AUTHORIZED))
 
     (if (unwrap-panic (contract-call? reserve withdraw ft (get owner vault) (get leftover-collateral vault)))
       (begin
@@ -761,7 +761,7 @@
         )
         (ok true)
       )
-      (err err-withdraw-failed)
+      (err ERR-WITHDRAW-FAILED)
     )
   )
 )

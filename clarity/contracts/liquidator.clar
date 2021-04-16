@@ -1,6 +1,6 @@
 ;; errors
-(define-constant err-liquidation-failed u1)
-(define-constant confirm-action u200)
+(define-constant ERR-LIQUIDATION-FAILED u51)
+(define-constant STATUS-OK u5200)
 
 (define-public (notify-risky-vault (vault-id uint))
   (let (
@@ -9,15 +9,15 @@
     (liquidation-ratio (unwrap-panic (contract-call? .dao get-liquidation-ratio collateral-type))))
       ;; Vault only at risk when liquidation ratio is < collateral-to-debt-ratio
       (asserts! 
-        (>= liquidation-ratio collateral-to-debt-ratio) (err confirm-action))
+        (>= liquidation-ratio collateral-to-debt-ratio) (err STATUS-OK))
       ;; Start auction
       (print "Vault is in danger. Time to liquidate.")
       (let 
         ((amounts (unwrap-panic (as-contract (contract-call? .freddie liquidate vault-id)))))
           (unwrap! 
             (contract-call? .auction-engine start-auction vault-id (get ustx-amount amounts) (get debt amounts)) 
-            (err err-liquidation-failed))
-          (ok confirm-action)
+            (err ERR-LIQUIDATION-FAILED))
+          (ok STATUS-OK)
       )
   )
 )
