@@ -46,7 +46,7 @@
   (begin
     (asserts! (is-eq contract-caller .freddie) (err err-unauthorized))
 
-    (match (print (contract-call? token transfer additional-ucollateral-amount tx-sender (as-contract tx-sender)))
+    (match (contract-call? token transfer additional-ucollateral-amount tx-sender (as-contract tx-sender))
       success (ok true)
       error (err err-deposit-failed)
     )
@@ -57,7 +57,7 @@
   (begin
     (asserts! (is-eq contract-caller .freddie) (err err-unauthorized))
 
-    (match (print (as-contract (contract-call? token transfer ucollateral-amount (as-contract tx-sender) vault-owner)))
+    (match (as-contract (contract-call? token transfer ucollateral-amount (as-contract tx-sender) vault-owner))
       success (ok true)
       error (err err-withdraw-failed)
     )
@@ -70,7 +70,7 @@
 
     (let ((max-new-debt (- (unwrap-panic (calculate-xusd-count token ucollateral-amount collateral-type)) current-debt)))
       (if (>= max-new-debt extra-debt)
-        (match (print (as-contract (contract-call? .xusd-token mint extra-debt vault-owner)))
+        (match (as-contract (contract-call? .xusd-token mint extra-debt vault-owner))
           success (ok true)
           error (err err-mint-failed)
         )
@@ -84,7 +84,7 @@
   (begin
     (asserts! (is-eq contract-caller .freddie) (err err-unauthorized))
 
-    (match (print (as-contract (contract-call? token transfer collateral-to-return (as-contract tx-sender) vault-owner)))
+    (match (as-contract (contract-call? token transfer collateral-to-return (as-contract tx-sender) vault-owner))
       transferred (ok true)
       error (err err-transfer-failed)
     )
