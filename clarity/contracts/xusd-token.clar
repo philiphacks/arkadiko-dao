@@ -3,7 +3,7 @@
 ;; Defines the xUSD Stablecoin according to the SRC20 Standard
 (define-fungible-token xusd)
 
-(define-constant ERR-BURN-FAILED u1)
+(define-constant ERR-BURN-FAILED u114)
 
 (define-read-only (get-total-supply)
   (ok (ft-get-supply xusd))
