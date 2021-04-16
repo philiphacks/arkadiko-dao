@@ -14,7 +14,6 @@
 (define-constant ERR-COULD-NOT-REDEEM u210)
 (define-constant ERR-DIKO-REQUEST-FAILED u211)
 
-
 (define-map auctions
   { id: uint }
   {
