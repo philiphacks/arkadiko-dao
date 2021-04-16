@@ -411,7 +411,7 @@
 ;; DONE     3. check if vault debt is covered (sum of xUSD in lots >= debt-to-raise)
 ;; DONE     4. update vault to allow vault owner to withdraw leftover collateral (if any)
 ;; DONE     5. if not all vault debt is covered: auction off collateral again (if any left)
-;; TODO     6. if not all vault debt is covered and no collateral is left: cover xUSD with gov token
+;; DONE     6. if not all vault debt is covered and no collateral is left: cover xUSD with gov token
 (define-public (close-auction (auction-id uint))
   (let ((auction (get-auction-by-id auction-id)))
     (asserts!
