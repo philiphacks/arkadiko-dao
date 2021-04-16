@@ -2,13 +2,13 @@
 (use-trait mock-ft-trait .mock-ft-trait.mock-ft-trait)
 
 ;; errors
-(define-constant err-bid-declined u1)
-(define-constant err-lot-sold u2)
-(define-constant err-poor-bid u3)
-(define-constant err-xusd-transfer-failed u4)
-(define-constant err-auction-not-allowed u5)
-(define-constant err-insufficient-collateral u6)
-(define-constant err-not-authorized u7)
+(define-constant ERR-BID-DECLINED u21)
+(define-constant ERR-LOT-SOLD u22)
+(define-constant ERR-POOR-BID u23)
+(define-constant ERR-XUSD-TRANSFER-FAILED u24)
+(define-constant ERR-AUCTION-NOT-ALLOWED u25)
+(define-constant ERR-INSUFFICIENT-COLLATERAL u26)
+(define-constant ERR-NOT-AUTHORIZED u2403)
 
 (define-map auctions
   { id: uint }
@@ -79,8 +79,8 @@
 ;; we will have to sell some governance or STX tokens from the reserve
 (define-public (start-auction (vault-id uint) (uamount uint) (debt-to-raise uint))
   (let ((vault (contract-call? .freddie get-vault-by-id vault-id)))
-    (asserts! (is-eq contract-caller .liquidator) (err err-not-authorized))
-    (asserts! (is-eq (get is-liquidated vault) true) (err err-auction-not-allowed))
+    (asserts! (is-eq contract-caller .liquidator) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq (get is-liquidated vault) true) (err ERR-AUCTION-NOT-ALLOWED))
 
     (let ((auction-id (+ (var-get last-auction-id) u1)))
       (begin
@@ -114,7 +114,7 @@
 ;; when a normal collateral liquidation auction can't raise enough debt
 (define-private (start-debt-auction (vault-id uint) (debt-to-raise uint))
   (let ((vault (contract-call? .freddie get-vault-by-id vault-id)))
-    (asserts! (is-eq (get is-liquidated vault) true) (err err-auction-not-allowed))
+    (asserts! (is-eq (get is-liquidated vault) true) (err ERR-AUCTION-NOT-ALLOWED))
 
     (let (
       (auction-id (+ (var-get last-auction-id) u1))
@@ -221,7 +221,7 @@
         (is-eq (get is-open auction) true)
       )
       (ok (register-bid auction-id lot-index xusd))
-      (err err-bid-declined) ;; just silently exit
+      (err ERR-BID-DECLINED) ;; just silently exit
     )
   )
 )
@@ -232,9 +232,9 @@
       (if (not (get is-accepted last-bid))
         (if (> xusd (get xusd last-bid)) ;; we have a better bid and the previous one was not accepted!
           (ok (accept-bid auction-id lot-index xusd))
-          (err err-poor-bid) ;; don't care cause either the bid is already over or it was a poor bid
+          (err ERR-POOR-BID) ;; don't care cause either the bid is already over or it was a poor bid
         )
-        (err err-lot-sold) ;; lot is already sold
+        (err ERR-LOT-SOLD) ;; lot is already sold
       )
     )
   )
@@ -317,7 +317,7 @@
             (ok false)
           )
         )
-        (err err-xusd-transfer-failed)
+        (err ERR-XUSD-TRANSFER-FAILED)
       )
     )
   )
@@ -377,9 +377,9 @@
         (>= block-height (get ends-at auction))
         (>= (get total-debt-raised auction) (get debt-to-raise auction))
       )
-      (err err-not-authorized)
+      (err ERR-NOT-AUTHORIZED)
     )
-    (asserts! (is-eq (get is-open auction) true) (err err-not-authorized))
+    (asserts! (is-eq (get is-open auction) true) (err ERR-NOT-AUTHORIZED))
 
     (map-set auctions
       { id: auction-id }
@@ -433,9 +433,9 @@
     (last-bid (get-last-bid auction-id lot-index))
     (lots (get-winning-lots (get owner last-bid)))
   )
-    (asserts! (is-eq (get is-open auction) false) (err err-not-authorized))
-    (asserts! (> (get xusd last-bid) u0) (err err-not-authorized))
-    (asserts! (is-eq (get is-accepted last-bid) false) (err err-not-authorized))
+    (asserts! (is-eq (get is-open auction) false) (err ERR-NOT-AUTHORIZED))
+    (asserts! (> (get xusd last-bid) u0) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq (get is-accepted last-bid) false) (err ERR-NOT-AUTHORIZED))
 
     (map-set auctions
       { id: auction-id }
