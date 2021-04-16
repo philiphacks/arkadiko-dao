@@ -160,7 +160,7 @@
     (maximum-surplus (unwrap-panic (contract-call? .dao get-maximum-debt-surplus)))
     (current-balance (unwrap-panic (contract-call? .freddie get-xusd-balance)))
   )
-    (asserts! (>= current-balance maximum-surplus) (err err-auction-not-allowed))
+    (asserts! (>= current-balance maximum-surplus) (err ERR-AUCTION-NOT-ALLOWED))
     ;; TODO: add assert to run only 1 surplus auction at once
 
     (map-set auctions
