@@ -51,7 +51,7 @@
 )
 
 (define-data-var last-auction-id uint u0)
-(define-data-var auction-ids (list 1800 uint) (list u0))
+(define-data-var auction-ids (list 1500 uint) (list u0))
 (define-data-var lot-size uint u100000000) ;; 100 xUSD
 
 (define-read-only (get-auction-by-id (id uint))
@@ -108,7 +108,7 @@
           }
         )
         (print "Added new open auction")
-        (var-set auction-ids (unwrap-panic (as-max-len? (append (var-get auction-ids) auction-id) u1800)))
+        (var-set auction-ids (unwrap-panic (as-max-len? (append (var-get auction-ids) auction-id) u1500)))
         (var-set last-auction-id auction-id)
         (ok true)
       )
@@ -146,7 +146,7 @@
       )
 
       (print "Added new open auction")
-      (var-set auction-ids (unwrap-panic (as-max-len? (append (var-get auction-ids) auction-id) u1800)))
+      (var-set auction-ids (unwrap-panic (as-max-len? (append (var-get auction-ids) auction-id) u1500)))
       (var-set last-auction-id auction-id)
     )
     (ok true)
@@ -181,7 +181,7 @@
     )
 
     (print "Added new open auction")
-    (var-set auction-ids (unwrap-panic (as-max-len? (append (var-get auction-ids) auction-id) u1800)))
+    (var-set auction-ids (unwrap-panic (as-max-len? (append (var-get auction-ids) auction-id) u1500)))
     (var-set last-auction-id auction-id)
     (ok true)
   )
@@ -262,23 +262,21 @@
         (is-eq lot-index (get lots-sold auction))
         (is-eq (get is-open auction) true)
       )
-      (ok (register-bid auction-id lot-index xusd))
+      (register-bid auction-id lot-index xusd)
       (err ERR-BID-DECLINED) ;; just silently exit
     )
   )
 )
 
 (define-private (register-bid (auction-id uint) (lot-index uint) (xusd uint))
-  (let ((auction (get-auction-by-id auction-id)))
-    (let ((last-bid (get-last-bid auction-id lot-index)))
-      (if (not (get is-accepted last-bid))
-        (if (> xusd (get xusd last-bid)) ;; we have a better bid and the previous one was not accepted!
-          (ok (accept-bid auction-id lot-index xusd))
-          (err ERR-POOR-BID) ;; don't care cause either the bid is already over or it was a poor bid
-        )
-        (err ERR-LOT-SOLD) ;; lot is already sold
-      )
-    )
+  (let (
+    (auction (get-auction-by-id auction-id))
+    (last-bid (get-last-bid auction-id lot-index))
+  )
+    (asserts! (is-eq (get is-accepted last-bid) false) (err ERR-LOT-SOLD))
+    (asserts! (> xusd (get xusd last-bid)) (err ERR-POOR-BID)) ;; need a better bid than previously already accepted
+
+    (accept-bid auction-id lot-index xusd)
   )
 )
 
@@ -311,20 +309,11 @@
       (begin
         (map-set auctions
           { id: auction-id }
-          {
-            id: auction-id,
-            auction-type: (get auction-type auction),
-            collateral-amount: (get collateral-amount auction),
-            collateral-token: (get collateral-token auction),
-            debt-to-raise: (get debt-to-raise auction),
-            vault-id: (get vault-id auction),
-            lot-size: (get lot-size auction),
+          (merge auction {
             lots-sold: (+ (unwrap-panic (is-lot-sold accepted-bid)) (get lots-sold auction)),
-            ends-at: (get ends-at auction),
             total-collateral-sold: (- (+ collateral-amount (get total-collateral-sold auction)) (get collateral-amount last-bid)),
-            total-debt-raised: (- (+ xusd (get total-debt-raised auction)) (get xusd last-bid)),
-            is-open: true
-          }
+            total-debt-raised: (- (+ xusd (get total-debt-raised auction)) (get xusd last-bid))
+          })
         )
         (map-set bids
           { auction-id: auction-id, lot-index: lot-index }
@@ -356,7 +345,7 @@
           )
           ;; auction is over - close all bids
           ;; send collateral to winning bidders
-          (ok (unwrap! (close-auction auction-id) (err u666)))
+          (close-auction auction-id)
           (ok false)
         )
       )
@@ -436,30 +425,22 @@
 
     (map-set auctions
       { id: auction-id }
-      {
-        id: auction-id,
-        auction-type: (get auction-type auction),
-        collateral-amount: (get collateral-amount auction),
-        collateral-token: (get collateral-token auction),
-        debt-to-raise: (get debt-to-raise auction),
-        vault-id: (get vault-id auction),
-        lot-size: (get lot-size auction),
-        lots-sold: (get lots-sold auction),
-        ends-at: (get ends-at auction),
-        total-collateral-sold: (get total-collateral-sold auction),
-        total-debt-raised: (get total-debt-raised auction),
-        is-open: false
-      }
+      (merge auction { is-open: false })
     )
     (try! (contract-call? .xusd-token burn (get total-debt-raised auction) (as-contract tx-sender)))
     (if (>= (get total-debt-raised auction) (get debt-to-raise auction))
-      (begin
+      (if (is-eq (get auction-type auction) "collateral")
         (contract-call?
           .freddie
           finalize-liquidation
           (get vault-id auction)
           (- (get collateral-amount auction) (get total-collateral-sold auction))
-          (get total-debt-raised auction)
+        )
+        (contract-call?
+          .freddie
+          finalize-liquidation
+          (get vault-id auction)
+          u0
         )
       )
       (begin
