@@ -335,7 +335,7 @@ Clarinet.test({
       ),
     );
 
-    // Ensure that 1 vault was update with a 40000000 collateral
+    // Ensure that 1 vault was update with a 20000000 collateral
     vaultEvent = vaultNotifEvent.contract_event.value.expectTuple();
     vault = vaultEvent["data"].expectTuple();
     vault["collateral"].expectUint(20000000);
@@ -487,7 +487,7 @@ Clarinet.test({
       ),
     );
 
-    // Ensure that 1 vault was update with a 40000000 collateral
+    // Ensure that the vault was emptied
     vaultEvent = vaultNotifEvent.contract_event.value.expectTuple();
     vault = vaultEvent["data"].expectTuple();
     vault["collateral"].expectUint(0);
