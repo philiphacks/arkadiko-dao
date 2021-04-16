@@ -3,7 +3,7 @@
 ;; Defines the xUSD Stablecoin according to the SRC20 Standard
 (define-fungible-token xusd)
 
-(define-constant err-burn-failed u1)
+(define-constant ERR-BURN-FAILED u1)
 
 (define-read-only (get-total-supply)
   (ok (ft-get-supply xusd))
@@ -55,7 +55,7 @@
   (begin
     (asserts! 
       (or (is-eq contract-caller .freddie) (is-eq contract-caller .auction-engine))
-      (err err-burn-failed))
+      (err ERR-BURN-FAILED))
     (ft-burn? xusd amount sender)))
 
 ;; Initialize the contract
