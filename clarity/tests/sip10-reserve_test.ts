@@ -9,7 +9,7 @@ import { assert } from "https://deno.land/std@0.90.0/testing/asserts.ts";
 
 Clarinet.test({
   name:
-    "mint 5 dollar in stablecoin from 20000000 uDIKO at $2/DIKO through collateralize-and-mint",
+    "sip10-reserve: mint 5 dollar in stablecoin from 20000000 uDIKO at $2/DIKO through collateralize-and-mint",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     let deployer = accounts.get("deployer")!;
     let wallet_1 = accounts.get("wallet_1")!;
@@ -23,7 +23,7 @@ Clarinet.test({
     );
     let xusdInitialSupply = call.result
       .expectOk()
-      .expectUint(30);
+      .expectUint(1000000030);
 
     // Update price of DIKO, Create a new vault
     let block = chain.mineBlock([
@@ -104,7 +104,7 @@ Clarinet.test({
 });
 
 Clarinet.test({
-  name: "should deposit extra collateral",
+  name: "sip10-reserve: should deposit extra collateral",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     let deployer = accounts.get("deployer")!;
     let wallet_1 = accounts.get("wallet_1")!;
@@ -183,7 +183,7 @@ Clarinet.test({
 });
 
 Clarinet.test({
-  name: "should withdraw collateral",
+  name: "sip10-reserve: should withdraw collateral",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     let deployer = accounts.get("deployer")!;
     let wallet_1 = accounts.get("wallet_1")!;
@@ -273,7 +273,7 @@ Clarinet.test({
 });
 
 Clarinet.test({
-  name: "should mint xUSD",
+  name: "sip10-reserve: should mint xUSD",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     let deployer = accounts.get("deployer")!;
     let wallet_1 = accounts.get("wallet_1")!;
@@ -344,7 +344,7 @@ Clarinet.test({
 });
 
 Clarinet.test({
-  name: "should burn xUSD",
+  name: "sip10-reserve: should burn xUSD",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     let deployer = accounts.get("deployer")!;
     let wallet_1 = accounts.get("wallet_1")!;

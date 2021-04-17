@@ -7,7 +7,7 @@ import {
 } from "https://deno.land/x/clarinet@v0.5.2/index.ts";
 
 Clarinet.test({
-  name: "freddy: basic flow",
+  name: "freddie: basic flow",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     let deployer = accounts.get("deployer")!;
     let wallet_1 = accounts.get("wallet_1")!;

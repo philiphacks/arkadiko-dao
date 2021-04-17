@@ -259,14 +259,10 @@
 
 (define-public (bid (auction-id uint) (lot-index uint) (xusd uint))
   (let ((auction (get-auction-by-id auction-id)))
-    (if
-      (and
-        (is-eq lot-index (get lots-sold auction))
-        (is-eq (get is-open auction) true)
-      )
-      (register-bid auction-id lot-index xusd)
-      (err ERR-BID-DECLINED) ;; just silently exit
-    )
+    (asserts! (is-eq lot-index (get lots-sold auction)) (err ERR-BID-DECLINED))
+    (asserts! (is-eq (get is-open auction) true) (err ERR-BID-DECLINED))
+
+    (register-bid auction-id lot-index xusd)
   )
 )
 
@@ -348,7 +344,7 @@
           ;; auction is over - close all bids
           ;; send collateral to winning bidders
           (close-auction auction-id)
-          (ok false)
+          (ok true)
         )
       )
     )
