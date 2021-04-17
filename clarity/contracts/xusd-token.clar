@@ -1,13 +1,13 @@
 (impl-trait .mock-ft-trait.mock-ft-trait)
 
-;; Defines the xUSD Stablecoin according to the SRC20 Standard
+;; Defines the xUSD Stablecoin according to the SIP-010 Standard
 (define-fungible-token xusd)
 
 (define-data-var token-uri (string-utf8 256) u"")
 
 ;; errors
-(define-constant ERR-BURN-FAILED u111)
-(define-constant ERR-NOT-AUTHORIZED u11401)
+(define-constant ERR-BURN-FAILED u141)
+(define-constant ERR-NOT-AUTHORIZED u14401)
 
 (define-private (get-contract-owner)
   (if (is-eq (unwrap-panic (get-block-info? header-hash u1)) 0xd2454d24b49126f7f47c986b06960d7f5b70812359084197a200d691e67a002e)

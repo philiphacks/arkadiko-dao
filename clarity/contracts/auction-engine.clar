@@ -376,6 +376,8 @@
     (last-bid (get-last-bid auction-id lot-index))
     (auction (get-auction-by-id auction-id))
   )
+    ;; (asserts! (is-eq (unwrap-panic (contract-call? ft get-symbol)) (get collateral-token auction)) (err u123456))
+
     (if
       (and
         (is-eq tx-sender (get owner last-bid))
