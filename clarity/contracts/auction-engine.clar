@@ -462,7 +462,7 @@
   )
 )
 
-(define-public (unlock-winning-lots (auction-id uint) (lot-index uint))
+(define-public (unlock-winning-lot (auction-id uint) (lot-index uint))
   (let (
     (auction (get-auction-by-id auction-id))
     (last-bid (get-last-bid auction-id lot-index))
@@ -474,30 +474,14 @@
 
     (map-set auctions
       { id: auction-id }
-      {
-        id: auction-id,
-        auction-type: (get auction-type auction),
-        collateral-amount: (get collateral-amount auction),
-        collateral-token: (get collateral-token auction),
-        debt-to-raise: (get debt-to-raise auction),
-        vault-id: (get vault-id auction),
-        lot-size: (get lot-size auction),
-        lots-sold: (+ u1 (get lots-sold auction)),
-        ends-at: (get ends-at auction),
-        total-collateral-sold: (get total-collateral-sold auction),
-        total-debt-raised: (get total-debt-raised auction),
-        is-open: (get is-open auction)
-      }
+      (merge auction { lots-sold: (+ u1 (get lots-sold auction)) })
     )
     (map-set bids
       { auction-id: auction-id, lot-index: lot-index }
-      {
-        xusd: (get xusd last-bid),
-        collateral-amount: (get collateral-amount last-bid),
+      (merge last-bid {
         collateral-token: (get collateral-token auction),
-        owner: (get owner last-bid),
         is-accepted: true
-      }
+      })
     )
     (map-set winning-lots
       { user: (get owner last-bid) }
