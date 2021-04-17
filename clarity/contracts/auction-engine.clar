@@ -9,11 +9,12 @@
 (define-constant ERR-AUCTION-NOT-ALLOWED u25)
 (define-constant ERR-INSUFFICIENT-COLLATERAL u26)
 (define-constant ERR-NOT-AUTHORIZED u2403)
-(define-constant ERR-AUCTION-NOT-ENDED u28)
+(define-constant ERR-AUCTION-NOT-OPEN u28)
 (define-constant ERR-BLOCK-HEIGHT-NOT-REACHED u29)
 (define-constant ERR-COULD-NOT-REDEEM u210)
 (define-constant ERR-DIKO-REQUEST-FAILED u211)
 
+(define-constant CONTRACT-OWNER tx-sender)
 (define-constant blocks-per-day u144)
 
 (define-map auctions
@@ -87,7 +88,13 @@
 ;; we will have to sell some governance or STX tokens from the reserve
 (define-public (start-auction (vault-id uint) (uamount uint) (debt-to-raise uint))
   (let ((vault (contract-call? .freddie get-vault-by-id vault-id)))
-    (asserts! (is-eq contract-caller .liquidator) (err ERR-NOT-AUTHORIZED))
+    (asserts!
+      (or
+        (is-eq contract-caller .liquidator)
+        (is-eq contract-caller .auction-engine)
+      )
+      (err ERR-NOT-AUTHORIZED)
+    )
     (asserts! (is-eq (get is-liquidated vault) true) (err ERR-AUCTION-NOT-ALLOWED))
 
     (let ((auction-id (+ (var-get last-auction-id) u1)))
@@ -242,7 +249,7 @@
       (xusd u0)
       (collateral-amount u0)
       (collateral-token "")
-      (owner (get-owner))
+      (owner CONTRACT-OWNER)
       (is-accepted false)
     )
   )
@@ -419,7 +426,7 @@
       )
       (err ERR-BLOCK-HEIGHT-NOT-REACHED)
     )
-    (asserts! (is-eq (get is-open auction) true) (err ERR-AUCTION-NOT-ENDED))
+    (asserts! (is-eq (get is-open auction) true) (err ERR-AUCTION-NOT-OPEN))
 
     (map-set auctions
       { id: auction-id }
@@ -488,16 +495,5 @@
       }
     )
     (ok true)
-  )
-)
-
-;; TODO: fix manual mocknet/testnet/mainnet switch
-(define-private (get-owner)
-  (if is-in-regtest
-    (if (is-eq (unwrap-panic (get-block-info? header-hash u1)) 0xd2454d24b49126f7f47c986b06960d7f5b70812359084197a200d691e67a002e)
-      'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7 ;; Testnet only
-      'ST1HTBVD3JG9C05J7HBJTHGR0GGW7KXW28M5JS8QE ;; Other test environments
-    )
-    'SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7 ;; Mainnet (TODO)
   )
 )
