@@ -13,6 +13,7 @@
 (define-constant ERR-BLOCK-HEIGHT-NOT-REACHED u29)
 (define-constant ERR-COULD-NOT-REDEEM u210)
 (define-constant ERR-DIKO-REQUEST-FAILED u211)
+(define-constant ERR-TOKEN-TYPE-MISMATCH u212)
 
 (define-constant CONTRACT-OWNER tx-sender)
 (define-constant blocks-per-day u144)
@@ -142,7 +143,7 @@
           id: auction-id,
           auction-type: "debt",
           collateral-amount: (/ (* u100 debt-to-raise) price-in-cents),
-          collateral-token: "diko",
+          collateral-token: "DIKO",
           debt-to-raise: debt-to-raise,
           vault-id: vault-id,
           lot-size: (var-get lot-size),
@@ -177,7 +178,7 @@
         id: auction-id,
         auction-type: "surplus",
         collateral-amount: xusd-amount,
-        collateral-token: "xusd",
+        collateral-token: "xUSD",
         debt-to-raise: u0, ;; no specific amount of debt should be raised
         vault-id: u0,
         lot-size: (var-get lot-size),
@@ -204,8 +205,8 @@
 )
 
 (define-read-only (collateral-token (token (string-ascii 12)))
-  (if (is-eq token "xstx")
-    "stx"
+  (if (is-eq token "xSTX")
+    "STX"
     token
   )
 )
@@ -376,7 +377,7 @@
     (last-bid (get-last-bid auction-id lot-index))
     (auction (get-auction-by-id auction-id))
   )
-    ;; (asserts! (is-eq (unwrap-panic (contract-call? ft get-symbol)) (get collateral-token auction)) (err u123456))
+    (asserts! (is-eq (unwrap-panic (contract-call? ft get-symbol)) (get collateral-token auction)) (err ERR-TOKEN-TYPE-MISMATCH))
 
     (if
       (and

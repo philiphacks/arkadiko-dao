@@ -26,7 +26,7 @@ Clarinet.test({
         types.uint(5000000),
         types.uint(1925000),
         types.principal(deployer.address),
-        types.ascii("stx-a"),
+        types.ascii("STX-A"),
         types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
         types.principal(

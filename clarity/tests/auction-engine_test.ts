@@ -15,15 +15,15 @@ Clarinet.test({
     let block = chain.mineBlock([
       // Initialize price of STX to $2 in the oracle
       Tx.contractCall("oracle", "update-price", [
-        types.ascii("stx"),
+        types.ascii("STX"),
         types.uint(200),
       ], deployer.address),
       Tx.contractCall("freddie", "collateralize-and-mint", [
         types.uint(100000000), // 100 STX
         types.uint(130000000), // mint 130 xUSD
         types.principal(deployer.address),
-        types.ascii("stx-a"),
-        types.ascii("stx"),
+        types.ascii("STX-A"),
+        types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
       ], deployer.address)
@@ -34,7 +34,7 @@ Clarinet.test({
 
     block = chain.mineBlock([
       Tx.contractCall("oracle", "update-price", [
-        types.ascii("stx"),
+        types.ascii("STX"),
         types.uint(150),
       ], deployer.address),
       Tx.contractCall("liquidator", "notify-risky-vault", [
@@ -126,7 +126,6 @@ Clarinet.test({
     ], deployer.address);
     call.result.expectOk().expectUint(0);
 
-    console.log(auction);
     // now try withdrawing the xSTX tokens
     block = chain.mineBlock([
       Tx.contractCall("auction-engine", "redeem-lot-collateral", [
@@ -140,8 +139,11 @@ Clarinet.test({
         types.uint(0)
       ], deployer.address)
     ]);
-    console.log(block.receipts);
     block.receipts[0].result.expectOk().expectBool(true);
+    call = await chain.callReadOnlyFn("xstx-token", "get-balance-of", [
+      types.principal(deployer.address),
+    ], deployer.address);
+    call.result.expectOk().expectUint(68965517);
   }
 });
 
@@ -154,15 +156,15 @@ Clarinet.test({
     let block = chain.mineBlock([
       // Initialize price of STX to $2 in the oracle
       Tx.contractCall("oracle", "update-price", [
-        types.ascii("stx"),
+        types.ascii("STX"),
         types.uint(200),
       ], deployer.address),
       Tx.contractCall("freddie", "collateralize-and-mint", [
         types.uint(100000000), // 100 STX
         types.uint(130000000), // mint 130 xUSD
         types.principal(deployer.address),
-        types.ascii("stx-a"),
-        types.ascii("stx"),
+        types.ascii("STX-A"),
+        types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
       ], deployer.address)
@@ -173,7 +175,7 @@ Clarinet.test({
 
     block = chain.mineBlock([
       Tx.contractCall("oracle", "update-price", [
-        types.ascii("stx"),
+        types.ascii("STX"),
         types.uint(12), // 12 cents
       ], deployer.address),
       Tx.contractCall("liquidator", "notify-risky-vault", [
@@ -240,12 +242,12 @@ Clarinet.test({
       wallet_1.address
     );
     let dikoAuction = call.result.expectTuple();
-    dikoAuction['collateral-token'].expectAscii('diko'); // auction off some gov token
+    dikoAuction['collateral-token'].expectAscii('DIKO'); // auction off some gov token
     dikoAuction['debt-to-raise'].expectUint(debtToRaise - debtRaised); // raise the remainder of previous auction
 
     block = chain.mineBlock([
       Tx.contractCall("oracle", "update-price", [
-        types.ascii("diko"),
+        types.ascii("DIKO"),
         types.uint(200),
       ], deployer.address),
       Tx.contractCall("auction-engine", "bid", [
@@ -287,15 +289,15 @@ Clarinet.test({
     let block = chain.mineBlock([
       // Initialize price of STX to $2 in the oracle
       Tx.contractCall("oracle", "update-price", [
-        types.ascii("stx"),
+        types.ascii("STX"),
         types.uint(200),
       ], deployer.address),
       Tx.contractCall("freddie", "collateralize-and-mint", [
         types.uint(100000000), // 100 STX
         types.uint(130000000), // mint 130 xUSD
         types.principal(wallet_1.address),
-        types.ascii("stx-a"),
-        types.ascii("stx"),
+        types.ascii("STX-A"),
+        types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
       ], wallet_1.address)
@@ -306,7 +308,7 @@ Clarinet.test({
 
     block = chain.mineBlock([
       Tx.contractCall("oracle", "update-price", [
-        types.ascii("stx"),
+        types.ascii("STX"),
         types.uint(150),
       ], deployer.address),
       Tx.contractCall("liquidator", "notify-risky-vault", [
@@ -364,15 +366,15 @@ Clarinet.test({
     let block = chain.mineBlock([
       // Initialize price of STX to $2 in the oracle
       Tx.contractCall("oracle", "update-price", [
-        types.ascii("stx"),
+        types.ascii("STX"),
         types.uint(200),
       ], deployer.address),
       Tx.contractCall("freddie", "collateralize-and-mint", [
         types.uint(100000000), // 100 STX
         types.uint(130000000), // mint 130 xUSD
         types.principal(wallet_1.address),
-        types.ascii("stx-a"),
-        types.ascii("stx"),
+        types.ascii("STX-A"),
+        types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
       ], wallet_1.address)
@@ -383,7 +385,7 @@ Clarinet.test({
 
     block = chain.mineBlock([
       Tx.contractCall("oracle", "update-price", [
-        types.ascii("stx"),
+        types.ascii("STX"),
         types.uint(150),
       ], deployer.address),
       Tx.contractCall("liquidator", "notify-risky-vault", [
@@ -440,15 +442,15 @@ Clarinet.test({
     let block = chain.mineBlock([
       // Initialize price of STX to $2 in the oracle
       Tx.contractCall("oracle", "update-price", [
-        types.ascii("stx"),
+        types.ascii("STX"),
         types.uint(200),
       ], deployer.address),
       Tx.contractCall("freddie", "collateralize-and-mint", [
         types.uint(100000000), // 100 STX
         types.uint(130000000), // mint 130 xUSD
         types.principal(wallet_1.address),
-        types.ascii("stx-a"),
-        types.ascii("stx"),
+        types.ascii("STX-A"),
+        types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
       ], wallet_1.address)
@@ -459,7 +461,7 @@ Clarinet.test({
 
     block = chain.mineBlock([
       Tx.contractCall("oracle", "update-price", [
-        types.ascii("stx"),
+        types.ascii("STX"),
         types.uint(150),
       ], deployer.address),
       Tx.contractCall("liquidator", "notify-risky-vault", [
@@ -501,15 +503,15 @@ Clarinet.test({
     let block = chain.mineBlock([
       // Initialize price of STX to $2 in the oracle
       Tx.contractCall("oracle", "update-price", [
-        types.ascii("stx"),
+        types.ascii("STX"),
         types.uint(200),
       ], deployer.address),
       Tx.contractCall("freddie", "collateralize-and-mint", [
         types.uint(100000000), // 100 STX
         types.uint(130000000), // mint 130 xUSD
         types.principal(wallet_1.address),
-        types.ascii("stx-a"),
-        types.ascii("stx"),
+        types.ascii("STX-A"),
+        types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
       ], wallet_1.address)
@@ -520,7 +522,7 @@ Clarinet.test({
 
     block = chain.mineBlock([
       Tx.contractCall("oracle", "update-price", [
-        types.ascii("stx"),
+        types.ascii("STX"),
         types.uint(150),
       ], deployer.address),
       Tx.contractCall("liquidator", "notify-risky-vault", [
