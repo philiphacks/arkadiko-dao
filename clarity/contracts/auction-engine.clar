@@ -14,6 +14,8 @@
 (define-constant ERR-COULD-NOT-REDEEM u210)
 (define-constant ERR-DIKO-REQUEST-FAILED u211)
 
+(define-constant blocks-per-day u144)
+
 (define-map auctions
   { id: uint }
   {
@@ -101,7 +103,7 @@
             vault-id: vault-id,
             lot-size: (var-get lot-size),
             lots-sold: u0,
-            ends-at: (+ block-height u144),
+            ends-at: (+ block-height blocks-per-day),
             total-collateral-sold: u0,
             total-debt-raised: u0,
             is-open: true
@@ -138,7 +140,7 @@
           vault-id: vault-id,
           lot-size: (var-get lot-size),
           lots-sold: u0,
-          ends-at: (+ block-height u144),
+          ends-at: (+ block-height blocks-per-day),
           total-collateral-sold: u0,
           total-debt-raised: u0,
           is-open: true
