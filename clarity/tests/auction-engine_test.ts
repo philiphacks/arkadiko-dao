@@ -126,7 +126,22 @@ Clarinet.test({
     ], deployer.address);
     call.result.expectOk().expectUint(0);
 
-    // now try withdrawing the xSTX tokens
+    // now try withdrawing the xSTX tokens that are not mine
+    block = chain.mineBlock([
+      Tx.contractCall("auction-engine", "redeem-lot-collateral", [
+        types.principal(
+          "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.xstx-token",
+        ),
+        types.principal(
+          "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.sip10-reserve",
+        ),
+        types.uint(1),
+        types.uint(0)
+      ], wallet_1.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(210);
+
+    // now try withdrawing the xSTX tokens that are mine
     block = chain.mineBlock([
       Tx.contractCall("auction-engine", "redeem-lot-collateral", [
         types.principal(
