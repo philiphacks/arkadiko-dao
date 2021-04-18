@@ -137,6 +137,8 @@
   )
 )
 
+;; can be called by the vault owner on a non-liquidated STX vault
+;; used to indicate willingness to stack/unstack the collateral in the PoX contract
 (define-public (toggle-stacking (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
     (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
@@ -156,11 +158,15 @@
   )
 )
 
+;; can be called by the vault owner on a non-liquidated STX vault
+;; called when collateral was unstacked & want to stack again
 (define-public (stack-collateral (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
     (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
+    (asserts! (is-eq tx-sender (get owner vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq "STX" (get collateral-token vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq false (get is-liquidated vault)) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq u0 (get stacked-tockens vault)) (err ERR-NOT-AUTHORIZED))
 
     (try! (contract-call? .stx-reserve add-tokens-to-stack (get collateral vault)))
     (map-set vaults
@@ -175,19 +181,17 @@
   )
 )
 
-;; This method should be ran after a stacking cycle ends to allow withdrawal of STX collateral
-;; Only mark vaults that have revoked stacking or have been liquidated
+;; This method should be ran by the deployer (contract owner)
+;; after a stacking cycle ends to allow withdrawal of STX collateral
+;; Only mark vaults that have revoked stacking and not been liquidated
 (define-public (enable-vault-withdrawals (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
     (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
     (asserts! (is-eq tx-sender CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq "STX" (get collateral-token vault)) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq false (get is-liquidated vault)) (err ERR-NOT-AUTHORIZED))
 
-    (if
-      (or
-        (is-eq true (get revoked-stacking vault))
-        (is-eq true (get is-liquidated vault))
-      )
+    (if (is-eq true (get revoked-stacking vault))
       (begin
         (map-set vaults
           { id: vault-id }
