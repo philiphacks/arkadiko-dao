@@ -38,6 +38,10 @@ path = "contracts/oracle.clar"
 depends_on = []
 path = "contracts/stacker-registry.clar"
 
+[contracts.stdiko-token]
+depends_on = []
+path = "contracts/stdiko-token.clar"
+
 [contracts.stx-reserve]
 depends_on = ["oracle", "dao", "xusd-token", "mock-ft-trait", "vault-trait"]
 path = "contracts/stx-reserve.clar"
