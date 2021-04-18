@@ -183,7 +183,7 @@ Clarinet.test({
 });
 
 Clarinet.test({
-  name: "freddie: initiate stacking in PoX contract",
+  name: "TODO freddie: initiate stacking in PoX contract",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     let deployer = accounts.get("deployer")!;
     let block = chain.mineBlock([
@@ -217,6 +217,32 @@ Clarinet.test({
     block.receipts[0].result.expectOk().expectUint(1000000000);
 
     call = await chain.callReadOnlyFn("freddie", "get-stacking-unlock-burn-height", [], deployer.address);
-    call.result.expectOk().expectUint(680000);
+    call.result.expectOk().expectUint(100);
+
+    // now imagine the vault owner changes his mind and revokes stacking
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "toggle-stacking", [
+        types.uint(1)
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectOk().expectBool(true);
+    call = await chain.callReadOnlyFn("freddie", "get-vault-by-id", [types.uint(1)], deployer.address);
+    let vault = call.result.expectTuple();
+    vault['revoked-stacking'].expectBool(true);
+
+    // now we wait until the burn-block-height (hardcoded to 100) is mined
+    for (let index = 0; index < 100; index++) {
+      chain.mineBlock([]);
+    }
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "enable-vault-withdrawals", [
+        types.uint(1)
+      ], deployer.address)
+    ]);
+    // TODO: FIX BELOW
+    // block.receipts[0].result.expectOk().expectBool(true);
+    // call = await chain.callReadOnlyFn("freddie", "get-vault-by-id", [types.uint(1)], deployer.address);
+    // vault = call.result.expectTuple();
+    // vault['stacked-tokens'].expectUint(0);
   }
 });

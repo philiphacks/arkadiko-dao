@@ -188,23 +188,23 @@
 ;; This method should be ran by the deployer (contract owner)
 ;; after a stacking cycle ends to allow withdrawal of STX collateral
 ;; Only mark vaults that have revoked stacking and not been liquidated
+;; must be called before a new initiate-stacking method call (stacking cycle)
 (define-public (enable-vault-withdrawals (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
     (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
     (asserts! (is-eq tx-sender CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq "STX" (get collateral-token vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq false (get is-liquidated vault)) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq true (get revoked-stacking vault)) (err ERR-NOT-AUTHORIZED))
+    (asserts! (>= burn-block-height (var-get stacking-unlock-burn-height)) (err ERR-BURN-HEIGHT-NOT-REACHED))
 
-    (if (is-eq true (get revoked-stacking vault))
-      (begin
-        (map-set vaults
-          { id: vault-id }
-          (merge vault {
-            stacked-tokens: u0,
-            updated-at-block-height: block-height
-          })
-        )
-        (ok true)
+    (begin
+      (map-set vaults
+        { id: vault-id }
+        (merge vault {
+          stacked-tokens: u0,
+          updated-at-block-height: block-height
+        })
       )
       (ok true)
     )
@@ -220,7 +220,7 @@
     (asserts! (is-eq "xSTX" (get collateral-token vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq true (get is-liquidated vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (> (get stacked-tokens vault) u0) (err ERR-NOT-AUTHORIZED))
-    (asserts! (>= block-height (var-get stacking-unlock-burn-height)) (err ERR-BURN-HEIGHT-NOT-REACHED))
+    (asserts! (>= burn-block-height (var-get stacking-unlock-burn-height)) (err ERR-BURN-HEIGHT-NOT-REACHED))
 
     (try! (add-stx-redeemable (get stacked-tokens vault)))
     (map-set vaults
