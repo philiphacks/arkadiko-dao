@@ -181,3 +181,42 @@ Clarinet.test({
     call.result.expectOk().expectUint(1995001084 + 4998916);
   }
 });
+
+Clarinet.test({
+  name: "freddie: initiate stacking in PoX contract",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    let deployer = accounts.get("deployer")!;
+    let block = chain.mineBlock([
+      Tx.contractCall("oracle", "update-price", [
+        types.ascii("STX"),
+        types.uint(200),
+      ], deployer.address),
+      Tx.contractCall("freddie", "collateralize-and-mint", [
+        types.uint(1000000000),
+        types.uint(1000000000), // mint 1000 xUSD
+        types.principal(deployer.address),
+        types.ascii("STX-A"),
+        types.ascii("STX"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+        types.principal(
+          "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
+        ),
+      ], deployer.address)
+    ]);
+
+    let call = await chain.callReadOnlyFn("stx-reserve", "get-tokens-to-stack", [], deployer.address);
+    call.result.expectOk().expectUint(1000000000); // 1000 STX
+
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "initiate-stacking", [
+        types.tuple({ 'version': '0x00', 'hashbytes': '0xf632e6f9d29bfb07bc8948ca6e0dd09358f003ac'}),
+        types.uint(5), // start block height
+        types.uint(1) // 1 cycle lock period
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectOk().expectUint(1000000000);
+
+    call = await chain.callReadOnlyFn("freddie", "get-stacking-unlock-burn-height", [], deployer.address);
+    call.result.expectOk().expectUint(680000);
+  }
+});

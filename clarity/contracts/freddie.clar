@@ -49,7 +49,7 @@
 )
 
 (define-data-var last-vault-id uint u0)
-(define-data-var unlock-burn-height uint u0)
+(define-data-var stacking-unlock-burn-height uint u0)
 (define-data-var stx-redeemable uint u0)
 
 ;; getters
@@ -74,6 +74,10 @@
       (leftover-collateral u0)
     )
   )
+)
+
+(define-read-only (get-stacking-unlock-burn-height)
+  (ok (var-get stacking-unlock-burn-height))
 )
 
 (define-read-only (get-stx-redeemable)
@@ -216,7 +220,7 @@
     (asserts! (is-eq "xSTX" (get collateral-token vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq true (get is-liquidated vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (> (get stacked-tokens vault) u0) (err ERR-NOT-AUTHORIZED))
-    (asserts! (>= block-height (var-get unlock-burn-height)) (err ERR-BURN-HEIGHT-NOT-REACHED))
+    (asserts! (>= block-height (var-get stacking-unlock-burn-height)) (err ERR-BURN-HEIGHT-NOT-REACHED))
 
     (try! (add-stx-redeemable (get stacked-tokens vault)))
     (map-set vaults
@@ -276,7 +280,7 @@
     (if (unwrap! (contract-call? .mock-pox can-stack-stx pox-addr tokens-to-stack start-burn-ht lock-period) (err u0))
       (begin
         (let ((result (unwrap-panic (contract-call? .mock-pox stack-stx tokens-to-stack pox-addr start-burn-ht lock-period))))
-          (var-set unlock-burn-height (get unlock-burn-height result))
+          (var-set stacking-unlock-burn-height (get unlock-burn-height result))
           (ok (get lock-amount result))
         )
       )
