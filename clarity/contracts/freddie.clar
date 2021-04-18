@@ -587,24 +587,22 @@
 )
 
 (define-public (finalize-liquidation (vault-id uint) (leftover-collateral uint))
-  (if (is-eq contract-caller .auction-engine)
-    (let ((vault (get-vault-by-id vault-id)))
-      (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
+  (let ((vault (get-vault-by-id vault-id)))
+    (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
+    (asserts! (is-eq contract-caller .auction-engine) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq (get is-liquidated vault) true) (err ERR-NOT-AUTHORIZED))
 
-      (map-set vaults
-        { id: vault-id }
-        (merge vault {
-          collateral: u0,
-          updated-at-block-height: block-height,
-          is-liquidated: true,
-          auction-ended: true,
-          leftover-collateral: leftover-collateral
-        })
-      )
-      (try! (contract-call? .dao subtract-debt-from-collateral-type (get collateral-type vault) (get debt vault)))
-      (ok true)
+    (map-set vaults
+      { id: vault-id }
+      (merge vault {
+        collateral: u0,
+        updated-at-block-height: block-height,
+        auction-ended: true,
+        leftover-collateral: leftover-collateral
+      })
     )
-    (err ERR-NOT-AUTHORIZED)
+    (try! (contract-call? .dao subtract-debt-from-collateral-type (get collateral-type vault) (get debt vault)))
+    (ok true)
   )
 )
 
