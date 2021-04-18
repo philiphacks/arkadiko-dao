@@ -32,6 +32,7 @@
     is-open: bool,
     total-collateral-sold: uint,
     total-debt-raised: uint,
+    total-debt-burned: uint,
     ends-at: uint
   }
 )
@@ -73,6 +74,7 @@
       (is-open false)
       (total-collateral-sold u0)
       (total-debt-raised u0)
+      (total-debt-burned u0)
       (ends-at u0)
     )
   )
@@ -114,6 +116,7 @@
             ends-at: (+ block-height blocks-per-day),
             total-collateral-sold: u0,
             total-debt-raised: u0,
+            total-debt-burned: u0,
             is-open: true
           }
         )
@@ -151,6 +154,7 @@
           ends-at: (+ block-height blocks-per-day),
           total-collateral-sold: u0,
           total-debt-raised: u0,
+          total-debt-burned: u0,
           is-open: true
         }
       )
@@ -186,6 +190,7 @@
         ends-at: (+ block-height u14),
         total-collateral-sold: u0,
         total-debt-raised: u0,
+        total-debt-burned: u0,
         is-open: true
       }
     )
@@ -435,7 +440,7 @@
       { id: auction-id }
       (merge auction { is-open: false })
     )
-    (try! (contract-call? .xusd-token burn (get total-debt-raised auction) (as-contract tx-sender)))
+    (try! (contract-call? .xusd-token burn (- (get total-debt-raised auction) (get total-debt-burned auction)) (as-contract tx-sender)))
     (if (>= (get total-debt-raised auction) (get debt-to-raise auction))
       (if (is-eq (get auction-type auction) "collateral")
         (contract-call?
@@ -453,12 +458,8 @@
       )
       (begin
         (if (< (get total-collateral-sold auction) (get collateral-amount auction)) ;; we have some collateral left to auction
-          ;; start new auction with collateral that is left
-          (start-auction
-            (get vault-id auction)
-            (- (get collateral-amount auction) (get total-collateral-sold auction))
-            (- (get debt-to-raise auction) (get total-debt-raised auction))
-          )
+          ;; extend auction with collateral that is left
+          (extend-auction auction-id)
           ;; no collateral left. Need to sell governance token to raise more xUSD
           (start-debt-auction
             (get vault-id auction)
@@ -467,6 +468,20 @@
         )
       )
     )
+  )
+)
+
+(define-private (extend-auction (auction-id uint))
+  (let ((auction (get-auction-by-id auction-id)))
+    (map-set auctions
+      { id: auction-id }
+      (merge auction {
+        total-debt-burned: (get total-debt-raised auction),
+        is-open: true,
+        ends-at: (+ (get ends-at auction) blocks-per-day)
+      })
+    )
+    (ok true)
   )
 )
 

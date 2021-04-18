@@ -60,6 +60,9 @@ Clarinet.test({
 
     let auction = auctions[1];
     auction['collateral-amount'].expectUint(100000000);
+    call = await chain.callReadOnlyFn("xusd-token", "get-total-supply", [], deployer.address);
+    call.result.expectOk().expectUint(1130000030);
+
     block = chain.mineBlock([
       Tx.contractCall("auction-engine", "bid", [
         types.uint(1),
@@ -119,6 +122,9 @@ Clarinet.test({
     vault['leftover-collateral'].expectUint(1379311);
     vault['is-liquidated'].expectBool(true);
     vault['auction-ended'].expectBool(true);
+
+    call = await chain.callReadOnlyFn("xusd-token", "get-total-supply", [], deployer.address);
+    call.result.expectOk().expectUint(985517272);
 
     // now check the wallet of contract - should have burned all xUSD
     call = await chain.callReadOnlyFn("xusd-token", "get-balance-of", [
@@ -297,7 +303,7 @@ Clarinet.test({
 
 Clarinet.test({
   name:
-    "TODO: auction engine: auction ends without all collateral sold which should start new auction",
+    "auction engine: auction ends without all collateral sold which should extend auction with another day",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     let deployer = accounts.get("deployer")!;
     let wallet_1 = accounts.get("wallet_1")!;
@@ -345,6 +351,14 @@ Clarinet.test({
     ]);
     block.receipts[0].result.expectOk().expectBool(true);
 
+    let call = await chain.callReadOnlyFn(
+      "auction-engine",
+      "get-auction-by-id",
+      [types.uint(1)],
+      wallet_1.address
+    );
+    let auction = call.result.expectTuple();
+    let endBlockHeight = auction['ends-at'].expectUint(146);
     // 1 bid has been made and collateral is left.
     // Now image no bids come in for the 2nd lot.
     // Auction should end and a new one should be started
@@ -357,18 +371,15 @@ Clarinet.test({
         types.uint(1)
       ], deployer.address)
     ]);
-    console.log(block.receipts[0]);
-    let call = await chain.callReadOnlyFn(
+    call = await chain.callReadOnlyFn(
       "auction-engine",
       "get-auction-by-id",
       [types.uint(1)],
       wallet_1.address
     );
-    let auction = call.result.expectTuple();
-    auction['is-open'].expectBool(true);
-    // TODO: fix test
-    // const debtRaised = auction['total-debt-raised'].expectUint(100000000);
-    // const debtToRaise = auction['debt-to-raise'].expectUint(143000000);
+    let extendedAuction = call.result.expectTuple();
+    extendedAuction['is-open'].expectBool(true);
+    extendedAuction['ends-at'].expectUint(endBlockHeight + 144);
   }
 });
 
