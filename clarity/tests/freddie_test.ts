@@ -106,3 +106,43 @@ Clarinet.test({
     call.result.expectOk().expectUint(200);
   }
 });
+
+Clarinet.test({
+  name: "freddie: calculate stability fee",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    let deployer = accounts.get("deployer")!;
+    let block = chain.mineBlock([
+      Tx.contractCall("oracle", "update-price", [
+        types.ascii("STX"),
+        types.uint(200),
+      ], deployer.address),
+      Tx.contractCall("freddie", "collateralize-and-mint", [
+        types.uint(1000000000),
+        types.uint(1000000000), // mint 1000 xUSD
+        types.principal(deployer.address),
+        types.ascii("STX-A"),
+        types.ascii("STX"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+        types.principal(
+          "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
+        ),
+      ], deployer.address),
+    ]);
+
+    // mine 1 year of blocks
+    for (let index = 0; index < 365*144; index++) {
+      if (index % 1008 === 0) {
+        block = chain.mineBlock([
+          Tx.contractCall("freddie", "accrue-stability-fee", [types.uint(1)], deployer.address)
+        ]);
+        block.receipts[0].result.expectOk().expectBool(true);
+      } else {
+        chain.mineBlock([]);
+      }
+    }
+
+    let call = await chain.callReadOnlyFn("freddie", "get-vault-by-id", [types.uint(1)], deployer.address);
+    let vault = call.result.expectTuple();
+    vault['stability-fee'].expectUint(4998916); // ~5 dollar (0.5% APY)
+  }
+});

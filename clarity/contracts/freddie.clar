@@ -166,7 +166,7 @@
     (asserts! (is-eq tx-sender (get owner vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq "STX" (get collateral-token vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq false (get is-liquidated vault)) (err ERR-NOT-AUTHORIZED))
-    (asserts! (is-eq u0 (get stacked-tockens vault)) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq u0 (get stacked-tokens vault)) (err ERR-NOT-AUTHORIZED))
 
     (try! (contract-call? .stx-reserve add-tokens-to-stack (get collateral vault)))
     (map-set vaults
