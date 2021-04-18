@@ -84,7 +84,7 @@ Clarinet.test({
   name: "freddie: calculate collateralization ratio",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     let deployer = accounts.get("deployer")!;
-    let block = chain.mineBlock([
+    chain.mineBlock([
       Tx.contractCall("oracle", "update-price", [
         types.ascii("STX"),
         types.uint(77),
