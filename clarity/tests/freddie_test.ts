@@ -152,5 +152,32 @@ Clarinet.test({
     call = await chain.callReadOnlyFn("freddie", "get-vault-by-id", [types.uint(1)], deployer.address);
     vault = call.result.expectTuple();
     vault['stability-fee'].expectUint(0);
+
+    // now check balance of freddie contract
+    call = await chain.callReadOnlyFn("xusd-token", "get-balance-of", [
+      types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
+    ], deployer.address);
+    call.result.expectOk().expectUint(4998916);
+
+    call = await chain.callReadOnlyFn("xusd-token", "get-balance-of", [
+      types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7'),
+    ], deployer.address);
+    call.result.expectOk().expectUint(1995001084);
+
+    // withdraw the xUSD from freddie to the deployer's (contract owner) address
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "redeem-xusd", [types.uint(4998916)], deployer.address)
+    ]);
+    block.receipts[0].result.expectOk().expectBool(true);
+
+    call = await chain.callReadOnlyFn("xusd-token", "get-balance-of", [
+      types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
+    ], deployer.address);
+    call.result.expectOk().expectUint(0);
+
+    call = await chain.callReadOnlyFn("xusd-token", "get-balance-of", [
+      types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7'),
+    ], deployer.address);
+    call.result.expectOk().expectUint(1995001084 + 4998916);
   }
 });
