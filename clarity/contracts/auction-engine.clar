@@ -91,13 +91,7 @@
 ;; we will have to sell some governance or STX tokens from the reserve
 (define-public (start-auction (vault-id uint) (uamount uint) (debt-to-raise uint))
   (let ((vault (contract-call? .freddie get-vault-by-id vault-id)))
-    (asserts!
-      (or
-        (is-eq contract-caller .liquidator)
-        (is-eq contract-caller .auction-engine)
-      )
-      (err ERR-NOT-AUTHORIZED)
-    )
+    (asserts! (is-eq contract-caller .liquidator) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq (get is-liquidated vault) true) (err ERR-AUCTION-NOT-ALLOWED))
 
     (let ((auction-id (+ (var-get last-auction-id) u1)))
