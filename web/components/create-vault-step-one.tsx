@@ -47,7 +47,7 @@ export const CreateVaultStepOne: React.FC<VaultProps> = ({ setStep, setCoinAmoun
 
   useEffect(() => {
     const fetchPrice = async () => {
-      let price = await getPrice(tokenName?.toUpperCase());
+      let price = await getPrice(tokenName);
       setPrice(price);
     };
 
