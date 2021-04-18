@@ -79,3 +79,30 @@ Clarinet.test({
     auctions[1]["is-open"].expectBool(true);
   },
 });
+
+Clarinet.test({
+  name: "freddie: calculate collateralization ratio",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    let deployer = accounts.get("deployer")!;
+    let block = chain.mineBlock([
+      Tx.contractCall("oracle", "update-price", [
+        types.ascii("STX"),
+        types.uint(77),
+      ], deployer.address),
+      Tx.contractCall("freddie", "collateralize-and-mint", [
+        types.uint(5000000),
+        types.uint(1925000),
+        types.principal(deployer.address),
+        types.ascii("STX-A"),
+        types.ascii("STX"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+        types.principal(
+          "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
+        ),
+      ], deployer.address),
+    ]);
+
+    let call = await chain.callReadOnlyFn("freddie", "calculate-current-collateral-to-debt-ratio", [types.uint(1)], deployer.address);
+    call.result.expectOk().expectUint(200);
+  }
+});
