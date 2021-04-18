@@ -20,7 +20,7 @@
 (define-constant ERR-BURN-HEIGHT-NOT-REACHED u412)
 
 ;; constants
-(define-constant blocks-per-day u144)
+(define-constant BLOCKS-PER-DAY u144)
 (define-constant CONTRACT-OWNER tx-sender)
 
 ;; Map of vault entries
@@ -499,7 +499,7 @@
 (define-read-only (get-stability-fee-for-vault (vault-id uint))
   (let (
     (vault (get-vault-by-id vault-id))
-    (days (/ (- block-height (get stability-fee-last-accrued vault)) blocks-per-day))
+    (days (/ (- block-height (get stability-fee-last-accrued vault)) BLOCKS-PER-DAY))
     (debt (/ (get debt vault) u100000)) ;; we can round to 1 number after comma, e.g. 1925000 uxUSD == 1.9 xUSD
     (daily-interest (/ (* debt (unwrap-panic (contract-call? .dao get-stability-fee (get collateral-type vault)))) u100))
   )
@@ -518,7 +518,7 @@
             (merge vault {
               updated-at-block-height: block-height,
               stability-fee: (+ (/ (get fee fee) (get decimals fee)) (get stability-fee vault)),
-              stability-fee-last-accrued: (+ (get stability-fee-last-accrued vault) (* (get days fee) blocks-per-day))
+              stability-fee-last-accrued: (+ (get stability-fee-last-accrued vault) (* (get days fee) BLOCKS-PER-DAY))
             })
           )
           (ok true)
@@ -659,7 +659,7 @@
 ;; taken from stability fees paid by vault owners
 (define-public (redeem-xusd (xusd-amount uint))
   (begin
-    (asserts! (> (- block-height (var-get block-height-last-paid)) (* blocks-per-day u31)) (err ERR-NOT-AUTHORIZED))
+    (asserts! (> (- block-height (var-get block-height-last-paid)) (* BLOCKS-PER-DAY u31)) (err ERR-NOT-AUTHORIZED))
 
     (var-set block-height-last-paid block-height)
     (contract-call? .xusd-token transfer xusd-amount (as-contract tx-sender) (var-get payout-address))

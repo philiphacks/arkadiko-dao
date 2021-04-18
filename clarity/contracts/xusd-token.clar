@@ -9,15 +9,7 @@
 (define-constant ERR-BURN-FAILED u141)
 (define-constant ERR-NOT-AUTHORIZED u14401)
 
-(define-private (get-contract-owner)
-  (if (is-eq (unwrap-panic (get-block-info? header-hash u1)) 0xd2454d24b49126f7f47c986b06960d7f5b70812359084197a200d691e67a002e)
-    'ST2YP83431YWD9FNWTTDCQX8B3K0NDKPCV3B1R30H ;; Testnet only
-    (if (is-eq (unwrap-panic (get-block-info? header-hash u1)) 0x6b2c809627f2fd19991d8eb6ae034cb4cce1e1fc714aa77351506b5af1f8248e)
-      'SP2J6ZY48GV1EZ5V2V5RB9MP66SW86PYKKNRV9EJ7 ;; Mainnet (TODO)
-      'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7 ;; Other test environments
-    )
-  )
-)
+(define-constant CONTRACT-OWNER tx-sender)
 
 (define-read-only (get-total-supply)
   (ok (ft-get-supply xusd))
@@ -40,7 +32,7 @@
 )
 
 (define-public (set-token-uri (value (string-utf8 256)))
-  (if (is-eq tx-sender (get-contract-owner))
+  (if (is-eq tx-sender CONTRACT-OWNER)
     (ok (var-set token-uri value))
     (err ERR-NOT-AUTHORIZED)
   )
@@ -81,8 +73,12 @@
 ;; Initialize the contract
 (begin
   ;; Testnet only: seed wallet_2 and wallet_3
-  ;; (asserts! is-in-regtest (ok u0))
-  (try! (ft-mint? xusd u20 'ST3KCNDSWZSFZCC6BE4VA9AXWXC9KEB16FBTRK36T))
-  (try! (ft-mint? xusd u10 'STB2BWB0K5XZGS3FXVTG3TKS46CQVV66NAK3YVN8))
-  (try! (ft-mint? xusd u1000000000 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7))
+  (if (is-eq (unwrap-panic (get-block-info? header-hash u1)) 0xd2454d24b49126f7f47c986b06960d7f5b70812359084197a200d691e67a002e)
+    (begin
+      (try! (ft-mint? xusd u20 'ST3KCNDSWZSFZCC6BE4VA9AXWXC9KEB16FBTRK36T))
+      (try! (ft-mint? xusd u10 'STB2BWB0K5XZGS3FXVTG3TKS46CQVV66NAK3YVN8))
+      (try! (ft-mint? xusd u1000000000 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7))
+    )
+    false
+  )
 )
