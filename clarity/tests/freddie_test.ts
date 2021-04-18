@@ -108,7 +108,7 @@ Clarinet.test({
 });
 
 Clarinet.test({
-  name: "freddie: calculate stability fee",
+  name: "freddie: calculate and pay stability fee",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     let deployer = accounts.get("deployer")!;
     let block = chain.mineBlock([
@@ -144,5 +144,13 @@ Clarinet.test({
     let call = await chain.callReadOnlyFn("freddie", "get-vault-by-id", [types.uint(1)], deployer.address);
     let vault = call.result.expectTuple();
     vault['stability-fee'].expectUint(4998916); // ~5 dollar (0.5% APY)
+
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "pay-stability-fee", [types.uint(1)], deployer.address)
+    ]);
+    block.receipts[0].result.expectOk().expectBool(true);
+    call = await chain.callReadOnlyFn("freddie", "get-vault-by-id", [types.uint(1)], deployer.address);
+    vault = call.result.expectTuple();
+    vault['stability-fee'].expectUint(0);
   }
 });
