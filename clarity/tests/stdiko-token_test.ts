@@ -32,6 +32,13 @@ Clarinet.test({
       types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stdiko-token'),
     ], deployer.address);
     call.result.expectOk().expectUint(1000000000);
+
+    // test value of last-list-index
+    // test list-ids
+    // test staker-principals map
+    call = await chain.callReadOnlyFn("stdiko-token", "get-staker-list", [
+      types.uint(0)
+    ], deployer.address);
   }
 });
 

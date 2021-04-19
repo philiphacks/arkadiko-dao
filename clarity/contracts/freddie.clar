@@ -665,3 +665,11 @@
     (contract-call? .xusd-token transfer xusd-amount (as-contract tx-sender) (var-get payout-address))
   )
 )
+
+;; TODO: implement according to governance
+(define-public (pay-staking-reward (staker principal) (staking-since uint))
+  (if true
+    (ok true)
+    (err u0)
+  )
+)
