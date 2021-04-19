@@ -9,6 +9,7 @@
 ;; errors
 (define-constant ERR-NOT-ENOUGH-BALANCE u31)
 (define-constant ERR-TRANSFER-FAILED u32)
+(define-constant ERR-PROPOSAL-NOT-RECOGNIZED u33)
 (define-constant ERR-NOT-AUTHORIZED u3401)
 (define-constant STATUS-OK u3200)
 
@@ -389,7 +390,39 @@
     (map-set proposals
       { id: proposal-id }
       (merge proposal { is-open: false }))
+    ;; TODO: (try! (return-diko)
+    (try! (execute-proposal proposal-id))
     (ok STATUS-OK)
+  )
+)
+
+(define-private (execute-proposal (proposal-id uint))
+  (let (
+    (proposal (get-proposal-by-id proposal-id))
+    (type (get type proposal))
+  )
+    (if (is-eq type "add_collateral_type")
+      (ok true) ;; TODO: (add-collateral-type <params_here>)
+      (if (is-eq type "change_risk_parameter")
+        (ok true) ;; TODO: call relevant method
+        (if (is-eq type "stacking_distribution")
+          (ok true)
+          (if (is-eq type "change_maximum_debt_surplus")
+            (ok true)
+            (if (is-eq type "emergency_shutdown")
+              (ok true)
+              (if (is-eq type "change_staking_reward")
+                (ok true)
+                (if (is-eq type "change_smart_contract")
+                  (ok true)
+                  (err ERR-PROPOSAL-NOT-RECOGNIZED)
+                )
+              )
+            )
+          )
+        )
+      )
+    )
   )
 )
 
