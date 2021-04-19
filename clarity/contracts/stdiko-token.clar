@@ -120,7 +120,7 @@
   (ok (map payout-principal (get-staker-list list-id)))
 )
 
-(define-private (payout-principal (staker principal))
+(define-public (payout-principal (staker principal))
   (let ((stake-info (get-staker staker)))
     (asserts! (>= (- block-height PAYOUT-BLOCK-PERIOD) (get last-payout stake-info)) (err ERR-RECENTLY-PAID))
 
