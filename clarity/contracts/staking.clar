@@ -59,7 +59,7 @@
 )
 
 ;; Stake tokens
-(define-public (stake (amount uint))
+(define-public (stake (token <mock-ft-trait>) (amount uint))
   (let (
     ;; Pending rewards will be staked first
     ;; The cumm reward per stake for the user will be updates,
@@ -70,9 +70,11 @@
     (stake-amount (get-stake-amount-of tx-sender))
     (new-stake-amount (+ stake-amount amount))
   )
-    ;; Mint stDIKO or LP token
+    ;; Mint stDIKO
     (try! (contract-call? .stdiko-token mint amount tx-sender))
-    (try! (contract-call? .arkadiko-token burn amount tx-sender))
+    ;; Lock up DIKO or LP (DIKOSTX)
+    ;; TODO - make sure only DIKO or the LP token is used as trait (add asserts!)
+    (try! (contract-call? token transfer amount tx-sender (as-contract tx-sender)))
     ;; Increase cumm reward for new total staked
     (try! (increase-cumm-reward-per-stake))
 
@@ -86,7 +88,7 @@
 )
 
 ;; Unstake tokens
-(define-public (unstake (amount uint))
+(define-public (unstake (token <mock-ft-trait>) (amount uint))
   (let (
     ;; Pending rewards will be staked first
     (stake-pending-result (stake-pending-rewards-of tx-sender)) 
@@ -94,10 +96,10 @@
     (stake-amount (get-stake-amount-of tx-sender))
     (new-stake-amount (- stake-amount amount))
   )
-    ;; Update total stake
     (var-set total-staked (- (var-get total-staked) amount))
-
-    (try! (contract-call? .arkadiko-token mint amount tx-sender))
+    ;; TODO: make sure only DIKO or the LP token is used as trait (add asserts!)
+    ;; TODO: make sure that the staker unstakes the same token as he staked with (e.g. LP/DIKO)?
+    (try! (contract-call? token transfer amount (as-contract tx-sender) tx-sender))
     (try! (contract-call? .stdiko-token burn amount tx-sender))
     ;; Increase cumm reward for new total staked
     (try! (increase-cumm-reward-per-stake))

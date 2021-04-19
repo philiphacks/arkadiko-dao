@@ -13,6 +13,7 @@ Clarinet.test({
 
     let block = chain.mineBlock([
       Tx.contractCall("staking", "stake", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token'),
         types.uint(1000000000)
       ], deployer.address)
     ]);
