@@ -39,7 +39,7 @@ depends_on = []
 path = "contracts/stacker-registry.clar"
 
 [contracts.stdiko-token]
-depends_on = []
+depends_on = ["mock-ft-trait", "freddie", "arkadiko-token"]
 path = "contracts/stdiko-token.clar"
 
 [contracts.stx-reserve]
