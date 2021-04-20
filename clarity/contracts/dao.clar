@@ -17,7 +17,7 @@
 
 ;; contract addresses
 (define-map contracts
-  { name: (string-utf8 256) }
+  { name: (string-ascii 256) }
   {
     address: principal, ;; e.g. 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7
     qualified-name: principal ;; e.g. 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie
@@ -41,6 +41,7 @@
     collateral-type: (string-ascii 12),
     type: (string-ascii 200),
     changes: (list 10 (tuple (key (string-ascii 256)) (new-value uint))),
+    contract-changes: (list 2 principal),
     details: (string-utf8 256)
   }
 )
@@ -74,6 +75,7 @@
       collateral-type: "",
       type: "",
       changes: (list { key: "", new-value: u0 } ),
+      contract-changes: (list DAO-OWNER),
       details: u""
     }
     (map-get? proposals { id: proposal-id })))
@@ -177,11 +179,11 @@
   (ok (var-get maximum-debt-surplus))
 )
 
-(define-read-only (get-contract-address-by-name (name (string-utf8 256)))
+(define-read-only (get-contract-address-by-name (name (string-ascii 256)))
   (get address (map-get? contracts { name: name }))
 )
 
-(define-read-only (get-qualified-name-by-name (name (string-utf8 256)))
+(define-read-only (get-qualified-name-by-name (name (string-ascii 256)))
   (get qualified-name (map-get? contracts { name: name }))
 )
 
@@ -213,7 +215,7 @@
 )
 
 ;; private methods
-(define-private (set-contract-address (name (string-utf8 256)) (address principal) (qualified-name principal))
+(define-private (set-contract-address (name (string-ascii 256)) (address principal) (qualified-name principal))
   (begin
     (map-set contracts { name: name } { address: address, qualified-name: qualified-name })
     (ok true)
@@ -319,6 +321,7 @@
     (token-name (string-ascii 12))
     (collateral-type (string-ascii 12))
     (url (string-ascii 256))
+    (contract-changes (list 2 principal))
   )
   (let (
     (proposer-balance (unwrap-panic (contract-call? .arkadiko-token get-balance-of tx-sender)))
@@ -344,6 +347,7 @@
         collateral-type: collateral-type,
         type: type,
         changes: changes,
+        contract-changes: contract-changes,
         details: details
       }
     )
@@ -436,19 +440,37 @@
         (ok true) ;; TODO: call relevant method
         (if (is-eq type "stacking_distribution")
           (begin
-            ;; "stacker-yield" "governance-token-yield" "governance-reserve-yield"
             (var-set stacker-yield (unwrap-panic (get new-value (element-at changes u0))))
             (var-set governance-token-yield (unwrap-panic (get new-value (element-at changes u1))))
             (var-set governance-reserve-yield (unwrap-panic (get new-value (element-at changes u2))))
+            (ok true)
           )
           (if (is-eq type "change_maximum_debt_surplus")
-            (var-set maximum-debt-surplus (unwrap-panic (get new-value (element-at changes u0))))
-            (if (is-eq type "emergency_shutdown")
+            (begin
+              (var-set maximum-debt-surplus (unwrap-panic (get new-value (element-at changes u0))))
               (ok true)
-              (if (is-eq type "change_staking_reward")
+            )
+            (if (is-eq type "emergency_shutdown")
+              (begin
+                (var-set emergency-shutdown-activated (not (var-get emergency-shutdown-activated)))
                 (ok true)
-                (if (is-eq type "change_smart_contract")
+              )
+              (if (is-eq type "change_staking_reward")
+                (begin
+                  ;; TODO: set staking reward
                   (ok true)
+                )
+                (if (is-eq type "change_smart_contract")
+                  (begin
+                    (map-set contracts
+                      { name: (get token-name proposal) }
+                      {
+                        address: (unwrap-panic (element-at (get contract-changes proposal) u1)),
+                        qualified-name: (unwrap-panic (element-at (get contract-changes proposal) u2))
+                      }
+                    )
+                    (ok true)
+                  )
                   (err ERR-PROPOSAL-NOT-RECOGNIZED)
                 )
               )
@@ -560,21 +582,21 @@
 
   ;; add contracts
   (map-set contracts
-    { name: u"freddie" }
+    { name: "freddie" }
     {
       address: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7,
       qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie
     }
   )
   (map-set contracts
-    { name: u"auction-engine" }
+    { name: "auction-engine" }
     {
       address: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7,
       qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.auction-engine
     }
   )
   (map-set contracts
-    { name: u"oracle" }
+    { name: "oracle" }
     {
       address: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7,
       qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.oracle

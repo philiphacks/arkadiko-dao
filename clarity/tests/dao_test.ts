@@ -46,7 +46,8 @@ Clarinet.test({
         types.ascii("STX"),
         types.ascii("Stacks"),
         types.ascii("STX-C"),
-        types.ascii("https://www.stacks.co")
+        types.ascii("https://www.stacks.co"),
+        types.list([])
       ], deployer.address)
     ]);
 

@@ -69,8 +69,8 @@
   (begin
     (asserts! 
       (or
-        (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name u"freddie")))
-        (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name u"auction-engine")))
+        (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "freddie")))
+        (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "auction-engine")))
       )
       (err ERR-BURN-FAILED)
     )
