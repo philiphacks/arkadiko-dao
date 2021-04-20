@@ -435,9 +435,14 @@
       (if (is-eq type "change_risk_parameter")
         (ok true) ;; TODO: call relevant method
         (if (is-eq type "stacking_distribution")
-          (ok true)
+          (begin
+            ;; "stacker-yield" "governance-token-yield" "governance-reserve-yield"
+            (var-set stacker-yield (unwrap-panic (get new-value (element-at changes u0))))
+            (var-set governance-token-yield (unwrap-panic (get new-value (element-at changes u1))))
+            (var-set governance-reserve-yield (unwrap-panic (get new-value (element-at changes u2))))
+          )
           (if (is-eq type "change_maximum_debt_surplus")
-            (ok true)
+            (var-set maximum-debt-surplus (unwrap-panic (get new-value (element-at changes u0))))
             (if (is-eq type "emergency_shutdown")
               (ok true)
               (if (is-eq type "change_staking_reward")
@@ -543,11 +548,11 @@
   (map-set proposal-types
     { type: "stacking_distribution" }
     {
-      changes-keys: (list "stacker_yield" "governance_token_yield" "governance_reserve_yield")
+      changes-keys: (list "stacker-yield" "governance-token-yield" "governance-reserve-yield")
     }
   )
   (map-set proposal-types
-    { type: "emergency_shutdown" }
+    { type: "emergency-shutdown" }
     {
       changes-keys: (list "")
     }
