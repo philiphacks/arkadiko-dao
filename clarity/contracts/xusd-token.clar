@@ -4,8 +4,6 @@
 (define-fungible-token xusd)
 
 (define-data-var token-uri (string-utf8 256) u"")
-(define-data-var freddie principal 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie)
-(define-data-var auction-engine principal 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.auction-engine)
 
 ;; errors
 (define-constant ERR-BURN-FAILED u141)
