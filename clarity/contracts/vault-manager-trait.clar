@@ -9,5 +9,8 @@
     (calculate-current-collateral-to-debt-ratio (uint) (response uint uint))
 
     (liquidate (uint) (response (tuple (ustx-amount uint) (debt uint)) uint))
+    (finalize-liquidation (uint uint) (response bool uint))
+
+    (get-xusd-balance () (response uint bool))
   )
 )

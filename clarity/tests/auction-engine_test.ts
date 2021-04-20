@@ -66,6 +66,7 @@ Clarinet.test({
 
     block = chain.mineBlock([
       Tx.contractCall("auction-engine", "bid", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
         types.uint(1),
         types.uint(0),
         types.uint(100000000)
@@ -97,6 +98,7 @@ Clarinet.test({
 
     block = chain.mineBlock([
       Tx.contractCall("auction-engine", "bid", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
         types.uint(1),
         types.uint(1),
         types.uint(44482758) // 1.5 (price of STX) * minimum collateral
@@ -224,6 +226,7 @@ Clarinet.test({
     minCollCall.result.expectOk().expectUint(100000000);
     block = chain.mineBlock([
       Tx.contractCall("auction-engine", "bid", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
         types.uint(1),
         types.uint(0),
         types.uint(100000000)
@@ -248,6 +251,7 @@ Clarinet.test({
 
     block = chain.mineBlock([
       Tx.contractCall("auction-engine", "close-auction", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
         types.uint(1)
       ], deployer.address)
     ]);
@@ -278,6 +282,7 @@ Clarinet.test({
         types.uint(200),
       ], deployer.address),
       Tx.contractCall("auction-engine", "bid", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
         types.uint(2),
         types.uint(0),
         types.uint(43000000)
@@ -351,6 +356,7 @@ Clarinet.test({
     // Make a bid on the first 100 xUSD
     block = chain.mineBlock([
       Tx.contractCall("auction-engine", "bid", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
         types.uint(1),
         types.uint(0),
         types.uint(100000000)
@@ -375,6 +381,7 @@ Clarinet.test({
 
     block = chain.mineBlock([
       Tx.contractCall("auction-engine", "close-auction", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
         types.uint(1)
       ], deployer.address)
     ]);
@@ -434,6 +441,7 @@ Clarinet.test({
     // Make a bid on the first 100 xUSD
     block = chain.mineBlock([
       Tx.contractCall("auction-engine", "bid", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
         types.uint(1),
         types.uint(0),
         types.uint(60000000)
@@ -453,6 +461,7 @@ Clarinet.test({
     // place new bid higher than 60 (e.g. 100)
     block = chain.mineBlock([
       Tx.contractCall("auction-engine", "bid", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
         types.uint(1),
         types.uint(0),
         types.uint(100000000)
@@ -511,6 +520,7 @@ Clarinet.test({
     // Make a bid on the first 100 xUSD
     block = chain.mineBlock([
       Tx.contractCall("auction-engine", "bid", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
         types.uint(1),
         types.uint(0),
         types.uint(100000000)
@@ -520,6 +530,7 @@ Clarinet.test({
 
     block = chain.mineBlock([
       Tx.contractCall("auction-engine", "bid", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
         types.uint(1),
         types.uint(0),
         types.uint(100000000)
@@ -573,6 +584,7 @@ Clarinet.test({
     // Make a bid on the first 100 xUSD
     block = chain.mineBlock([
       Tx.contractCall("auction-engine", "bid", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
         types.uint(1),
         types.uint(0),
         types.uint(90000000)
@@ -582,6 +594,7 @@ Clarinet.test({
 
     block = chain.mineBlock([
       Tx.contractCall("auction-engine", "bid", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
         types.uint(1),
         types.uint(0),
         types.uint(80000000)
