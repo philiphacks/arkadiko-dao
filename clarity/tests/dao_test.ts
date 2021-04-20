@@ -15,7 +15,7 @@ Clarinet.test({
     let block = chain.mineBlock([
       Tx.contractCall("dao", "propose", [
         types.uint(1),
-        types.ascii('N/A'),
+        types.utf8('N/A'),
         types.ascii("add_collateral_type"),
         types.list([
           types.tuple({
@@ -44,7 +44,9 @@ Clarinet.test({
           })
         ]),
         types.ascii("STX"),
-        types.ascii("STX-C")
+        types.ascii("Stacks"),
+        types.ascii("STX-C"),
+        types.ascii("https://www.stacks.co")
       ], deployer.address)
     ]);
 

@@ -36,14 +36,16 @@
     yes-votes: uint,
     no-votes: uint,
     token: (string-ascii 12),
+    token-name: (string-ascii 12),
+    url: (string-ascii 256),
     collateral-type: (string-ascii 12),
     type: (string-ascii 200),
     changes: (list 10 (tuple (key (string-ascii 256)) (new-value uint))),
-    details: (string-ascii 256)
+    details: (string-utf8 256)
   }
 )
 (define-data-var proposal-count uint u0)
-(define-data-var proposal-ids (list 220 uint) (list u0))
+(define-data-var proposal-ids (list 100 uint) (list u0))
 (define-map votes-by-member { proposal-id: uint, member: principal } { vote-count: uint })
 (define-data-var emergency-shutdown-activated bool false)
 (define-data-var stacker-yield uint u9000) ;; 90%
@@ -67,10 +69,12 @@
       yes-votes: u0,
       no-votes: u0,
       token: "",
+      token-name: "",
+      url: "",
       collateral-type: "",
       type: "",
       changes: (list { key: "", new-value: u0 } ),
-      details: (unwrap-panic (as-max-len? "" u256))
+      details: u""
     }
     (map-get? proposals { id: proposal-id })))
 
@@ -308,11 +312,13 @@
 ;; Default voting period is 10 days (144 * 10 blocks)
 (define-public (propose
     (start-block-height uint)
-    (details (string-ascii 256))
+    (details (string-utf8 256))
     (type (string-ascii 200))
     (changes (list 10 (tuple (key (string-ascii 256)) (new-value uint))))
     (token (string-ascii 12))
+    (token-name (string-ascii 12))
     (collateral-type (string-ascii 12))
+    (url (string-ascii 256))
   )
   (let (
     (proposer-balance (unwrap-panic (contract-call? .arkadiko-token get-balance-of tx-sender)))
@@ -333,6 +339,8 @@
         yes-votes: u0,
         no-votes: u0,
         token: token,
+        token-name: token-name,
+        url: url,
         collateral-type: collateral-type,
         type: type,
         changes: changes,
@@ -340,7 +348,7 @@
       }
     )
     (var-set proposal-count proposal-id)
-    (var-set proposal-ids (unwrap-panic (as-max-len? (append (var-get proposal-ids) proposal-id) u220)))
+    (var-set proposal-ids (unwrap-panic (as-max-len? (append (var-get proposal-ids) proposal-id) u100)))
     (ok true)
   )
 )
@@ -414,8 +422,8 @@
     (if (is-eq type "add_collateral_type")
       (add-collateral-type
         (get token proposal)
-        "Name of Coin"
-        "URL"
+        (get token-name proposal)
+        (get url proposal)
         (get collateral-type proposal)
         (unwrap-panic (get new-value (element-at changes u0))) ;; liquidation ratio
         (unwrap-panic (get new-value (element-at changes u1))) ;; liquidation penalty
