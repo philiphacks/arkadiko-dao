@@ -19,7 +19,8 @@
 (define-map contracts
   { name: (string-utf8 256) }
   {
-    address: principal
+    address: principal, ;; e.g. 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7
+    qualified-name: principal ;; e.g. 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie
   }
 )
 
@@ -173,7 +174,11 @@
 )
 
 (define-read-only (get-contract-address-by-name (name (string-utf8 256)))
-  (map-get? contracts { name: name })
+  (get address (map-get? contracts { name: name }))
+)
+
+(define-read-only (get-qualified-name-by-name (name (string-utf8 256)))
+  (get qualified-name (map-get? contracts { name: name }))
 )
 
 ;; public methods
@@ -204,9 +209,9 @@
 )
 
 ;; private methods
-(define-private (set-contract-address (name (string-utf8 256)) (address principal))
+(define-private (set-contract-address (name (string-utf8 256)) (address principal) (qualified-name principal))
   (begin
-    (map-set contracts { name: name } { address: address })
+    (map-set contracts { name: name } { address: address, qualified-name: qualified-name })
     (ok true)
   )
 )
@@ -522,6 +527,29 @@
     { type: "emergency_shutdown" }
     {
       changes-keys: (list "")
+    }
+  )
+
+  ;; add contracts
+  (map-set contracts
+    { name: u"freddie" }
+    {
+      address: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7,
+      qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie
+    }
+  )
+  (map-set contracts
+    { name: u"auction-engine" }
+    {
+      address: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7,
+      qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.auction-engine
+    }
+  )
+  (map-set contracts
+    { name: u"oracle" }
+    {
+      address: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7,
+      qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.oracle
     }
   )
 )
