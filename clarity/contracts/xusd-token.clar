@@ -66,9 +66,15 @@
 (define-public (burn (amount uint) (sender principal))
   (begin
     (asserts! 
-      (or (is-eq contract-caller .freddie) (is-eq contract-caller .auction-engine))
-      (err ERR-BURN-FAILED))
-    (ft-burn? xusd amount sender)))
+      (or
+        (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "freddie")))
+        (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "auction-engine")))
+      )
+      (err ERR-BURN-FAILED)
+    )
+    (ft-burn? xusd amount sender)
+  )
+)
 
 ;; Initialize the contract
 (begin
