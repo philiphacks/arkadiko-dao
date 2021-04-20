@@ -437,7 +437,7 @@
         (unwrap-panic (get new-value (element-at changes u5))) ;; collateralization ratio
       )
       (if (is-eq type "change_risk_parameter")
-        (ok true) ;; TODO: call relevant method
+        (change-risk-parameters (get collateral-type proposal) changes)
         (if (is-eq type "stacking_distribution")
           (begin
             (var-set stacker-yield (unwrap-panic (get new-value (element-at changes u0))))
@@ -465,14 +465,64 @@
                     (map-set contracts
                       { name: (get token-name proposal) }
                       {
-                        address: (unwrap-panic (element-at (get contract-changes proposal) u1)),
-                        qualified-name: (unwrap-panic (element-at (get contract-changes proposal) u2))
+                        address: (unwrap-panic (element-at (get contract-changes proposal) u0)),
+                        qualified-name: (unwrap-panic (element-at (get contract-changes proposal) u1))
                       }
                     )
                     (ok true)
                   )
                   (err ERR-PROPOSAL-NOT-RECOGNIZED)
                 )
+              )
+            )
+          )
+        )
+      )
+    )
+  )
+)
+
+(define-private (change-risk-parameters (collateral-type (string-ascii 12)) (changes (list 10 (tuple (key (string-ascii 256)) (new-value uint)))))
+  (let (
+    (type (get-collateral-type-by-token collateral-type))
+    (result (fold change-risk-parameter changes type))
+  )
+    (ok true)
+  )
+)
+
+(define-private (change-risk-parameter (change (tuple (key (string-ascii 256)) (new-value uint)))
+                                       (type (tuple (collateral-to-debt-ratio uint) (liquidation-penalty uint) (liquidation-ratio uint)
+                                              (maximum-debt uint) (name (string-ascii 256)) (stability-fee uint) (stability-fee-apy uint)
+                                              (token (string-ascii 12)) (token-type (string-ascii 12)) (total-debt uint) (url (string-ascii 256)))
+                                       )
+                )
+  (let ((key (get key change)))
+    (if (is-eq key "liquidation-penalty")
+      (merge type {
+        liquidation-penalty: (get new-value change)
+      })
+      (if (is-eq key "liquidation-ratio")
+        (merge type {
+          liquidation-ratio: (get new-value change)
+        })
+        (if (is-eq key "collateral-to-debt-ratio")
+          (merge type {
+            collateral-to-debt-ratio: (get new-value change)
+          })
+          (if (is-eq key "maximum-debt")
+            (merge type {
+              maximum-debt: (get new-value change)
+            })
+            (if (is-eq key "stability-fee")
+              (merge type {
+                stability-fee: (get new-value change)
+              })
+              (if (is-eq key "stability-fee-apy")
+                (merge type {
+                  stability-fee-apy: (get new-value change)
+                })
+                type
               )
             )
           )
