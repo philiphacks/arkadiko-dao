@@ -216,15 +216,16 @@
   )
 )
 
-(define-private (add-collateral-type (name (string-ascii 12))
-                                    (token (string-ascii 12))
+(define-private (add-collateral-type (token (string-ascii 12))
+                                    (name (string-ascii 12))
                                     (url (string-ascii 256))
                                     (collateral-type (string-ascii 12))
                                     (liquidation-ratio uint)
                                     (liquidation-penalty uint)
                                     (stability-fee uint)
                                     (stability-fee-apy uint)
-                                    (maximum-debt uint))
+                                    (maximum-debt uint)
+                                    (collateral-to-debt-ratio uint))
   (begin
     ;; (asserts! (is-eq DAO-OWNER tx-sender) (err ERR-NOT-AUTHORIZED))
     (map-set collateral-types
@@ -236,7 +237,7 @@
         url: url,
         total-debt: u0,
         liquidation-ratio: liquidation-ratio,
-        collateral-to-debt-ratio: u200,
+        collateral-to-debt-ratio: collateral-to-debt-ratio,
         maximum-debt: maximum-debt,
         liquidation-penalty: liquidation-penalty,
         stability-fee: stability-fee,
@@ -396,7 +397,10 @@
       { id: proposal-id }
       (merge proposal { is-open: false }))
     ;; TODO: (try! (return-diko)
-    (try! (execute-proposal proposal-id))
+    (if (> (get yes-votes proposal) (get no-votes proposal))
+      (try! (execute-proposal proposal-id))
+      false
+    )
     (ok STATUS-OK)
   )
 )
@@ -405,9 +409,21 @@
   (let (
     (proposal (get-proposal-by-id proposal-id))
     (type (get type proposal))
+    (changes (get changes proposal))
   )
     (if (is-eq type "add_collateral_type")
-      (ok true) ;; TODO: (add-collateral-type <params_here>)
+      (add-collateral-type
+        (get token proposal)
+        "Name of Coin"
+        "URL"
+        (get collateral-type proposal)
+        (unwrap-panic (get new-value (element-at changes u0))) ;; liquidation ratio
+        (unwrap-panic (get new-value (element-at changes u1))) ;; liquidation penalty
+        (unwrap-panic (get new-value (element-at changes u2))) ;; stability fee
+        (unwrap-panic (get new-value (element-at changes u3))) ;; stability fee apy
+        (unwrap-panic (get new-value (element-at changes u4))) ;; maximum debt
+        (unwrap-panic (get new-value (element-at changes u5))) ;; collateralization ratio
+      )
       (if (is-eq type "change_risk_parameter")
         (ok true) ;; TODO: call relevant method
         (if (is-eq type "stacking_distribution")
@@ -506,12 +522,11 @@
     { type: "add_collateral_type" }
     {
       changes-keys: (list
-        "collateral_token"
-        "collateral_name"
         "liquidation-ratio"
         "collateral-to-debt-ratio"
         "maximum-debt"
         "liquidation-penalty"
+        "stability-fee"
         "stability-fee-apy"
         "minimum-vault-debt"
       )
