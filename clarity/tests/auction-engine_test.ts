@@ -38,6 +38,7 @@ Clarinet.test({
         types.uint(150),
       ], deployer.address),
       Tx.contractCall("liquidator", "notify-risky-vault", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
         types.uint(1),
       ], deployer.address),
     ]);
@@ -204,6 +205,7 @@ Clarinet.test({
         types.uint(12), // 12 cents
       ], deployer.address),
       Tx.contractCall("liquidator", "notify-risky-vault", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
         types.uint(1),
       ], deployer.address),
     ]);
@@ -337,6 +339,7 @@ Clarinet.test({
         types.uint(150),
       ], deployer.address),
       Tx.contractCall("liquidator", "notify-risky-vault", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
         types.uint(1),
       ], deployer.address),
     ]);
@@ -419,6 +422,7 @@ Clarinet.test({
         types.uint(150),
       ], deployer.address),
       Tx.contractCall("liquidator", "notify-risky-vault", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
         types.uint(1),
       ], deployer.address),
     ]);
@@ -495,6 +499,7 @@ Clarinet.test({
         types.uint(150),
       ], deployer.address),
       Tx.contractCall("liquidator", "notify-risky-vault", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
         types.uint(1),
       ], deployer.address),
     ]);
@@ -556,6 +561,7 @@ Clarinet.test({
         types.uint(150),
       ], deployer.address),
       Tx.contractCall("liquidator", "notify-risky-vault", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
         types.uint(1),
       ], deployer.address),
     ]);

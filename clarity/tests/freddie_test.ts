@@ -52,6 +52,7 @@ Clarinet.test({
       // Notify liquidator
       // Q: How are we supposed to guess the vault-id?
       Tx.contractCall("liquidator", "notify-risky-vault", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
         types.uint(1),
       ], deployer.address),
     ]);

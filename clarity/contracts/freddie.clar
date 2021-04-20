@@ -1,3 +1,4 @@
+(impl-trait .vault-manager-trait.vault-manager-trait)
 (use-trait vault-trait .vault-trait.vault-trait)
 (use-trait mock-ft-trait .mock-ft-trait.mock-ft-trait)
 
@@ -56,26 +57,30 @@
 
 ;; getters
 (define-read-only (get-vault-by-id (id uint))
-  (unwrap!
+  (default-to
+    {
+      id: u0,
+      owner: CONTRACT-OWNER,
+      collateral: u0,
+      collateral-type: "",
+      collateral-token: "",
+      stacked-tokens: u0,
+      revoked-stacking: false,
+      debt: u0,
+      created-at-block-height: u0,
+      updated-at-block-height: u0,
+      stability-fee: u0,
+      stability-fee-last-accrued: u0,
+      is-liquidated: false,
+      auction-ended: false,
+      leftover-collateral: u0
+    }
     (map-get? vaults { id: id })
-    (tuple
-      (id u0)
-      (owner CONTRACT-OWNER)
-      (collateral u0)
-      (collateral-type "")
-      (collateral-token "")
-      (stacked-tokens u0)
-      (revoked-stacking false)
-      (debt u0)
-      (created-at-block-height u0)
-      (updated-at-block-height u0)
-      (stability-fee u0)
-      (stability-fee-last-accrued u0)
-      (is-liquidated false)
-      (auction-ended false)
-      (leftover-collateral u0)
-    )
   )
+)
+
+(define-read-only (fetch-vault-by-id (id uint))
+  (ok (get-vault-by-id id))
 )
 
 (define-read-only (get-stacking-unlock-burn-height)
@@ -105,7 +110,7 @@
 )
 
 (define-read-only (get-last-vault-id)
-  (var-get last-vault-id)
+  (ok (var-get last-vault-id))
 )
 
 (define-read-only (get-vaults (user principal))
@@ -116,7 +121,7 @@
 
 (define-read-only (get-collateral-type-for-vault (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
-    (get collateral-type vault)
+    (ok (get collateral-type vault))
   )
 )
 

@@ -34,6 +34,7 @@ Clarinet.test({
     
     block = chain.mineBlock([
       Tx.contractCall("liquidator", "notify-risky-vault", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
         types.uint(1)
       ], deployer.address)
     ]);

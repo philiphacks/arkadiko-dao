@@ -1,5 +1,6 @@
 (use-trait vault-trait .vault-trait.vault-trait)
 (use-trait mock-ft-trait .mock-ft-trait.mock-ft-trait)
+(use-trait vault-manager-trait .vault-manager-trait.vault-manager-trait)
 
 ;; errors
 (define-constant ERR-BID-DECLINED u21)
@@ -89,8 +90,8 @@
 ;; we wanna sell as little collateral as possible to cover the vault's debt
 ;; if we cannot cover the vault's debt with the collateral sale,
 ;; we will have to sell some governance or STX tokens from the reserve
-(define-public (start-auction (vault-id uint) (uamount uint) (debt-to-raise uint))
-  (let ((vault (contract-call? .freddie get-vault-by-id vault-id)))
+(define-public (start-auction (vault-manager <vault-manager-trait>) (vault-id uint) (uamount uint) (debt-to-raise uint))
+  (let ((vault (unwrap-panic (contract-call? vault-manager fetch-vault-by-id vault-id))))
     (asserts! (is-eq contract-caller .liquidator) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq (get is-liquidated vault) true) (err ERR-AUCTION-NOT-ALLOWED))
 
