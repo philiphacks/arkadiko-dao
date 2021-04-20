@@ -373,7 +373,7 @@
   )
 )
 
-(define-public (redeem-lot-collateral (ft <mock-ft-trait>) (reserve <vault-trait>) (auction-id uint) (lot-index uint))
+(define-public (redeem-lot-collateral (vault-manager <vault-manager-trait>) (ft <mock-ft-trait>) (reserve <vault-trait>) (auction-id uint) (lot-index uint))
   (let (
     (last-bid (get-last-bid auction-id lot-index))
     (auction (get-auction-by-id auction-id))
@@ -394,9 +394,9 @@
                 ;; request "collateral-amount" gov tokens from the DAO
                 (begin
                   (try! (contract-call? .dao request-diko-tokens ft (get collateral-amount auction)))
-                  (contract-call? .freddie redeem-auction-collateral ft reserve (get collateral-amount last-bid) tx-sender)
+                  (contract-call? vault-manager redeem-auction-collateral ft reserve (get collateral-amount last-bid) tx-sender)
                 )
-                (contract-call? .freddie redeem-auction-collateral ft reserve (get collateral-amount last-bid) tx-sender)
+                (contract-call? vault-manager redeem-auction-collateral ft reserve (get collateral-amount last-bid) tx-sender)
               )
             )
             (err ERR-COULD-NOT-REDEEM)

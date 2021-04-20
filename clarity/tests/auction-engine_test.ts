@@ -138,6 +138,7 @@ Clarinet.test({
     // now try withdrawing the xSTX tokens that are not mine
     block = chain.mineBlock([
       Tx.contractCall("auction-engine", "redeem-lot-collateral", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
         types.principal(
           "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.xstx-token",
         ),
@@ -153,6 +154,7 @@ Clarinet.test({
     // now try withdrawing the xSTX tokens that are mine
     block = chain.mineBlock([
       Tx.contractCall("auction-engine", "redeem-lot-collateral", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
         types.principal(
           "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.xstx-token",
         ),
