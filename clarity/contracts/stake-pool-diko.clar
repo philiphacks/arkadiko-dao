@@ -242,8 +242,10 @@
 (define-read-only (calculate-cumm-reward-per-stake (rewards-per-block uint) (block-diff uint) (current-total-staked uint))
   (let (
     (current-cumm-reward-per-stake (var-get cumm-reward-per-stake)) 
+    (pool-data (contract-call? .stake-registry get-pool-data .stake-pool-diko))
+    (pool-active (get active pool-data))
   )
-    (if (> current-total-staked u0)
+    (if (and (> current-total-staked u0) (is-eq pool-active true))
       (let (
         (total-rewards-to-distribute (* rewards-per-block block-diff))
         (reward-added-per-token (/ total-rewards-to-distribute current-total-staked))

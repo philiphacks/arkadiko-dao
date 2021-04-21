@@ -39,8 +39,8 @@
 )
 
 ;; Get pool info
-(define-read-only (get-pool-data (pool-trait <stake-pool-trait>))
-  (unwrap-panic (map-get? pools-data-map { pool: (contract-of pool-trait) }))
+(define-read-only (get-pool-data (pool principal))
+  (unwrap-panic (map-get? pools-data-map { pool: pool }))
 )
 
 ;; Register and activate new pool
