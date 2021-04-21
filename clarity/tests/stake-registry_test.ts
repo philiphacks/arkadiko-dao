@@ -76,12 +76,6 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
     ]);
     block.receipts[0].result.expectOk().expectBool(true);
 
-    let call = chain.callReadOnlyFn("stake-registry", "get-pool-contract", [types.uint(0)], wallet_1.address);
-    call.result.expectTuple()['pool'].expectPrincipal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko');
-
-    call = chain.callReadOnlyFn("stake-registry", "get-pool-data", [types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko')], wallet_1.address);
-    call.result.expectTuple()['active'].expectBool(true);
-
     block = chain.mineBlock([
     Tx.contractCall("stake-registry", "stake", [
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko'),
@@ -91,8 +85,8 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
     ]);
     block.receipts[0].result.expectOk().expectUint(1000000000);
 
-    call = chain.callReadOnlyFn("stake-registry", "get-pool-data", [types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko')], wallet_1.address);
-    call.result.expectTuple()['active'].expectBool(true);
+    // let call = chain.callReadOnlyFn("stake-registry", "get-pool-data", [types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko')], wallet_1.address);
+    // call.result.expectTuple()['active'].expectBool(true);
 
 
 }

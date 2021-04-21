@@ -5,16 +5,16 @@
   (
 
     ;; Stake asset
-    (stake (<mock-ft-trait> uint) (response uint uint))
+    (stake (<mock-ft-trait> principal uint) (response uint uint))
 
     ;; Unstake asset
-    (unstake (<mock-ft-trait> uint) (response uint uint))
+    (unstake (<mock-ft-trait> principal uint) (response uint uint))
 
     ;; Get pending rewards for staker
     (get-pending-rewards (principal) (response uint uint))
 
     ;; Claim rewards
-    (claim-pending-rewards (principal) (response uint uint))
+    (claim-pending-rewards (principal uint) (response uint uint))
 
   )
 )
