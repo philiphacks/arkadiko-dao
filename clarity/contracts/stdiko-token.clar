@@ -169,7 +169,7 @@
 
 (define-public (mint (amount uint) (recipient principal))
   (begin
-    (asserts! (is-eq contract-caller .staking) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq contract-caller .stake-pool) (err ERR-NOT-AUTHORIZED))
     (ft-mint? stdiko amount recipient)
   )
 )
