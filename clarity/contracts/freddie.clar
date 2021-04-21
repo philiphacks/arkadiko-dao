@@ -308,11 +308,11 @@
   (let ((ratio (unwrap-panic (contract-call? reserve calculate-current-collateral-to-debt-ratio collateral-token debt collateral-amount))))
     (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
     (asserts! (is-eq tx-sender sender) (err ERR-NOT-AUTHORIZED))
-    (asserts! (>= ratio (unwrap-panic (contract-call? .dao get-liquidation-ratio collateral-type))) (err ERR-INSUFFICIENT-COLLATERAL))
+    (asserts! (>= ratio (unwrap-panic (contract-call? .collateral-types get-liquidation-ratio collateral-type))) (err ERR-INSUFFICIENT-COLLATERAL))
     (asserts!
       (<
-        (unwrap-panic (contract-call? .dao get-total-debt collateral-type))
-        (unwrap-panic (contract-call? .dao get-maximum-debt collateral-type))
+        (unwrap-panic (contract-call? .collateral-types get-total-debt collateral-type))
+        (unwrap-panic (contract-call? .collateral-types get-maximum-debt collateral-type))
       )
       (err ERR-MAXIMUM-DEBT-REACHED)
     )
@@ -341,7 +341,7 @@
         (map-set vault-entries { user: sender } { ids: (unwrap-panic (as-max-len? (append entries vault-id) u1200)) })
         (map-set vaults { id: vault-id } vault)
         (var-set last-vault-id vault-id)
-        (try! (contract-call? .dao add-debt-to-collateral-type collateral-type debt))
+        (try! (contract-call? .collateral-types add-debt-to-collateral-type collateral-type debt))
         (print { type: "vault", action: "created", data: vault })
         (ok debt)
       )
@@ -389,7 +389,8 @@
             collateral: new-collateral,
             updated-at-block-height: block-height
           })))
-      (asserts! (>= ratio (unwrap-panic (contract-call? .dao get-collateral-to-debt-ratio "stx"))) (err ERR-INSUFFICIENT-COLLATERAL))
+      ;; TODO: FIX (make "STX" dynamic)
+      (asserts! (>= ratio (unwrap-panic (contract-call? .collateral-types get-collateral-to-debt-ratio "STX"))) (err ERR-INSUFFICIENT-COLLATERAL))
       (unwrap! (contract-call? reserve withdraw ft (get owner vault) uamount) (err ERR-WITHDRAW-FAILED))
       (map-set vaults { id: vault-id } updated-vault)
       (print { type: "vault", action: "withdraw", data: updated-vault })
@@ -410,8 +411,8 @@
     (asserts! (is-eq tx-sender (get owner vault)) (err ERR-NOT-AUTHORIZED))
     (asserts!
       (<
-        (unwrap-panic (contract-call? .dao get-total-debt (get collateral-type vault)))
-        (unwrap-panic (contract-call? .dao get-maximum-debt (get collateral-type vault)))
+        (unwrap-panic (contract-call? .collateral-types get-total-debt (get collateral-type vault)))
+        (unwrap-panic (contract-call? .collateral-types get-maximum-debt (get collateral-type vault)))
       )
       (err ERR-MAXIMUM-DEBT-REACHED)
     )
@@ -426,7 +427,7 @@
                 (get collateral-type vault)) 
       (err u5))
     (map-set vaults { id: vault-id } updated-vault)
-    (try! (contract-call? .dao add-debt-to-collateral-type (get collateral-type vault) extra-debt))
+    (try! (contract-call? .collateral-types add-debt-to-collateral-type (get collateral-type vault) extra-debt))
     (print { type: "vault", action: "mint", data: updated-vault })
     (ok true)
   )
@@ -469,7 +470,7 @@
 
     (try! (contract-call? .xusd-token burn (get debt vault) (get owner vault)))
     (try! (contract-call? reserve burn ft (get owner vault) (get collateral vault)))
-    (try! (contract-call? .dao subtract-debt-from-collateral-type (get collateral-type vault) (get debt vault)))
+    (try! (contract-call? .collateral-types subtract-debt-from-collateral-type (get collateral-type vault) (get debt vault)))
     (map-set vaults { id: vault-id } updated-vault)
     (print { type: "vault", action: "burn", data: updated-vault })
     (map-set closing-vault { user: (get owner vault) } { vault-id: vault-id })
@@ -506,7 +507,7 @@
     (vault (get-vault-by-id vault-id))
     (days (/ (- block-height (get stability-fee-last-accrued vault)) blocks-per-day))
     (debt (/ (get debt vault) u100000)) ;; we can round to 1 number after comma, e.g. 1925000 uxUSD == 1.9 xUSD
-    (daily-interest (/ (* debt (unwrap-panic (contract-call? .dao get-stability-fee (get collateral-type vault)))) u100))
+    (daily-interest (/ (* debt (unwrap-panic (contract-call? .collateral-types get-stability-fee (get collateral-type vault)))) u100))
   )
     (ok (tuple (fee (* daily-interest days)) (decimals u12) (days days))) ;; 12 decimals so u5233 means 5233/10^12 xUSD daily interest
   )
@@ -577,7 +578,7 @@
             })
           )
           (try! (contract-call? .sip10-reserve mint-xstx collateral))
-          (let ((debt (/ (* (unwrap-panic (contract-call? .dao get-liquidation-penalty (get collateral-type vault))) (get debt vault)) u100)))
+          (let ((debt (/ (* (unwrap-panic (contract-call? .collateral-types get-liquidation-penalty (get collateral-type vault))) (get debt vault)) u100)))
             (ok (tuple (ustx-amount collateral) (debt (+ debt (get debt vault)))))
           )
         )
@@ -592,7 +593,7 @@
               leftover-collateral: u0
             })
           )
-          (let ((debt (/ (* (unwrap-panic (contract-call? .dao get-liquidation-penalty (get collateral-type vault))) (get debt vault)) u100)))
+          (let ((debt (/ (* (unwrap-panic (contract-call? .collateral-types get-liquidation-penalty (get collateral-type vault))) (get debt vault)) u100)))
             (ok (tuple (ustx-amount collateral) (debt (+ debt (get debt vault)))))
           )
         )
@@ -616,7 +617,7 @@
         leftover-collateral: leftover-collateral
       })
     )
-    (try! (contract-call? .dao subtract-debt-from-collateral-type (get collateral-type vault) (get debt vault)))
+    (try! (contract-call? .collateral-types subtract-debt-from-collateral-type (get collateral-type vault) (get debt vault)))
     (ok true)
   )
 )
