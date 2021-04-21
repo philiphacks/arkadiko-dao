@@ -10,6 +10,10 @@ path = "contracts/arkadiko-token.clar"
 depends_on = ["oracle", "xusd-token", "freddie", "mock-ft-trait", "vault-trait"]
 path = "contracts/auction-engine.clar"
 
+[contracts.auction-engine-trait]
+depends_on = []
+path = "contracts/auction-engine-trait.clar"
+
 [contracts.dao]
 depends_on = ["arkadiko-token", "vault-trait", "mock-pox"]
 path = "contracts/dao.clar"
@@ -19,7 +23,7 @@ depends_on = ["stx-reserve", "vault-trait", "mock-ft-trait", "vault-manager-trai
 path = "contracts/freddie.clar"
 
 [contracts.liquidator]
-depends_on = ["freddie", "dao", "auction-engine", "vault-manager-trait"]
+depends_on = ["dao", "vault-manager-trait", "auction-engine-trait"]
 path = "contracts/liquidator.clar"
 
 [contracts.mock-ft-trait]
