@@ -14,12 +14,12 @@ path = "contracts/auction-engine.clar"
 depends_on = []
 path = "contracts/auction-engine-trait.clar"
 
-[contracts.collateral-type-trait]
+[contracts.collateral-types-trait]
 depends_on = []
-path = "contracts/collateral-type-trait.clar"
+path = "contracts/collateral-types-trait.clar"
 
 [contracts.collateral-types]
-depends_on = ["collateral-type-trait"]
+depends_on = ["collateral-types-trait"]
 path = "contracts/collateral-types.clar"
 
 [contracts.dao]

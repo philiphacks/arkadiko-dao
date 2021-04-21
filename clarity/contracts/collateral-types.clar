@@ -1,4 +1,4 @@
-(impl-trait .collateral-type-trait.collateral-type-trait)
+(impl-trait .collateral-types-trait.collateral-types-trait)
 
 ;; Smart Contract that keeps all collateral types accepted by the DAO
 
