@@ -7,16 +7,68 @@
 ;; When total stake changes, the cumm reward per stake is increased accordingly.
 
 (impl-trait .stake-pool-trait.stake-pool-trait)
+(impl-trait .mock-ft-trait.mock-ft-trait)
 (use-trait mock-ft-trait .mock-ft-trait.mock-ft-trait)
 
 ;; Errors
 (define-constant ERR-NOT-AUTHORIZED (err u18401))
 (define-constant ERR-REWARDS-CALC (err u18001))
 
+;; Constants
+(define-constant CONTRACT-OWNER tx-sender)
+
 ;; Variables
+(define-data-var token-uri (string-utf8 256) u"")
 (define-data-var total-staked uint u0)
 (define-data-var cumm-reward-per-stake uint u0)
 (define-data-var last-reward-increase-block uint u0) 
+
+
+;; ---------------------------------------------------------
+;; SIP-10 Functions
+;; ---------------------------------------------------------
+
+(define-fungible-token stdiko)
+
+(define-read-only (get-total-supply)
+  (ok (ft-get-supply stdiko))
+)
+
+(define-read-only (get-name)
+  (ok "Staked DIKO")
+)
+
+(define-read-only (get-symbol)
+  (ok "stDIKO")
+)
+
+(define-read-only (get-decimals)
+  (ok u6)
+)
+
+(define-read-only (get-balance-of (account principal))
+  (ok (ft-get-balance stdiko account))
+)
+
+(define-public (set-token-uri (value (string-utf8 256)))
+  (if (is-eq tx-sender CONTRACT-OWNER)
+    (ok (var-set token-uri value))
+    (err ERR-NOT-AUTHORIZED)
+  )
+)
+
+(define-read-only (get-token-uri)
+  (ok (some (var-get token-uri)))
+)
+
+(define-public (transfer (amount uint) (sender principal) (recipient principal))
+  (ft-transfer? stdiko amount sender recipient)
+)
+
+
+;; ---------------------------------------------------------
+;; Stake Functions
+;; ---------------------------------------------------------
 
 ;; Keep track of total amount staked and last cumm reward per stake
 (define-map stakes 
@@ -81,7 +133,7 @@
     (try! (increase-cumm-reward-per-stake))
 
     ;; Mint stDIKO
-    (try! (contract-call? .stdiko-token mint amount staker))
+    (try! (ft-mint? stdiko amount staker))
 
     ;; Transfer DIKO to this contract
     (try! (contract-call? token transfer amount staker (as-contract tx-sender)))
@@ -114,7 +166,7 @@
     (try! (increase-cumm-reward-per-stake))
 
     ;; Burn stDIKO 
-    (try! (contract-call? .stdiko-token burn amount staker))
+    (try! (ft-burn? stdiko amount staker))
 
     ;; Transfer DIKO back from this contract to the user
     (try! (contract-call? token transfer amount (as-contract tx-sender) staker))
@@ -147,7 +199,7 @@
     (if (and (>= amount pending-rewards) (>= amount u1))
       (begin
         ;; Mint sDIKO for staker
-        (try! (contract-call? .stdiko-token mint amount staker))
+      (try! (ft-mint? stdiko amount staker))
 
         (ok amount)
       )
