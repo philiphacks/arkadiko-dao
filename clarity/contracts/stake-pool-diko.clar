@@ -199,20 +199,22 @@
 )
 
 ;; Claim rewards for staker
-;; TODO: only stake-registry should be able to call this method
 (define-public (claim-pending-rewards (staker principal) (amount uint))
-  (let (
-    (pending-rewards (unwrap! (get-pending-rewards staker) ERR-REWARDS-CALC))
-  )
-    ;; Only mint if enough pending rewards and amount is positive
-    (if (and (>= amount pending-rewards) (>= amount u1))
-      (begin
-        ;; Mint sDIKO for staker
-        (try! (ft-mint? stdiko amount staker))
+  (begin
+    (asserts! (is-eq POOL-REGISTRY tx-sender) ERR-NOT-AUTHORIZED)
+    (let (
+      (pending-rewards (unwrap! (get-pending-rewards staker) ERR-REWARDS-CALC))
+    )
+      ;; Only mint if enough pending rewards and amount is positive
+      (if (and (>= amount pending-rewards) (>= amount u1))
+        (begin
+          ;; Mint sDIKO for staker
+          (try! (ft-mint? stdiko amount staker))
 
-        (ok amount)
+          (ok amount)
+        )
+        (ok u0)
       )
-      (ok u0)
     )
   )
 )
