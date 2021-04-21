@@ -7,7 +7,7 @@ depends_on = ["mock-ft-trait"]
 path = "contracts/arkadiko-token.clar"
 
 [contracts.auction-engine]
-depends_on = ["oracle", "xusd-token", "freddie", "mock-ft-trait", "vault-trait"]
+depends_on = ["oracle", "xusd-token", "freddie", "mock-ft-trait", "vault-trait", "auction-engine-trait"]
 path = "contracts/auction-engine.clar"
 
 [contracts.auction-engine-trait]
@@ -35,8 +35,12 @@ depends_on = []
 path = "contracts/mock-pox.clar"
 
 [contracts.oracle]
-depends_on = []
+depends_on = ["oracle-trait"]
 path = "contracts/oracle.clar"
+
+[contracts.oracle-trait]
+depends_on = []
+path = "contracts/oracle-trait.clar"
 
 [contracts.stacker-registry]
 depends_on = []

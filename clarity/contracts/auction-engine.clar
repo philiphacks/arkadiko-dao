@@ -1,6 +1,8 @@
 (use-trait vault-trait .vault-trait.vault-trait)
 (use-trait mock-ft-trait .mock-ft-trait.mock-ft-trait)
 (use-trait vault-manager-trait .vault-manager-trait.vault-manager-trait)
+(use-trait oracle-trait .oracle-trait.oracle-trait)
+(impl-trait .auction-engine-trait.auction-engine-trait)
 
 ;; errors
 (define-constant ERR-BID-DECLINED u21)
@@ -215,10 +217,12 @@
 ;; e.g. if we need to cover 10 xUSD debt, and we have 20 STX at $1/STX,
 ;; we only need to auction off 10 STX
 ;; but we give a 3% discount to incentivise people
-(define-read-only (calculate-minimum-collateral-amount (auction-id uint))
+;; TODO: this should be read-only but a bug in traits blocks this from being read-only
+;; see https://github.com/blockstack/stacks-blockchain/issues/1981
+(define-public (calculate-minimum-collateral-amount (oracle <oracle-trait>) (auction-id uint))
   (let (
     (auction (get-auction-by-id auction-id))
-    (price-in-cents (contract-call? .oracle get-price (collateral-token (get collateral-token auction))))
+    (price-in-cents (unwrap-panic (contract-call? oracle fetch-price (collateral-token (get collateral-token auction)))))
     (collateral-left (- (get collateral-amount auction) (get total-collateral-sold auction)))
     (debt-left-to-raise (- (get debt-to-raise auction) (get total-debt-raised auction)))
   )
@@ -265,17 +269,17 @@
   )
 )
 
-(define-public (bid (vault-manager <vault-manager-trait>) (auction-id uint) (lot-index uint) (xusd uint))
+(define-public (bid (vault-manager <vault-manager-trait>) (oracle <oracle-trait>) (auction-id uint) (lot-index uint) (xusd uint))
   (let ((auction (get-auction-by-id auction-id)))
     (asserts! (is-eq lot-index (get lots-sold auction)) (err ERR-BID-DECLINED))
     (asserts! (is-eq (get is-open auction) true) (err ERR-BID-DECLINED))
     (asserts! (is-eq (contract-of vault-manager) (unwrap-panic (contract-call? .dao get-qualified-name-by-name "freddie"))) (err ERR-NOT-AUTHORIZED))
 
-    (register-bid vault-manager auction-id lot-index xusd)
+    (register-bid vault-manager oracle auction-id lot-index xusd)
   )
 )
 
-(define-private (register-bid (vault-manager <vault-manager-trait>) (auction-id uint) (lot-index uint) (xusd uint))
+(define-private (register-bid (vault-manager <vault-manager-trait>) (oracle <oracle-trait>) (auction-id uint) (lot-index uint) (xusd uint))
   (let (
     (auction (get-auction-by-id auction-id))
     (last-bid (get-last-bid auction-id lot-index))
@@ -283,7 +287,7 @@
     (asserts! (is-eq (get is-accepted last-bid) false) (err ERR-LOT-SOLD))
     (asserts! (> xusd (get xusd last-bid)) (err ERR-POOR-BID)) ;; need a better bid than previously already accepted
 
-    (accept-bid vault-manager auction-id lot-index xusd)
+    (accept-bid vault-manager oracle auction-id lot-index xusd)
   )
 )
 
@@ -294,11 +298,11 @@
   )
 )
 
-(define-private (accept-bid (vault-manager <vault-manager-trait>) (auction-id uint) (lot-index uint) (xusd uint))
+(define-private (accept-bid (vault-manager <vault-manager-trait>) (oracle <oracle-trait>) (auction-id uint) (lot-index uint) (xusd uint))
   (let (
     (auction (get-auction-by-id auction-id))
     (last-bid (get-last-bid auction-id lot-index))
-    (collateral-amount (unwrap-panic (calculate-minimum-collateral-amount auction-id)))
+    (collateral-amount (unwrap-panic (calculate-minimum-collateral-amount oracle auction-id)))
     (accepted-bid
       (or
         (is-eq xusd (get lot-size auction))

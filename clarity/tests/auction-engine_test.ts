@@ -68,6 +68,7 @@ Clarinet.test({
     block = chain.mineBlock([
       Tx.contractCall("auction-engine", "bid", [
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.oracle'),
         types.uint(1),
         types.uint(0),
         types.uint(100000000)
@@ -89,23 +90,21 @@ Clarinet.test({
     lastBid['is-accepted'].expectBool(true);
     lastBid['xusd'].expectUint(100000000);
 
-    let minCollCall = await chain.callReadOnlyFn(
-      "auction-engine",
-      "calculate-minimum-collateral-amount",
-      [types.uint(1)],
-      wallet_1.address
-    );
-    minCollCall.result.expectOk().expectUint(29655172);
-
     block = chain.mineBlock([
+      Tx.contractCall("auction-engine", "calculate-minimum-collateral-amount", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.oracle'),
+        types.uint(1)
+      ], wallet_1.address),
       Tx.contractCall("auction-engine", "bid", [
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.oracle'),
         types.uint(1),
         types.uint(1),
         types.uint(44482758) // 1.5 (price of STX) * minimum collateral
       ], deployer.address)
     ]);
-    block.receipts[0].result.expectOk().expectBool(true);
+    block.receipts[0].result.expectOk().expectUint(29655172);
+    block.receipts[1].result.expectOk().expectBool(true);
 
     call = await chain.callReadOnlyFn(
       "auction-engine",
@@ -221,22 +220,21 @@ Clarinet.test({
 
     // Now the liquidation started and an auction should have been created!
     // Make a bid on the first 100 xUSD
-    let minCollCall = await chain.callReadOnlyFn(
-      "auction-engine",
-      "calculate-minimum-collateral-amount",
-      [types.uint(1)],
-      wallet_1.address
-    );
-    minCollCall.result.expectOk().expectUint(100000000);
     block = chain.mineBlock([
+      Tx.contractCall("auction-engine", "calculate-minimum-collateral-amount", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.oracle'),
+        types.uint(1)
+      ], wallet_1.address),
       Tx.contractCall("auction-engine", "bid", [
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.oracle'),
         types.uint(1),
         types.uint(0),
         types.uint(100000000)
       ], deployer.address)
     ]);
-    block.receipts[0].result.expectOk().expectBool(true);
+    block.receipts[0].result.expectOk().expectUint(100000000);
+    block.receipts[1].result.expectOk().expectBool(true);
 
     // The auction sold off all of its collateral now, but not enough debt was raised
     // As a result, we will raise debt through a governance token auction
@@ -287,6 +285,7 @@ Clarinet.test({
       ], deployer.address),
       Tx.contractCall("auction-engine", "bid", [
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.oracle'),
         types.uint(2),
         types.uint(0),
         types.uint(43000000)
@@ -362,6 +361,7 @@ Clarinet.test({
     block = chain.mineBlock([
       Tx.contractCall("auction-engine", "bid", [
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.oracle'),
         types.uint(1),
         types.uint(0),
         types.uint(100000000)
@@ -448,6 +448,7 @@ Clarinet.test({
     block = chain.mineBlock([
       Tx.contractCall("auction-engine", "bid", [
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.oracle'),
         types.uint(1),
         types.uint(0),
         types.uint(60000000)
@@ -468,6 +469,7 @@ Clarinet.test({
     block = chain.mineBlock([
       Tx.contractCall("auction-engine", "bid", [
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.oracle'),
         types.uint(1),
         types.uint(0),
         types.uint(100000000)
@@ -528,6 +530,7 @@ Clarinet.test({
     block = chain.mineBlock([
       Tx.contractCall("auction-engine", "bid", [
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.oracle'),
         types.uint(1),
         types.uint(0),
         types.uint(100000000)
@@ -538,6 +541,7 @@ Clarinet.test({
     block = chain.mineBlock([
       Tx.contractCall("auction-engine", "bid", [
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.oracle'),
         types.uint(1),
         types.uint(0),
         types.uint(100000000)
@@ -593,6 +597,7 @@ Clarinet.test({
     block = chain.mineBlock([
       Tx.contractCall("auction-engine", "bid", [
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.oracle'),
         types.uint(1),
         types.uint(0),
         types.uint(90000000)
@@ -603,6 +608,7 @@ Clarinet.test({
     block = chain.mineBlock([
       Tx.contractCall("auction-engine", "bid", [
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.oracle'),
         types.uint(1),
         types.uint(0),
         types.uint(80000000)
