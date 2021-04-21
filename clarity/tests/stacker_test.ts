@@ -7,7 +7,7 @@ import {
 } from "https://deno.land/x/clarinet@v0.6.0/index.ts";
 
 Clarinet.test({
-  name: "TODO stacker: initiate stacking in PoX contract",
+  name: "stacker: initiate stacking in PoX contract",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     let deployer = accounts.get("deployer")!;
     let block = chain.mineBlock([
@@ -63,10 +63,9 @@ Clarinet.test({
         types.uint(1)
       ], deployer.address)
     ]);
-    // TODO: FIX BELOW
     block.receipts[0].result.expectOk().expectBool(true);
-    // call = await chain.callReadOnlyFn("freddie", "get-vault-by-id", [types.uint(1)], deployer.address);
-    // vault = call.result.expectTuple();
-    // vault['stacked-tokens'].expectUint(0);
+    call = await chain.callReadOnlyFn("freddie", "get-vault-by-id", [types.uint(1)], deployer.address);
+    vault = call.result.expectTuple();
+    vault['stacked-tokens'].expectUint(0);
   }
 });
