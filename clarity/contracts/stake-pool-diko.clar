@@ -143,10 +143,16 @@
   (let (
     (pending-rewards (unwrap! (get-pending-rewards staker) rewards-err))
   )
-    ;; Mint sDIKO for staker
-    ;; (try! (contract-call? .stdiko-token mint amount staker))
+    ;; Only mint if enough pending rewards and amount is positive
+    (if (and (>= amount pending-rewards) (>= amount u1))
+      (begin
+        ;; Mint sDIKO for staker
+        (try! (contract-call? .stdiko-token mint amount staker))
 
-    (ok amount)
+        (ok amount)
+      )
+      (ok u0)
+    )
   )
 )
 
