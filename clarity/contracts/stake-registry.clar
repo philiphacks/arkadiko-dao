@@ -85,9 +85,9 @@
     (begin
         (let (
             (pool (contract-of pool-trait)) 
-            (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) ERR-POOL-INACTIVE))
+            (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) ERR-POOL-EXIST))
         )
-            (asserts! (is-eq (get active pool-info) true) ERR-POOL-EXIST)
+            (asserts! (is-eq (get active pool-info) true) ERR-POOL-INACTIVE)
             (try! (contract-call? pool-trait stake token-trait tx-sender amount))
             (ok amount)
         )
@@ -99,9 +99,8 @@
     (begin
         (let (
             (pool (contract-of pool-trait)) 
-            (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) ERR-POOL-INACTIVE))
+            (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) ERR-POOL-EXIST))
         )
-            (asserts! (is-eq (get active pool-info) true) ERR-POOL-EXIST)
             (try! (contract-call? pool-trait unstake token-trait tx-sender amount))
             (ok amount)
         )
@@ -115,10 +114,9 @@
     (begin
         (let (
             (pool (contract-of pool-trait)) 
-            (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) ERR-POOL-INACTIVE))
+            (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) ERR-POOL-EXIST))
         )
-            (asserts! (is-eq (get active pool-info) true) ERR-POOL-EXIST)
-
+            ;; TODO:
             ;; (contract-call? pool-trait get-pending-rewards tx-sender)
             (ok u1)
         )
@@ -130,9 +128,8 @@
     (begin
         (let (
             (pool (contract-of pool-trait)) 
-            (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) ERR-POOL-INACTIVE))
+            (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) ERR-POOL-EXIST))
         )
-            (asserts! (is-eq (get active pool-info) true) ERR-POOL-EXIST)
             (ok (contract-call? pool-trait claim-pending-rewards tx-sender amount))
         )
     )
