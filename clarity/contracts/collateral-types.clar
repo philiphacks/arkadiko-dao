@@ -1,3 +1,5 @@
+(impl-trait .collateral-type-trait.collateral-type-trait)
+
 ;; Smart Contract that keeps all collateral types accepted by the DAO
 
 (define-constant ERR-NOT-AUTHORIZED u17401)
@@ -20,50 +22,52 @@
 )
 
 (define-read-only (get-collateral-type-by-name (name (string-ascii 12)))
-  (unwrap!
-    (map-get? collateral-types { name: name })
-    (tuple
-      (name "")
-      (token "")
-      (token-type "")
-      (url "")
-      (total-debt u0)
-      (liquidation-ratio u0)
-      (collateral-to-debt-ratio u0)
-      (maximum-debt u0)
-      (liquidation-penalty u0)
-      (stability-fee u0)
-      (stability-fee-apy u0)
+  (ok
+    (default-to
+      {
+        name: "",
+        token: "",
+        token-type: "",
+        url: "",
+        total-debt: u0,
+        liquidation-ratio: u0,
+        collateral-to-debt-ratio: u0,
+        maximum-debt: u0,
+        liquidation-penalty: u0,
+        stability-fee: u0,
+        stability-fee-apy: u0
+      }
+      (map-get? collateral-types { name: name })
     )
   )
 )
 
 (define-read-only (get-liquidation-ratio (token (string-ascii 12)))
-  (ok (get liquidation-ratio (get-collateral-type-by-name token)))
+  (ok (get liquidation-ratio (unwrap-panic (get-collateral-type-by-name token))))
 )
 
 (define-read-only (get-collateral-to-debt-ratio (token (string-ascii 12)))
-  (ok (get collateral-to-debt-ratio (get-collateral-type-by-name token)))
+  (ok (get collateral-to-debt-ratio (unwrap-panic (get-collateral-type-by-name token))))
 )
 
 (define-read-only (get-maximum-debt (token (string-ascii 12)))
-  (ok (get maximum-debt (get-collateral-type-by-name token)))
+  (ok (get maximum-debt (unwrap-panic (get-collateral-type-by-name token))))
 )
 
 (define-read-only (get-total-debt (token (string-ascii 12)))
-  (ok (get total-debt (get-collateral-type-by-name token)))
+  (ok (get total-debt (unwrap-panic (get-collateral-type-by-name token))))
 )
 
 (define-read-only (get-liquidation-penalty (token (string-ascii 12)))
-  (ok (get liquidation-penalty (get-collateral-type-by-name token)))
+  (ok (get liquidation-penalty (unwrap-panic (get-collateral-type-by-name token))))
 )
 
 (define-read-only (get-stability-fee (token (string-ascii 12)))
-  (ok (get stability-fee (get-collateral-type-by-name token)))
+  (ok (get stability-fee (unwrap-panic (get-collateral-type-by-name token))))
 )
 
 (define-read-only (get-stability-fee-apy (token (string-ascii 12)))
-  (ok (get stability-fee-apy (get-collateral-type-by-name token)))
+  (ok (get stability-fee-apy (unwrap-panic (get-collateral-type-by-name token))))
 )
 
 ;; public methods
@@ -71,7 +75,7 @@
   (begin
     ;; freddie should be calling this method
     (asserts! (is-eq contract-caller .freddie) (err ERR-NOT-AUTHORIZED))
-    (let ((collateral-type (get-collateral-type-by-name token)))
+    (let ((collateral-type (unwrap-panic (get-collateral-type-by-name token))))
       (map-set collateral-types
         { name: token }
         (merge collateral-type { total-debt: (+ debt (get total-debt collateral-type)) }))
@@ -84,7 +88,7 @@
   (begin
     ;; freddie should be calling this method
     (asserts! (is-eq contract-caller .freddie) (err ERR-NOT-AUTHORIZED))
-    (let ((collateral-type (get-collateral-type-by-name token)))
+    (let ((collateral-type (unwrap-panic (get-collateral-type-by-name token))))
       (map-set collateral-types
         { name: token }
         (merge collateral-type { total-debt: (- (get total-debt collateral-type) debt) }))
@@ -104,7 +108,7 @@
                                     (maximum-debt uint)
                                     (collateral-to-debt-ratio uint))
   (begin
-    ;; (asserts! (is-eq DAO-OWNER tx-sender) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq contract-caller .dao) (err ERR-NOT-AUTHORIZED))
     (map-set collateral-types
       { name: collateral-type }
       {
@@ -127,9 +131,12 @@
 
 (define-public (change-risk-parameters (collateral-type (string-ascii 12)) (changes (list 10 (tuple (key (string-ascii 256)) (new-value uint)))))
   (let (
-    (type (get-collateral-type-by-name collateral-type))
+    (type (unwrap-panic (get-collateral-type-by-name collateral-type)))
     (result (fold change-risk-parameter changes type))
   )
+    (asserts! (is-eq contract-caller .dao) (err ERR-NOT-AUTHORIZED))
+
+    (map-set collateral-types { name: collateral-type } result)
     (ok true)
   )
 )
