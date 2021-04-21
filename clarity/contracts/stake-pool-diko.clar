@@ -1,4 +1,4 @@
-;; Staking contract - Stake DIKO to get sDIKO
+;; Stake Pool - Stake DIKO to get sDIKO
 ;; 
 ;; A fixed amount of rewards per block will be distributed across all stakers, according to their size in the pool
 ;; Rewards will be automatically staked before staking or unstaking. 
@@ -13,9 +13,12 @@
 ;; Errors
 (define-constant ERR-NOT-AUTHORIZED (err u18401))
 (define-constant ERR-REWARDS-CALC (err u18001))
+(define-constant ERR-WRONG-TOKEN (err u18002))
 
 ;; Constants
 (define-constant CONTRACT-OWNER tx-sender)
+(define-constant POOL-REGISTRY 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7) ;; TODO: Not sure if this correct, we should check stake-registry?
+(define-constant POOL-TOKEN 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token)
 
 ;; Variables
 (define-data-var token-uri (string-utf8 256) u"")
@@ -112,69 +115,75 @@
 )
 
 ;; Stake tokens
-;; TODO: only DIKO tokens can be staked
-;; TODO: only stake-registry should be able to call this method
 (define-public (stake (token <mock-ft-trait>) (staker principal) (amount uint))
-  (let (
-    ;; Get pending rewards as we need to claim first
-    (pending-rewards (unwrap! (get-pending-rewards staker) ERR-REWARDS-CALC))
+  (begin
+    (asserts! (is-eq POOL-REGISTRY tx-sender) ERR-NOT-AUTHORIZED)
+    (asserts! (is-eq POOL-TOKEN (contract-of token)) ERR-WRONG-TOKEN)
 
-    ;; Calculate new stake amount
-    (stake-amount (get-stake-amount-of staker))
-    (new-stake-amount (+ stake-amount amount))
+    (let (
+      ;; Get pending rewards as we need to claim first
+      (pending-rewards (unwrap! (get-pending-rewards staker) ERR-REWARDS-CALC))
+
+      ;; Calculate new stake amount
+      (stake-amount (get-stake-amount-of staker))
+      (new-stake-amount (+ stake-amount amount))
+    )
+      ;; Claim all pending rewards for staker so we can set the new cumm-reward for this user
+      (try! (claim-pending-rewards staker pending-rewards))
+
+      ;; Update total stake
+      (var-set total-staked (+ (var-get total-staked) amount))
+
+      ;; Increase cumm reward for new total staked
+      (try! (increase-cumm-reward-per-stake))
+
+      ;; Mint stDIKO
+      (try! (ft-mint? stdiko amount staker))
+
+      ;; Transfer DIKO to this contract
+      (try! (contract-call? token transfer amount staker (as-contract tx-sender)))
+
+      ;; Update sender stake info
+      (map-set stakes { staker: staker } { uamount: new-stake-amount, cumm-reward-per-stake: (var-get cumm-reward-per-stake) })
+
+      (ok new-stake-amount)
+    )
   )
-    ;; Claim all pending rewards for staker so we can set the new cumm-reward for this user
-    (try! (claim-pending-rewards staker pending-rewards))
 
-    ;; Update total stake
-    (var-set total-staked (+ (var-get total-staked) amount))
-
-    ;; Increase cumm reward for new total staked
-    (try! (increase-cumm-reward-per-stake))
-
-    ;; Mint stDIKO
-    (try! (ft-mint? stdiko amount staker))
-
-    ;; Transfer DIKO to this contract
-    (try! (contract-call? token transfer amount staker (as-contract tx-sender)))
-
-    ;; Update sender stake info
-    (map-set stakes { staker: staker } { uamount: new-stake-amount, cumm-reward-per-stake: (var-get cumm-reward-per-stake) })
-
-    (ok new-stake-amount)
-  )
 )
 
 ;; Unstake tokens
-;; TODO: only stake-registry should be able to call this method
 (define-public (unstake (token <mock-ft-trait>) (staker principal) (amount uint))
-  (let (
-    ;; Get pending rewards as we need to claim first
-    (pending-rewards (unwrap! (get-pending-rewards staker) ERR-REWARDS-CALC))
+  (begin
+    (asserts! (is-eq POOL-REGISTRY tx-sender) ERR-NOT-AUTHORIZED)
+    (let (
+      ;; Get pending rewards as we need to claim first
+      (pending-rewards (unwrap! (get-pending-rewards staker) ERR-REWARDS-CALC))
 
-    ;; Calculate new stake amount
-    (stake-amount (get-stake-amount-of staker))
-    (new-stake-amount (- stake-amount amount))
-  )
-    ;; Claim all pending rewards for staker so we can set the new cumm-reward for this user
-    (try! (claim-pending-rewards staker pending-rewards))
+      ;; Calculate new stake amount
+      (stake-amount (get-stake-amount-of staker))
+      (new-stake-amount (- stake-amount amount))
+    )
+      ;; Claim all pending rewards for staker so we can set the new cumm-reward for this user
+      (try! (claim-pending-rewards staker pending-rewards))
 
-    ;; Update total stake
-    (var-set total-staked (- (var-get total-staked) amount))
+      ;; Update total stake
+      (var-set total-staked (- (var-get total-staked) amount))
 
-    ;; Increase cumm reward for new total staked
-    (try! (increase-cumm-reward-per-stake))
+      ;; Increase cumm reward for new total staked
+      (try! (increase-cumm-reward-per-stake))
 
-    ;; Burn stDIKO 
-    (try! (ft-burn? stdiko amount staker))
+      ;; Burn stDIKO 
+      (try! (ft-burn? stdiko amount staker))
 
-    ;; Transfer DIKO back from this contract to the user
-    (try! (contract-call? token transfer amount (as-contract tx-sender) staker))
+      ;; Transfer DIKO back from this contract to the user
+      (try! (contract-call? token transfer amount (as-contract tx-sender) staker))
 
-    ;; Update sender stake info
-    (map-set stakes { staker: staker } { uamount: new-stake-amount, cumm-reward-per-stake: (var-get cumm-reward-per-stake) })
+      ;; Update sender stake info
+      (map-set stakes { staker: staker } { uamount: new-stake-amount, cumm-reward-per-stake: (var-get cumm-reward-per-stake) })
 
-    (ok new-stake-amount)
+      (ok new-stake-amount)
+    )
   )
 )
 
@@ -199,7 +208,7 @@
     (if (and (>= amount pending-rewards) (>= amount u1))
       (begin
         ;; Mint sDIKO for staker
-      (try! (ft-mint? stdiko amount staker))
+        (try! (ft-mint? stdiko amount staker))
 
         (ok amount)
       )

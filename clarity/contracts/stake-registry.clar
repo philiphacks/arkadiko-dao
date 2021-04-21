@@ -1,7 +1,9 @@
+;; Stake Registry - Keep track of all staking pools
 ;; 
+;; Users can stake, unstake and claim rewards from active pools.
 ;; 
-;; 
-;; 
+;; DAO can activate a new pool or deactivate an existing one.
+;; When a pool is deactivated, users can not stake but they can unstake.
 
 (use-trait mock-ft-trait .mock-ft-trait.mock-ft-trait)
 (use-trait stake-pool-trait .stake-pool-trait.stake-pool-trait)
@@ -13,7 +15,7 @@
 (define-constant ERR-POOL-INACTIVE (err u19003))
 
 ;; Variables
-(define-constant DAO-OWNER tx-sender)
+(define-constant DAO-OWNER tx-sender) ;; TODO: needs to become DAO
 (define-data-var pool-count uint u0)
 
 ;; Pool maps
@@ -44,7 +46,7 @@
 ;; Register and activate new pool
 (define-public (activate-pool (name (string-ascii 256)) (pool-trait <stake-pool-trait>))
     (begin
-        ;; (asserts! (is-eq DAO-OWNER tx-sender) unauthorized-err)
+        (asserts! (is-eq DAO-OWNER tx-sender) ERR-NOT-AUTHORIZED)
         (let ( 
             (pool (contract-of pool-trait)) 
             (pool-id (var-get pool-count)) 
@@ -64,7 +66,7 @@
 ;; Inactivate pool
 (define-public (deactivate-pool (pool-trait <stake-pool-trait>))
     (begin
-        ;; (asserts! (is-eq DAO-OWNER tx-sender) unauthorized-err)
+        (asserts! (is-eq DAO-OWNER tx-sender) ERR-NOT-AUTHORIZED)
         (let ( 
             (pool (contract-of pool-trait)) 
             (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) ERR-INVALID-POOL))
