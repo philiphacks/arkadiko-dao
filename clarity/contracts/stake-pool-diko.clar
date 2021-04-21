@@ -68,7 +68,7 @@
     (pending-rewards (unwrap! (get-pending-rewards staker) rewards-err))
 
     ;; Calculate new stake amount
-    (stake-amount (get-stake-amount-of tx-sender))
+    (stake-amount (get-stake-amount-of staker))
     (new-stake-amount (+ stake-amount amount))
   )
     ;; Claim all pending rewards for staker so we can set the new cumm-reward for this user
@@ -81,13 +81,13 @@
     (try! (increase-cumm-reward-per-stake))
 
     ;; Mint stDIKO
-    (try! (contract-call? .stdiko-token mint amount tx-sender))
+    (try! (contract-call? .stdiko-token mint amount staker))
 
     ;; Transfer DIKO to this contract
-    (try! (contract-call? token transfer amount tx-sender (as-contract tx-sender)))
+    (try! (contract-call? token transfer amount staker (as-contract tx-sender)))
 
     ;; Update sender stake info
-    (map-set stakes { staker: tx-sender } { uamount: new-stake-amount, cumm-reward-per-stake: (var-get cumm-reward-per-stake) })
+    (map-set stakes { staker: staker } { uamount: new-stake-amount, cumm-reward-per-stake: (var-get cumm-reward-per-stake) })
 
     (ok new-stake-amount)
   )
@@ -101,7 +101,7 @@
     (pending-rewards (unwrap! (get-pending-rewards staker) rewards-err))
 
     ;; Calculate new stake amount
-    (stake-amount (get-stake-amount-of tx-sender))
+    (stake-amount (get-stake-amount-of staker))
     (new-stake-amount (- stake-amount amount))
   )
     ;; Claim all pending rewards for staker so we can set the new cumm-reward for this user
@@ -114,13 +114,13 @@
     (try! (increase-cumm-reward-per-stake))
 
     ;; Burn stDIKO 
-    (try! (contract-call? .stdiko-token burn amount tx-sender))
+    (try! (contract-call? .stdiko-token burn amount staker))
 
     ;; Transfer DIKO back from this contract to the user
-    (try! (contract-call? token transfer amount (as-contract tx-sender) tx-sender))
+    (try! (contract-call? token transfer amount (as-contract tx-sender) staker))
 
     ;; Update sender stake info
-    (map-set stakes { staker: tx-sender } { uamount: new-stake-amount, cumm-reward-per-stake: (var-get cumm-reward-per-stake) })
+    (map-set stakes { staker: staker } { uamount: new-stake-amount, cumm-reward-per-stake: (var-get cumm-reward-per-stake) })
 
     (ok new-stake-amount)
   )
