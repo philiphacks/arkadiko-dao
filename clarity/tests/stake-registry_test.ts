@@ -37,7 +37,7 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
 });
 
 Clarinet.test({
-name: "stake-registry: inactivate pool,",
+name: "stake-registry: deactivate pool,",
 async fn(chain: Chain, accounts: Map<string, Account>) {
     let deployer = accounts.get("deployer")!;
     let wallet_1 = accounts.get("wallet_1")!;
@@ -51,7 +51,7 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
     block.receipts[0].result.expectOk().expectBool(true);
 
     block = chain.mineBlock([
-    Tx.contractCall("stake-registry", "inactivate-pool", [
+    Tx.contractCall("stake-registry", "deactivate-pool", [
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko'),
     ], deployer.address)
     ]);

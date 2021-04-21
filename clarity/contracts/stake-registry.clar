@@ -7,13 +7,13 @@
 (use-trait stake-pool-trait .stake-pool-trait.stake-pool-trait)
 
 ;; Errors
-(define-constant unauthorized-err (err u15))
-(define-constant invalid-pool-err (err u65))
-(define-constant pool-already-exist-err (err u66))
-(define-constant pool-inactive-err (err u67))
+(define-constant ERR-NOT-AUTHORIZED (err u19401))
+(define-constant ERR-INVALID-POOL (err u19001))
+(define-constant ERR-POOL-EXIST (err u19002))
+(define-constant ERR-POOL-INACTIVE (err u19003))
 
 ;; Variables
-(define-constant dao-owner tx-sender)
+(define-constant DAO-OWNER tx-sender)
 (define-data-var pool-count uint u0)
 
 ;; Pool maps
@@ -44,14 +44,14 @@
 ;; Register and activate new pool
 (define-public (activate-pool (name (string-ascii 256)) (pool-trait <stake-pool-trait>))
     (begin
-        ;; (asserts! (is-eq dao-owner tx-sender) unauthorized-err)
+        ;; (asserts! (is-eq DAO-OWNER tx-sender) unauthorized-err)
         (let ( 
             (pool (contract-of pool-trait)) 
             (pool-id (var-get pool-count)) 
             (pool-does-not-exist (is-none (map-get? pools-data-map { pool: pool} )))
             )
             (begin
-                (asserts! (is-eq pool-does-not-exist true) pool-already-exist-err)
+                (asserts! (is-eq pool-does-not-exist true) ERR-POOL-EXIST)
                 (map-set pools-map { pool-id: pool-id } { pool: pool})
                 (map-set pools-data-map { pool: pool } { name: name, active: true })
                 (var-set pool-count (+ pool-id u1))
@@ -62,12 +62,12 @@
 )
 
 ;; Inactivate pool
-(define-public (inactivate-pool (pool-trait <stake-pool-trait>))
+(define-public (deactivate-pool (pool-trait <stake-pool-trait>))
     (begin
-        ;; (asserts! (is-eq dao-owner tx-sender) unauthorized-err)
+        ;; (asserts! (is-eq DAO-OWNER tx-sender) unauthorized-err)
         (let ( 
             (pool (contract-of pool-trait)) 
-            (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) invalid-pool-err))
+            (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) ERR-INVALID-POOL))
             )
             (begin
                 (map-set pools-data-map { pool: pool } { name: (get name pool-info), active: false })
@@ -83,9 +83,9 @@
     (begin
         (let (
             (pool (contract-of pool-trait)) 
-            (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) pool-inactive-err))
+            (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) ERR-POOL-INACTIVE))
         )
-            (asserts! (is-eq (get active pool-info) true) pool-already-exist-err)
+            (asserts! (is-eq (get active pool-info) true) ERR-POOL-EXIST)
             (try! (contract-call? pool-trait stake token-trait tx-sender amount))
             (ok amount)
         )
@@ -97,9 +97,9 @@
     (begin
         (let (
             (pool (contract-of pool-trait)) 
-            (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) pool-inactive-err))
+            (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) ERR-POOL-INACTIVE))
         )
-            (asserts! (is-eq (get active pool-info) true) pool-already-exist-err)
+            (asserts! (is-eq (get active pool-info) true) ERR-POOL-EXIST)
             (try! (contract-call? pool-trait unstake token-trait tx-sender amount))
             (ok amount)
         )
@@ -107,13 +107,15 @@
 )
 
 ;; Get pending pool rewards
+;; TODO: this should be read-only but a bug in traits blocks this from being read-only
+;; see https://github.com/blockstack/stacks-blockchain/issues/1981
 (define-read-only (get-pending-rewards (pool-trait <stake-pool-trait>))
     (begin
         (let (
             (pool (contract-of pool-trait)) 
-            (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) pool-inactive-err))
+            (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) ERR-POOL-INACTIVE))
         )
-            (asserts! (is-eq (get active pool-info) true) pool-already-exist-err)
+            (asserts! (is-eq (get active pool-info) true) ERR-POOL-EXIST)
 
             ;; (contract-call? pool-trait get-pending-rewards tx-sender)
             (ok u1)
@@ -126,9 +128,9 @@
     (begin
         (let (
             (pool (contract-of pool-trait)) 
-            (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) pool-inactive-err))
+            (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) ERR-POOL-INACTIVE))
         )
-            (asserts! (is-eq (get active pool-info) true) pool-already-exist-err)
+            (asserts! (is-eq (get active pool-info) true) ERR-POOL-EXIST)
             (ok (contract-call? pool-trait claim-pending-rewards tx-sender amount))
         )
     )

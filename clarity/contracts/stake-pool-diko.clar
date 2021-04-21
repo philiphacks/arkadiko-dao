@@ -10,8 +10,8 @@
 (use-trait mock-ft-trait .mock-ft-trait.mock-ft-trait)
 
 ;; Errors
-(define-constant unauthorized-err (err u15))
-(define-constant rewards-err (err u16))
+(define-constant ERR-NOT-AUTHORIZED (err u18401))
+(define-constant ERR-REWARDS-CALC (err u18001))
 
 ;; Variables
 (define-data-var total-staked uint u0)
@@ -65,7 +65,7 @@
 (define-public (stake (token <mock-ft-trait>) (staker principal) (amount uint))
   (let (
     ;; Get pending rewards as we need to claim first
-    (pending-rewards (unwrap! (get-pending-rewards staker) rewards-err))
+    (pending-rewards (unwrap! (get-pending-rewards staker) ERR-REWARDS-CALC))
 
     ;; Calculate new stake amount
     (stake-amount (get-stake-amount-of staker))
@@ -98,7 +98,7 @@
 (define-public (unstake (token <mock-ft-trait>) (staker principal) (amount uint))
   (let (
     ;; Get pending rewards as we need to claim first
-    (pending-rewards (unwrap! (get-pending-rewards staker) rewards-err))
+    (pending-rewards (unwrap! (get-pending-rewards staker) ERR-REWARDS-CALC))
 
     ;; Calculate new stake amount
     (stake-amount (get-stake-amount-of staker))
@@ -141,7 +141,7 @@
 ;; TODO: only stake-registry should be able to call this method
 (define-public (claim-pending-rewards (staker principal) (amount uint))
   (let (
-    (pending-rewards (unwrap! (get-pending-rewards staker) rewards-err))
+    (pending-rewards (unwrap! (get-pending-rewards staker) ERR-REWARDS-CALC))
   )
     ;; Only mint if enough pending rewards and amount is positive
     (if (and (>= amount pending-rewards) (>= amount u1))
