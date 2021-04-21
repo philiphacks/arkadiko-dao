@@ -96,6 +96,7 @@
   (let ((vault (unwrap-panic (contract-call? vault-manager fetch-vault-by-id vault-id))))
     (asserts! (is-eq contract-caller .liquidator) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq (get is-liquidated vault) true) (err ERR-AUCTION-NOT-ALLOWED))
+    (asserts! (is-eq (contract-of vault-manager) (unwrap-panic (contract-call? .dao get-qualified-name-by-name "freddie"))) (err ERR-NOT-AUTHORIZED))
 
     (let ((auction-id (+ (var-get last-auction-id) u1)))
       (begin
@@ -171,6 +172,7 @@
     (current-balance (unwrap-panic (contract-call? vault-manager get-xusd-balance)))
   )
     (asserts! (>= current-balance maximum-surplus) (err ERR-AUCTION-NOT-ALLOWED))
+    (asserts! (is-eq (contract-of vault-manager) (unwrap-panic (contract-call? .dao get-qualified-name-by-name "freddie"))) (err ERR-NOT-AUTHORIZED))
     ;; TODO: add assert to run only 1 surplus auction at once
 
     (map-set auctions
@@ -252,6 +254,7 @@
     (auction (get-auction-by-id auction-id))
     (price-in-cents (contract-call? .oracle get-price (collateral-token (get collateral-token auction))))
   )
+    (asserts! (is-eq (contract-of oracle) (unwrap-panic (contract-call? .dao get-qualified-name-by-name "oracle"))) (err ERR-NOT-AUTHORIZED))
     (calculate-minimum-collateral-amount (get last-price-in-cents price-in-cents) auction-id)
   )
 )
@@ -283,6 +286,7 @@
     (asserts! (is-eq lot-index (get lots-sold auction)) (err ERR-BID-DECLINED))
     (asserts! (is-eq (get is-open auction) true) (err ERR-BID-DECLINED))
     (asserts! (is-eq (contract-of vault-manager) (unwrap-panic (contract-call? .dao get-qualified-name-by-name "freddie"))) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq (contract-of oracle) (unwrap-panic (contract-call? .dao get-qualified-name-by-name "oracle"))) (err ERR-NOT-AUTHORIZED))
 
     (register-bid vault-manager oracle auction-id lot-index xusd)
   )
@@ -392,6 +396,7 @@
     (auction (get-auction-by-id auction-id))
   )
     (asserts! (is-eq (unwrap-panic (contract-call? ft get-symbol)) (get collateral-token auction)) (err ERR-TOKEN-TYPE-MISMATCH))
+    (asserts! (is-eq (contract-of vault-manager) (unwrap-panic (contract-call? .dao get-qualified-name-by-name "freddie"))) (err ERR-NOT-AUTHORIZED))
 
     (if
       (and
