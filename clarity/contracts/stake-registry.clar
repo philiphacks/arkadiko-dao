@@ -54,7 +54,6 @@
                 (asserts! (is-eq pool-does-not-exist true) pool-already-exist-err)
                 (map-set pools-map { pool-id: pool-id } { pool: pool})
                 (map-set pools-data-map { pool: pool } { name: name, active: true })
-
                 (var-set pool-count (+ pool-id u1))
                 (ok true)
             )
@@ -63,7 +62,7 @@
 )
 
 ;; Inactivate pool
-(define-public (inactivate-pool (pool-id uint) (pool-trait <stake-pool-trait>))
+(define-public (inactivate-pool (pool-trait <stake-pool-trait>))
     (begin
         ;; (asserts! (is-eq dao-owner tx-sender) unauthorized-err)
         (let ( 
@@ -72,8 +71,6 @@
             )
             (begin
                 (map-set pools-data-map { pool: pool } { name: (get name pool-info), active: false })
-
-                (var-set pool-count (+ pool-id u1))
                 (ok true)
             )
         )
@@ -89,9 +86,7 @@
             (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) pool-inactive-err))
         )
             (asserts! (is-eq (get active pool-info) true) pool-already-exist-err)
-
             (try! (contract-call? pool-trait stake token-trait amount))
-
             (ok amount)
         )
     )
@@ -105,20 +100,35 @@
             (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) pool-inactive-err))
         )
             (asserts! (is-eq (get active pool-info) true) pool-already-exist-err)
-
             (try! (contract-call? pool-trait unstake token-trait amount))
-
             (ok amount)
         )
     )
 )
 
 ;; Get pending pool rewards
-(define-public (get-pending-rewards (pool-trait <stake-pool-trait>) (amount uint))
-    (ok amount)
+(define-read-only (get-pending-rewards (pool-trait <stake-pool-trait>))
+    (begin
+        (let (
+            (pool (contract-of pool-trait)) 
+            (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) pool-inactive-err))
+        )
+            (asserts! (is-eq (get active pool-info) true) pool-already-exist-err)
+            ;; (contract-call? pool-trait get-pending-rewards tx-sender)
+            (ok u1)
+        )
+    )
 )
 
 ;; Claim pool rewards
 (define-public (claim-rewards (pool-trait <stake-pool-trait>) (amount uint))
-    (ok amount)
+    (begin
+        (let (
+            (pool (contract-of pool-trait)) 
+            (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) pool-inactive-err))
+        )
+            (asserts! (is-eq (get active pool-info) true) pool-already-exist-err)
+            (ok (contract-call? pool-trait claim-pending-rewards tx-sender))
+        )
+    )
 )

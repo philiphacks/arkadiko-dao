@@ -11,12 +11,10 @@
     (unstake (<mock-ft-trait> uint) (response uint uint))
 
     ;; Get pending rewards for staker
-    ;; (get-pending-rewards-for (principal) (response uint uint))
+    (get-pending-rewards (principal) (response uint uint))
 
-    ;; TODO: Claim rewards
-
-
-    ;; TODO: stake pending rewards in diko pool? V2?
+    ;; Claim rewards
+    (claim-pending-rewards (principal) (response uint uint))
 
   )
 )

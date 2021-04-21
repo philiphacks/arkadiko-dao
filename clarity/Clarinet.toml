@@ -42,10 +42,6 @@ path = "contracts/stacker-registry.clar"
 depends_on = ["mock-ft-trait", "freddie", "arkadiko-token"]
 path = "contracts/stdiko-token.clar"
 
-[contracts.staking]
-depends_on = ["dao", "mock-ft-trait", "arkadiko-token", "stdiko-token"]
-path = "contracts/staking.clar"
-
 [contracts.stx-reserve]
 depends_on = ["oracle", "dao", "xusd-token", "mock-ft-trait", "vault-trait"]
 path = "contracts/stx-reserve.clar"
@@ -67,13 +63,13 @@ depends_on = ["mock-ft-trait", "vault-trait", "oracle", "dao", "xusd-token", "xs
 path = "contracts/sip10-reserve.clar"
 
 [contracts.stake-registry]
-depends_on = ["arkadiko-token", "stdiko-token", "stake-pool", "stake-pool-trait", "mock-ft-trait"]
+depends_on = ["arkadiko-token", "stdiko-token", "stake-pool-diko", "stake-pool-trait", "mock-ft-trait"]
 path = "contracts/stake-registry.clar"
 
 [contracts.stake-pool-trait]
 depends_on = []
 path = "contracts/stake-pool-trait.clar"
 
-[contracts.stake-pool]
+[contracts.stake-pool-diko]
 depends_on = ["stake-pool-trait", "stdiko-token", "arkadiko-token"]
-path = "contracts/stake-pool.clar"
+path = "contracts/stake-pool-diko.clar"

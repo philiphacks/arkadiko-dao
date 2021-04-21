@@ -111,20 +111,26 @@
 )
 
 ;; Get amount of rewards which are not staked yet
-(define-read-only (get-pending-rewards-for (staker principal))
+(define-read-only (get-pending-rewards (staker principal))
   (let (
     (stake-amount (get-stake-amount-of staker))
     (amount-owed-per-token (- (var-get cumm-reward-per-stake) (get-stake-cumm-reward-per-stake-of staker)))
     (rewards (* stake-amount amount-owed-per-token))
   )
-    rewards
+    (ok rewards)
   )
 )
+
+(define-public (claim-pending-rewards (staker principal))
+  (ok u0)
+)
+
+
 
 ;; Stake pending reward for a given staker
 (define-public (stake-pending-rewards-of (staker principal))
   (let (
-    (pending-rewards (get-pending-rewards-for staker))
+    (pending-rewards u0)
     (stake-amount (get-stake-amount-of staker))
     (new-stake-amount (+ pending-rewards stake-amount))
   )
