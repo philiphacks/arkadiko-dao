@@ -1,3 +1,5 @@
+(impl-trait .stacker-trait.stacker-trait)
+
 ;; Stacker can initiate stacking for the STX reserve
 ;; The amount to stack is kept as a data var in the stx reserve
 ;; Stacks the STX tokens in POX

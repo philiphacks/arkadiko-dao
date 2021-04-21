@@ -55,8 +55,12 @@ depends_on = []
 path = "contracts/stacker-registry.clar"
 
 [contracts.stacker]
-depends_on = []
+depends_on = ["stacker-trait"]
 path = "contracts/stacker.clar"
+
+[contracts.stacker-trait]
+depends_on = []
+path = "contracts/stacker-trait.clar"
 
 [contracts.stx-reserve]
 depends_on = ["collateral-types", "oracle", "dao", "xusd-token", "mock-ft-trait", "vault-trait"]
