@@ -91,7 +91,7 @@ Clarinet.test({
     lastBid['xusd'].expectUint(100000000);
 
     block = chain.mineBlock([
-      Tx.contractCall("auction-engine", "calculate-minimum-collateral-amount", [
+      Tx.contractCall("auction-engine", "fetch-minimum-collateral-amount", [
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.oracle'),
         types.uint(1)
       ], wallet_1.address),
@@ -221,7 +221,7 @@ Clarinet.test({
     // Now the liquidation started and an auction should have been created!
     // Make a bid on the first 100 xUSD
     block = chain.mineBlock([
-      Tx.contractCall("auction-engine", "calculate-minimum-collateral-amount", [
+      Tx.contractCall("auction-engine", "fetch-minimum-collateral-amount", [
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.oracle'),
         types.uint(1)
       ], wallet_1.address),
