@@ -35,7 +35,6 @@ describe("freddie test suite", () => {
       await deployContract('collateral-types');
       await deployContract('oracle');
       await deployContract('arkadiko-token');
-      await deployContract('mock-pox');
       await deployContract('dao');
 
       await deployContract('xusd-token');

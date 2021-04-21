@@ -32,7 +32,6 @@ describe("stacks reserve test suite", () => {
       await deployContract('xusd-token');
       await deployContract('arkadiko-token');
       await deployContract('xstx-token');
-      await deployContract('mock-pox');
       await deployContract('dao');
 
       await deployContract('stx-reserve');

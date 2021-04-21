@@ -284,9 +284,9 @@
   (let ((tokens-to-stack (unwrap! (contract-call? .stx-reserve get-tokens-to-stack) (ok u0))))
     (asserts! (is-eq tx-sender CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
   
-    (if (unwrap! (contract-call? .mock-pox can-stack-stx pox-addr tokens-to-stack start-burn-ht lock-period) (err u0))
+    (if (unwrap! (contract-call? .pox can-stack-stx pox-addr tokens-to-stack start-burn-ht lock-period) (err u0))
       (begin
-        (let ((result (unwrap-panic (contract-call? .mock-pox stack-stx tokens-to-stack pox-addr start-burn-ht lock-period))))
+        (let ((result (unwrap-panic (contract-call? .pox stack-stx tokens-to-stack pox-addr start-burn-ht lock-period))))
           (var-set stacking-unlock-burn-height (get unlock-burn-height result))
           (ok (get lock-amount result))
         )

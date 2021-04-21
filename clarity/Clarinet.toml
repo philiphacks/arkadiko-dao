@@ -23,7 +23,7 @@ depends_on = ["collateral-types-trait"]
 path = "contracts/collateral-types.clar"
 
 [contracts.dao]
-depends_on = ["arkadiko-token", "collateral-types", "vault-trait", "mock-pox"]
+depends_on = ["arkadiko-token", "collateral-types", "vault-trait"]
 path = "contracts/dao.clar"
 
 [contracts.freddie]
@@ -37,10 +37,6 @@ path = "contracts/liquidator.clar"
 [contracts.mock-ft-trait]
 depends_on = []
 path = "contracts/mock-ft-trait.clar"
-
-[contracts.mock-pox]
-depends_on = []
-path = "contracts/mock-pox.clar"
 
 [contracts.oracle]
 depends_on = ["oracle-trait"]
