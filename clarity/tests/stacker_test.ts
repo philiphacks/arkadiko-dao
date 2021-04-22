@@ -63,6 +63,7 @@ Clarinet.test({
     }
     block = chain.mineBlock([
       Tx.contractCall("freddie", "enable-vault-withdrawals", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stacker'),
         types.uint(1)
       ], deployer.address)
     ]);
