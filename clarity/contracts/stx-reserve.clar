@@ -185,14 +185,10 @@
 
 ;; this should be called when upgrading contracts
 ;; STX reserve should only contain STX
-(define-public (migrate-funds (new-vault <vault-trait>) (token <mock-ft-trait>))
+(define-public (migrate-funds (new-vault <vault-trait>))
   (begin
     (asserts! (is-eq contract-caller CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
 
-    (let (
-      (balance (unwrap-panic (contract-call? token get-balance-of (as-contract tx-sender))))
-    )
-      (contract-call? token transfer balance (as-contract tx-sender) (contract-of new-vault))
-    )
+    (as-contract (stx-transfer? (stx-get-balance (as-contract tx-sender)) (as-contract tx-sender) (contract-of new-vault)))
   )
 )
