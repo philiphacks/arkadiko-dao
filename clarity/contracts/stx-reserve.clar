@@ -1,5 +1,6 @@
 (impl-trait .vault-trait.vault-trait)
 (use-trait mock-ft-trait .mock-ft-trait.mock-ft-trait)
+(use-trait vault-trait .vault-trait.vault-trait)
 
 ;; errors
 (define-constant ERR-NOT-AUTHORIZED u11401)
@@ -9,6 +10,8 @@
 (define-constant ERR-DEPOSIT-FAILED u115)
 (define-constant ERR-WITHDRAW-FAILED u116)
 (define-constant ERR-MINT-FAILED u117)
+
+(define-constant CONTRACT-OWNER tx-sender)
 
 (define-data-var tokens-to-stack uint u0)
 
@@ -176,6 +179,20 @@
     (match (print (as-contract (stx-transfer? ustx-amount (as-contract tx-sender) sender)))
       transferred (ok true)
       error (err ERR-TRANSFER-FAILED)
+    )
+  )
+)
+
+;; this should be called when upgrading contracts
+;; STX reserve should only contain STX
+(define-public (migrate-funds (new-vault <vault-trait>) (token <mock-ft-trait>))
+  (begin
+    (asserts! (is-eq contract-caller CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
+
+    (let (
+      (balance (unwrap-panic (contract-call? token get-balance-of (as-contract tx-sender))))
+    )
+      (contract-call? token transfer balance (as-contract tx-sender) (contract-of new-vault))
     )
   )
 )
