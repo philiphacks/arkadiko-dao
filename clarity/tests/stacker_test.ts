@@ -40,6 +40,9 @@ Clarinet.test({
     ]);
     block.receipts[0].result.expectOk().expectUint(1000000000);
 
+    call = await chain.callReadOnlyFn("stacker", "get-stx-balance", [], deployer.address);
+    call.result.expectOk().expectUint(1000000000);
+
     call = await chain.callReadOnlyFn("stacker", "get-stacking-unlock-burn-height", [], deployer.address);
     call.result.expectOk().expectUint(100);
 

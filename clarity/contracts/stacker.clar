@@ -57,3 +57,7 @@
 (define-public (payout)
   (ok true)
 )
+
+(define-read-only (get-stx-balance)
+  (ok (stx-get-balance (as-contract tx-sender)))
+)
