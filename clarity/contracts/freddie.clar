@@ -198,9 +198,9 @@
     (asserts! (is-eq "STX" (get collateral-token vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq false (get is-liquidated vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq true (get revoked-stacking vault)) (err ERR-NOT-AUTHORIZED))
-    ;; TODO: fix this - get var from stacker contract
-    ;; (asserts! (>= burn-block-height (var-get stacking-unlock-burn-height)) (err ERR-BURN-HEIGHT-NOT-REACHED))
+    (asserts! (>= burn-block-height (unwrap-panic (contract-call? .stacker get-stacking-unlock-burn-height))) (err ERR-BURN-HEIGHT-NOT-REACHED))
 
+    (try! (contract-call? .stacker request-stx-for-withdrawal (get collateral vault)))
     (begin
       (map-set vaults
         { id: vault-id }
@@ -223,7 +223,7 @@
     (asserts! (is-eq "xSTX" (get collateral-token vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq true (get is-liquidated vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (> (get stacked-tokens vault) u0) (err ERR-NOT-AUTHORIZED))
-    ;; (asserts! (>= burn-block-height (var-get stacking-unlock-burn-height)) (err ERR-BURN-HEIGHT-NOT-REACHED))
+    (asserts! (>= burn-block-height (unwrap-panic (contract-call? .stacker get-stacking-unlock-burn-height))) (err ERR-BURN-HEIGHT-NOT-REACHED))
 
     (try! (add-stx-redeemable (get stacked-tokens vault)))
     (map-set vaults

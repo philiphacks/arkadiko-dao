@@ -345,4 +345,18 @@
       qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stacker
     }
   )
+  (map-set contracts
+    { name: "stx-reserve" }
+    {
+      address: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7,
+      qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve
+    }
+  )
+  (map-set contracts
+    { name: "sip10-reserve" }
+    {
+      address: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7,
+      qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.sip10-reserve
+    }
+  )
 )

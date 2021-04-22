@@ -46,6 +46,16 @@
   )
 )
 
+;; can be called by the stx reserve to request STX tokens for withdrawal
+(define-public (request-stx-for-withdrawal (ustx-amount uint))
+  (begin
+    (asserts! (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "freddie"))) (err ERR-NOT-AUTHORIZED))
+    (as-contract
+      (stx-transfer? ustx-amount (as-contract tx-sender) (unwrap-panic (contract-call? .dao get-qualified-name-by-name "stx-reserve")))
+    )
+  )
+)
+
 ;; Pay all parties:
 ;; - Owners of vaults
 ;; - DAO Reserve
