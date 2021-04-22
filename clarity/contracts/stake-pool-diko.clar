@@ -17,7 +17,7 @@
 
 ;; Constants
 (define-constant CONTRACT-OWNER tx-sender)
-(define-constant POOL-REGISTRY 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7) ;; TODO: Not sure if this correct, we should check stake-registry?
+(define-constant STAKE-REGISTRY 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-registry)
 (define-constant POOL-TOKEN 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token)
 
 ;; Variables
@@ -117,7 +117,7 @@
 ;; Stake tokens
 (define-public (stake (token <mock-ft-trait>) (staker principal) (amount uint))
   (begin
-    (asserts! (is-eq POOL-REGISTRY tx-sender) ERR-NOT-AUTHORIZED)
+    (asserts! (is-eq contract-caller STAKE-REGISTRY) ERR-NOT-AUTHORIZED)
     (asserts! (is-eq POOL-TOKEN (contract-of token)) ERR-WRONG-TOKEN)
 
     (let (
@@ -141,7 +141,7 @@
       (try! (ft-mint? stdiko amount staker))
 
       ;; Transfer DIKO to this contract
-      (try! (contract-call? token transfer amount staker (as-contract tx-sender)))
+      (try! (transfer amount staker (as-contract tx-sender)))
 
       ;; Update sender stake info
       (map-set stakes { staker: staker } { uamount: new-stake-amount, cumm-reward-per-stake: (var-get cumm-reward-per-stake) })
@@ -155,7 +155,7 @@
 ;; Unstake tokens
 (define-public (unstake (token <mock-ft-trait>) (staker principal) (amount uint))
   (begin
-    (asserts! (is-eq POOL-REGISTRY tx-sender) ERR-NOT-AUTHORIZED)
+    (asserts! (is-eq contract-caller STAKE-REGISTRY) ERR-NOT-AUTHORIZED)
     (let (
       ;; Get pending rewards as we need to claim first
       (pending-rewards (unwrap! (get-pending-rewards staker) ERR-REWARDS-CALC))
@@ -177,7 +177,7 @@
       (try! (ft-burn? stdiko amount staker))
 
       ;; Transfer DIKO back from this contract to the user
-      (try! (contract-call? token transfer amount (as-contract tx-sender) staker))
+      (try! (transfer amount (as-contract tx-sender) staker))
 
       ;; Update sender stake info
       (map-set stakes { staker: staker } { uamount: new-stake-amount, cumm-reward-per-stake: (var-get cumm-reward-per-stake) })
@@ -201,7 +201,7 @@
 ;; Claim rewards for staker
 (define-public (claim-pending-rewards (staker principal) (amount uint))
   (begin
-    (asserts! (is-eq POOL-REGISTRY tx-sender) ERR-NOT-AUTHORIZED)
+    (asserts! (is-eq contract-caller STAKE-REGISTRY) ERR-NOT-AUTHORIZED)
     (let (
       (pending-rewards (unwrap! (get-pending-rewards staker) ERR-REWARDS-CALC))
     )
