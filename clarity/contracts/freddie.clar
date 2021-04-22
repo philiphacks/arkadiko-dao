@@ -199,6 +199,7 @@
     (asserts! (is-eq "STX" (get collateral-token vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq false (get is-liquidated vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq true (get revoked-stacking vault)) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq (contract-of stacker) (unwrap-panic (contract-call? .dao get-qualified-name-by-name "stacker"))) (err ERR-NOT-AUTHORIZED))
     (asserts! (>= burn-block-height (unwrap-panic (contract-call? stacker get-stacking-unlock-burn-height))) (err ERR-BURN-HEIGHT-NOT-REACHED))
 
     (try! (contract-call? .stacker request-stx-for-withdrawal (get collateral vault)))
@@ -224,6 +225,7 @@
     (asserts! (is-eq "xSTX" (get collateral-token vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq true (get is-liquidated vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (> (get stacked-tokens vault) u0) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq (contract-of stacker) (unwrap-panic (contract-call? .dao get-qualified-name-by-name "stacker"))) (err ERR-NOT-AUTHORIZED))
     (asserts! (>= burn-block-height (unwrap-panic (contract-call? stacker get-stacking-unlock-burn-height))) (err ERR-BURN-HEIGHT-NOT-REACHED))
 
     (try! (add-stx-redeemable (get stacked-tokens vault)))
