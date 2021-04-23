@@ -203,7 +203,7 @@
     (asserts! (is-eq (contract-of stacker) (unwrap-panic (contract-call? .dao get-qualified-name-by-name "stacker"))) (err ERR-NOT-AUTHORIZED))
     (asserts! (>= burn-block-height (unwrap-panic (contract-call? stacker get-stacking-unlock-burn-height))) (err ERR-BURN-HEIGHT-NOT-REACHED))
 
-    (try! (contract-call? .stacker request-stx-for-withdrawal (get collateral vault)))
+    (try! (contract-call? stacker request-stx-for-withdrawal (get collateral vault)))
     (begin
       (map-set vaults
         { id: vault-id }
