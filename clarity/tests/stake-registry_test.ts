@@ -423,3 +423,74 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
 }
 });
     
+
+Clarinet.test({
+name: "stake-registry: test authorisation",
+async fn(chain: Chain, accounts: Map<string, Account>) {
+    let deployer = accounts.get("deployer")!;
+    let wallet_1 = accounts.get("wallet_1")!;
+
+    // Activate new pool as user - unauthorised
+    let block = chain.mineBlock([
+    Tx.contractCall("stake-registry", "activate-pool", [
+        types.ascii('test-pool'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko'),
+    ], wallet_1.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(19401)
+
+    // Deactivate pool as user - unauthorised
+    block = chain.mineBlock([
+    Tx.contractCall("stake-registry", "deactivate-pool", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko'),
+    ], wallet_1.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(19401)
+
+    // Deactivate pool that does not exist
+    block = chain.mineBlock([
+    Tx.contractCall("stake-registry", "deactivate-pool", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko'),
+    ], deployer.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(19001)
+
+    // Stake to pool that does not exist
+    block = chain.mineBlock([
+    Tx.contractCall("stake-registry", "stake", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token'),
+        types.uint(100)
+    ], wallet_1.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(19002)
+
+    // Try to stake wrong token
+    block = chain.mineBlock([
+    Tx.contractCall("stake-registry", "stake", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.xusd-token'),
+        types.uint(100)
+    ], wallet_1.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(19002)
+
+    // Try to stake in pool directly as user - unauthorised
+    block = chain.mineBlock([
+    Tx.contractCall("stake-pool-diko", "stake", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token'),
+        types.uint(100)
+    ], wallet_1.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(18401)
+
+    // Try to claim rewards on pool directly - unauthorised
+    block = chain.mineBlock([
+    Tx.contractCall("stake-pool-diko", "claim-pending-rewards", [
+        types.principal(wallet_1.address)
+    ], wallet_1.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(18401)
+}
+});
