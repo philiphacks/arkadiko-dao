@@ -17,6 +17,8 @@
 ;; 0x00
 
 (define-constant ERR-NOT-AUTHORIZED u19401)
+(define-constant ERR-CANNOT-STACK u191)
+(define-constant ERR-FAILED-STACK-STX u192)
 (define-constant CONTRACT-OWNER tx-sender)
 
 (define-data-var stacking-unlock-burn-height uint u0)
@@ -45,18 +47,22 @@
                                   (lock-period uint))
   ;; 1. check `get-stacking-minimum` to see if we have > minimum tokens
   ;; 2. call `stack-stx` for 1 `lock-period` fixed
-  (let ((tokens-to-stack (unwrap! (contract-call? .stx-reserve get-tokens-to-stack) (ok u0))))
+  (let (
+    (tokens-to-stack (unwrap! (contract-call? .stx-reserve get-tokens-to-stack) (ok u0)))
+    (can-stack (contract-call? 'ST000000000000000000002AMW42H.pox can-stack-stx pox-addr tokens-to-stack start-burn-ht lock-period))
+  )
     (asserts! (is-eq tx-sender CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
   
-    (if (unwrap! (contract-call? .mock-pox can-stack-stx pox-addr tokens-to-stack start-burn-ht lock-period) (err u0))
+    ;; check if we can stack - if not, then probably cause we have not reached the minimum with (var-get tokens-to-stack)
+    (if (unwrap! can-stack (err ERR-CANNOT-STACK))
       (begin
         (try! (contract-call? .stx-reserve request-stx-to-stack))
-        (let ((result (unwrap-panic (contract-call? .mock-pox stack-stx tokens-to-stack pox-addr start-burn-ht lock-period))))
+        (let ((result (unwrap! (contract-call? 'ST000000000000000000002AMW42H.pox stack-stx tokens-to-stack pox-addr start-burn-ht lock-period) (err ERR-FAILED-STACK-STX))))
           (var-set stacking-unlock-burn-height (get unlock-burn-height result))
           (ok (get lock-amount result))
         )
       )
-      (err u0) ;; cannot stack yet - probably cause we have not reached the minimum with (var-get tokens-to-stack)
+      (err ERR-CANNOT-STACK)
     )
   )
 )

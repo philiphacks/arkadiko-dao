@@ -38,6 +38,7 @@ Clarinet.test({
         types.uint(1) // 1 cycle lock period
       ], deployer.address)
     ]);
+    console.log(block.receipts[0].events);
     block.receipts[0].result.expectOk().expectUint(1000000000);
 
     call = await chain.callReadOnlyFn("stacker", "get-stx-balance", [], deployer.address);
