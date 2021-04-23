@@ -31,15 +31,16 @@ describe("freddie test suite", () => {
       await deployContract('oracle-trait');
       await deployContract('auction-engine-trait');
       await deployContract('collateral-types-trait');
+      await deployContract('stacker-trait');
 
       await deployContract('collateral-types');
       await deployContract('oracle');
       await deployContract('arkadiko-token');
-      await deployContract('mock-pox');
       await deployContract('dao');
 
       await deployContract('xusd-token');
       await deployContract('xstx-token');
+      await deployContract('stacker');
 
       await deployContract('stx-reserve');
       await deployContract('sip10-reserve');
