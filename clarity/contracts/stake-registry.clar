@@ -29,7 +29,9 @@
   { pool: principal }
   {
     name: (string-ascii 256),
-    active: bool
+    active: bool,
+    activated-block: uint,
+    deactivated-block: uint
   }
 )
 
@@ -55,7 +57,7 @@
             (begin
                 (asserts! (is-eq pool-does-not-exist true) ERR-POOL-EXIST)
                 (map-set pools-map { pool-id: pool-id } { pool: pool})
-                (map-set pools-data-map { pool: pool } { name: name, active: true })
+                (map-set pools-data-map { pool: pool } { name: name, active: true, activated-block: block-height, deactivated-block: u0 })
                 (var-set pool-count (+ pool-id u1))
                 (ok true)
             )
@@ -70,9 +72,11 @@
         (let ( 
             (pool (contract-of pool-trait)) 
             (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) ERR-INVALID-POOL))
+            (name (get name pool-info))
+            (activated-block (get activated-block pool-info))
             )
             (begin
-                (map-set pools-data-map { pool: pool } { name: (get name pool-info), active: false })
+                (map-set pools-data-map { pool: pool } { name: name, active: false, activated-block: activated-block, deactivated-block: block-height })
                 (ok true)
             )
         )
@@ -108,29 +112,24 @@
 )
 
 ;; Get pending pool rewards
-;; TODO: this should be read-only but a bug in traits blocks this from being read-only
+;; A bug in traits blocks this from being read-only
 ;; see https://github.com/blockstack/stacks-blockchain/issues/1981
-(define-read-only (get-pending-rewards (pool-trait <stake-pool-trait>))
-    (begin
-        (let (
-            (pool (contract-of pool-trait)) 
-            (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) ERR-POOL-EXIST))
-        )
-            ;; TODO:
-            ;; (contract-call? pool-trait get-pending-rewards tx-sender)
-            (ok u1)
-        )
-    )
-)
+;; Workaround: get-pending-rewards on pool directly
+;; (define-read-only (get-pending-rewards (pool-trait <stake-pool-trait>))
+;;     (begin
+;;         (let (
+;;             (pool (contract-of pool-trait)) 
+;;             (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) ERR-POOL-EXIST))
+;;         )
+;;             (contract-call? pool-trait get-pending-rewards tx-sender)
+;;             (ok u1)
+;;         )
+;;     )
+;; )
 
 ;; Claim pool rewards
-(define-public (claim-rewards (pool-trait <stake-pool-trait>) (amount uint))
+(define-public (claim-pending-rewards (pool-trait <stake-pool-trait>))
     (begin
-        (let (
-            (pool (contract-of pool-trait)) 
-            (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) ERR-POOL-EXIST))
-        )
-            (ok (contract-call? pool-trait claim-pending-rewards tx-sender amount))
-        )
+        (contract-call? pool-trait claim-pending-rewards tx-sender)
     )
 )

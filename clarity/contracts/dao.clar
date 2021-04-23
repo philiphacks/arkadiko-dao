@@ -53,7 +53,6 @@
 (define-data-var governance-token-yield uint u500) ;; 5%
 (define-data-var governance-reserve-yield uint u500) ;; 5%
 (define-data-var maximum-debt-surplus uint u10000000000000) ;; 10 million default
-(define-data-var staking-reward-per-block uint u1000) ;; expressed in which currency?
 
 (define-read-only (get-votes-by-member-by-id (proposal-id uint) (member principal))
   (default-to 
@@ -178,10 +177,6 @@
 
 (define-read-only (get-maximum-debt-surplus)
   (ok (var-get maximum-debt-surplus))
-)
-
-(define-read-only (get-staking-reward-per-block)
-  (ok (var-get staking-reward-per-block))
 )
 
 (define-read-only (get-contract-address-by-name (name (string-ascii 256)))

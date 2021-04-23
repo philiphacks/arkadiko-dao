@@ -14,7 +14,7 @@
     (get-pending-rewards (principal) (response uint uint))
 
     ;; Claim rewards
-    (claim-pending-rewards (principal uint) (response uint uint))
+    (claim-pending-rewards (principal) (response uint uint))
 
   )
 )

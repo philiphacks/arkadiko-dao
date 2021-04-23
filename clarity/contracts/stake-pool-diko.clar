@@ -19,6 +19,7 @@
 (define-constant CONTRACT-OWNER tx-sender)
 (define-constant STAKE-REGISTRY 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-registry)
 (define-constant POOL-TOKEN 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token)
+(define-constant REWARDS-PER-BLOCK u1000)
 
 ;; Variables
 (define-data-var token-uri (string-utf8 256) u"")
@@ -121,27 +122,24 @@
     (asserts! (is-eq POOL-TOKEN (contract-of token)) ERR-WRONG-TOKEN)
 
     (let (
-      ;; Get pending rewards as we need to claim first
-      (pending-rewards (unwrap! (get-pending-rewards staker) ERR-REWARDS-CALC))
-
       ;; Calculate new stake amount
       (stake-amount (get-stake-amount-of staker))
       (new-stake-amount (+ stake-amount amount))
     )
       ;; Claim all pending rewards for staker so we can set the new cumm-reward for this user
-      (try! (claim-pending-rewards staker pending-rewards))
+      (try! (claim-pending-rewards staker))
 
       ;; Update total stake
       (var-set total-staked (+ (var-get total-staked) amount))
 
       ;; Increase cumm reward for new total staked
-      (try! (increase-cumm-reward-per-stake))
+      (increase-cumm-reward-per-stake)
 
       ;; Mint stDIKO
       (try! (ft-mint? stdiko amount staker))
 
       ;; Transfer DIKO to this contract
-      (try! (transfer amount staker (as-contract tx-sender)))
+      (try! (contract-call? .arkadiko-token transfer amount staker (as-contract tx-sender)))
 
       ;; Update sender stake info
       (map-set stakes { staker: staker } { uamount: new-stake-amount, cumm-reward-per-stake: (var-get cumm-reward-per-stake) })
@@ -156,28 +154,26 @@
 (define-public (unstake (token <mock-ft-trait>) (staker principal) (amount uint))
   (begin
     (asserts! (is-eq contract-caller STAKE-REGISTRY) ERR-NOT-AUTHORIZED)
+    (asserts! (is-eq POOL-TOKEN (contract-of token)) ERR-WRONG-TOKEN)
     (let (
-      ;; Get pending rewards as we need to claim first
-      (pending-rewards (unwrap! (get-pending-rewards staker) ERR-REWARDS-CALC))
-
       ;; Calculate new stake amount
       (stake-amount (get-stake-amount-of staker))
       (new-stake-amount (- stake-amount amount))
     )
       ;; Claim all pending rewards for staker so we can set the new cumm-reward for this user
-      (try! (claim-pending-rewards staker pending-rewards))
+      (try! (claim-pending-rewards staker))
 
       ;; Update total stake
       (var-set total-staked (- (var-get total-staked) amount))
 
       ;; Increase cumm reward for new total staked
-      (try! (increase-cumm-reward-per-stake))
+      (increase-cumm-reward-per-stake)
 
       ;; Burn stDIKO 
       (try! (ft-burn? stdiko amount staker))
 
       ;; Transfer DIKO back from this contract to the user
-      (try! (transfer amount (as-contract tx-sender) staker))
+      (try! (contract-call? .arkadiko-token transfer amount (as-contract tx-sender) staker))
 
       ;; Update sender stake info
       (map-set stakes { staker: staker } { uamount: new-stake-amount, cumm-reward-per-stake: (var-get cumm-reward-per-stake) })
@@ -191,7 +187,7 @@
 (define-read-only (get-pending-rewards (staker principal))
   (let (
     (stake-amount (get-stake-amount-of staker))
-    (amount-owed-per-token (- (var-get cumm-reward-per-stake) (get-stake-cumm-reward-per-stake-of staker)))
+    (amount-owed-per-token (- (calculate-cumm-reward-per-stake) (get-stake-cumm-reward-per-stake-of staker)))
     (rewards (* stake-amount amount-owed-per-token))
   )
     (ok rewards)
@@ -199,19 +195,19 @@
 )
 
 ;; Claim rewards for staker
-(define-public (claim-pending-rewards (staker principal) (amount uint))
+(define-public (claim-pending-rewards (staker principal))
   (begin
     (asserts! (is-eq contract-caller STAKE-REGISTRY) ERR-NOT-AUTHORIZED)
     (let (
       (pending-rewards (unwrap! (get-pending-rewards staker) ERR-REWARDS-CALC))
     )
       ;; Only mint if enough pending rewards and amount is positive
-      (if (and (>= amount pending-rewards) (>= amount u1))
+      (if (>= pending-rewards u1)
         (begin
-          ;; Mint sDIKO for staker
-          (try! (ft-mint? stdiko amount staker))
+          ;; Mint DIKO rewards for staker
+          (try! (contract-call? .arkadiko-token mint pending-rewards staker))
 
-          (ok amount)
+          (ok pending-rewards)
         )
         (ok u0)
       )
@@ -223,33 +219,27 @@
 ;; Increase cumm reward per stake and save
 (define-private (increase-cumm-reward-per-stake)
   (let (
-    (current-total-staked (var-get total-staked))
-    (rewards-per-block (unwrap-panic (contract-call? .dao get-staking-reward-per-block)))
-    ;; Block difference
-    (block-diff (- block-height (var-get last-reward-increase-block)))
     ;; Calculate new cumm reward per stake
-    (new-cumm-reward-per-stake (calculate-cumm-reward-per-stake rewards-per-block block-diff current-total-staked))
+    (new-cumm-reward-per-stake (calculate-cumm-reward-per-stake))
+    (last-block-height (get-last-block-height))
   )
-    (print current-total-staked)
     (var-set cumm-reward-per-stake new-cumm-reward-per-stake)
-    (var-set last-reward-increase-block block-height)
-    (if true
-      (ok new-cumm-reward-per-stake)
-      (err u0)
-    )
+    (var-set last-reward-increase-block last-block-height)
+    new-cumm-reward-per-stake
   )
 )
 
-;; Calculate new cumm reward per stake (helper for increase-cumm-reward-per-stake)
-(define-read-only (calculate-cumm-reward-per-stake (rewards-per-block uint) (block-diff uint) (current-total-staked uint))
+;; Calculate current cumm reward per stake
+(define-read-only (calculate-cumm-reward-per-stake)
   (let (
+    (current-total-staked (var-get total-staked))
+    (last-block-height (get-last-block-height))
+    (block-diff (- last-block-height (var-get last-reward-increase-block)))
     (current-cumm-reward-per-stake (var-get cumm-reward-per-stake)) 
-    (pool-data (contract-call? .stake-registry get-pool-data .stake-pool-diko))
-    (pool-active (get active pool-data))
   )
-    (if (and (> current-total-staked u0) (is-eq pool-active true))
+    (if (> current-total-staked u0)
       (let (
-        (total-rewards-to-distribute (* rewards-per-block block-diff))
+        (total-rewards-to-distribute (* REWARDS-PER-BLOCK block-diff))
         (reward-added-per-token (/ total-rewards-to-distribute current-total-staked))
         (new-cumm-reward-per-stake (+ current-cumm-reward-per-stake reward-added-per-token))
       )
@@ -258,4 +248,24 @@
       current-cumm-reward-per-stake
     )
   )
+)
+
+;; Helper for current-cumm-reward-per-stake
+;; Return current block height, or block height when pool was deactivated
+(define-private (get-last-block-height)
+  (let (
+    (pool-data (contract-call? .stake-registry get-pool-data .stake-pool-diko))
+    (pool-active (get active pool-data))
+    (deactivated-block (get deactivated-block pool-data))
+  )
+    (if (is-eq pool-active true)
+      block-height
+      deactivated-block
+    )
+  )
+)
+
+;; Initialize the contract
+(begin
+  (var-set last-reward-increase-block block-height)
 )
