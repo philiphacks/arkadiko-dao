@@ -19,7 +19,7 @@
 (define-constant CONTRACT-OWNER tx-sender)
 (define-constant STAKE-REGISTRY 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-registry)
 (define-constant POOL-TOKEN 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token)
-(define-constant REWARDS-PER-BLOCK u1000)
+(define-constant REWARDS-PER-BLOCK u1000000000) ;; TODO: set production value. Test value is 1000 DIKO per block with 6 decimals
 
 ;; Variables
 (define-data-var token-uri (string-utf8 256) u"")
@@ -195,7 +195,8 @@
   (let (
     (stake-amount (get-stake-amount-of staker))
     (amount-owed-per-token (- (calculate-cumm-reward-per-stake) (get-stake-cumm-reward-per-stake-of staker)))
-    (rewards (* stake-amount amount-owed-per-token))
+    (rewards-decimals (* stake-amount amount-owed-per-token))
+    (rewards (/ rewards-decimals u1000000))
   )
     (ok rewards)
   )
@@ -247,7 +248,7 @@
     (if (> current-total-staked u0)
       (let (
         (total-rewards-to-distribute (* REWARDS-PER-BLOCK block-diff))
-        (reward-added-per-token (/ total-rewards-to-distribute current-total-staked))
+        (reward-added-per-token (/ (* total-rewards-to-distribute u1000000) current-total-staked))
         (new-cumm-reward-per-stake (+ current-cumm-reward-per-stake reward-added-per-token))
       )
         new-cumm-reward-per-stake
