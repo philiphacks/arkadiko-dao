@@ -226,6 +226,7 @@ name: "staking - Stake and calculate rewards",
 async fn(chain: Chain, accounts: Map<string, Account>) {
     let deployer = accounts.get("deployer")!;
     let wallet_1 = accounts.get("wallet_1")!;
+    let wallet_2 = accounts.get("wallet_2")!;
 
     // Activate new pool
     let block = chain.mineBlock([
@@ -269,12 +270,17 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
     call = chain.callReadOnlyFn("stake-pool-diko", "get-total-staked", [], wallet_1.address);
     call.result.expectUint(100);
 
-    // Advanced 2 blocks.  2 * (1000 / 100) = 20
-    // Calculate function takes into account current rewards, so adds 1 block
+    // Not advanced blocks yet.  0 * (1000 / 100) = 0
     call = chain.callReadOnlyFn("stake-pool-diko", "get-cumm-reward-per-stake", [], wallet_1.address);
-    call.result.expectUint(20);
+    call.result.expectUint(0);
+
+    // Started at 0. Calculation takes into account 1 extra block. 1 * (1000 / 100) = 10
     call = chain.callReadOnlyFn("stake-pool-diko", "calculate-cumm-reward-per-stake", [], wallet_1.address);
-    call.result.expectUint(30);
+    call.result.expectUint(10);
+
+    // Wallet 1 starts at 20
+    call = chain.callReadOnlyFn("stake-pool-diko", "get-stake-cumm-reward-per-stake-of", [types.principal(wallet_1.address)], wallet_1.address);
+    call.result.expectUint(0);
 
     // Advanced 0 blocks for user. 
     // Pending rewards takes into account 1 block extra, so 1 * 1000
@@ -289,18 +295,60 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
 
     // Total stake did not change, so cumm reward per stake should not change either
     call = chain.callReadOnlyFn("stake-pool-diko", "get-cumm-reward-per-stake", [], wallet_1.address);
-    call.result.expectUint(20);
+    call.result.expectUint(0);
 
-    // Advanced 5 blocks  5 * (1000 / 100) = 50
+    // Advanced 3 blocks  3 * (1000 / 100) = 30
     // Calculate function takes into account current rewards, so adds 1 block
     call = chain.callReadOnlyFn("stake-pool-diko", "calculate-cumm-reward-per-stake", [], wallet_1.address);
-    call.result.expectUint(60);
+    call.result.expectUint(40);
 
-    // Advanced 3 blocks for user plus one in calculation, so 4000 
+    // Advanced 3 blocks for user plus one in calculation
+    // (40 - 0) * 100 = 4000
     call = chain.callReadOnlyFn("stake-pool-diko", "get-pending-rewards", [types.principal(wallet_1.address)], wallet_1.address);
     call.result.expectOk().expectUint(4000);   
     
-    // TODO: let wallet_2 stake and wallet_1 unstake 500 -> check rewards after 5 blocks
+
+    // Stake - Wallet 2
+    block = chain.mineBlock([
+    Tx.contractCall("stake-registry", "stake", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token'),
+        types.uint(200)
+    ], wallet_2.address)
+    ]);
+    block.receipts[0].result.expectOk().expectUint(200);
+
+    // Total staked 100 + 200 = 300
+    call = chain.callReadOnlyFn("stake-pool-diko", "get-total-staked", [], wallet_1.address);
+    call.result.expectUint(300);
+
+    // 20 was start for wallet 1
+    call = chain.callReadOnlyFn("stake-pool-diko", "get-stake-cumm-reward-per-stake-of", [types.principal(wallet_1.address)], wallet_1.address);
+    call.result.expectUint(0);
+
+    // Was 40 after 3 blocks. Saved when wallet_2 staked.
+    call = chain.callReadOnlyFn("stake-pool-diko", "get-cumm-reward-per-stake", [], wallet_1.address);
+    call.result.expectUint(40);
+
+    // Start for wallet 2 = 40
+    call = chain.callReadOnlyFn("stake-pool-diko", "get-stake-cumm-reward-per-stake-of", [types.principal(wallet_2.address)], wallet_2.address);
+    call.result.expectUint(40);
+ 
+    // Start was 40. Adding 3 = 1000 rewards / 300 total staked
+    call = chain.callReadOnlyFn("stake-pool-diko", "calculate-cumm-reward-per-stake", [], wallet_1.address);
+    call.result.expectUint(43);
+
+    // User just staked, so only advanced 1 block. Start cumm reward is 33, now it's 36.
+    // (1 * (43-40)) * 200 tokens = 600 rewards
+    // TODO: Actual rewards should be 666, but there is a rounding error due to small numbers
+    call = chain.callReadOnlyFn("stake-pool-diko", "get-pending-rewards", [types.principal(wallet_2.address)], wallet_2.address);
+    call.result.expectOk().expectUint(600);  
+
+    // Advanced 3 blocks for user plus one in calculation, so 4000 
+    // (43-0) * 100 = 4300
+    call = chain.callReadOnlyFn("stake-pool-diko", "get-pending-rewards", [types.principal(wallet_1.address)], wallet_1.address);
+    call.result.expectOk().expectUint(4300);   
+    
 }
 });
 

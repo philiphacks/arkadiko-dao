@@ -121,6 +121,9 @@
     (asserts! (is-eq contract-caller STAKE-REGISTRY) ERR-NOT-AUTHORIZED)
     (asserts! (is-eq POOL-TOKEN (contract-of token)) ERR-WRONG-TOKEN)
 
+    ;; Save currrent cumm reward per stake
+    (increase-cumm-reward-per-stake)
+
     (let (
       ;; Calculate new stake amount
       (stake-amount (get-stake-amount-of staker))
@@ -132,7 +135,7 @@
       ;; Update total stake
       (var-set total-staked (+ (var-get total-staked) amount))
 
-      ;; Increase cumm reward for new total staked
+      ;; Update cumm reward per stake now that total is updated
       (increase-cumm-reward-per-stake)
 
       ;; Mint stDIKO
@@ -155,6 +158,10 @@
   (begin
     (asserts! (is-eq contract-caller STAKE-REGISTRY) ERR-NOT-AUTHORIZED)
     (asserts! (is-eq POOL-TOKEN (contract-of token)) ERR-WRONG-TOKEN)
+
+    ;; Save currrent cumm reward per stake
+    (increase-cumm-reward-per-stake)
+
     (let (
       ;; Calculate new stake amount
       (stake-amount (get-stake-amount-of staker))
@@ -166,7 +173,7 @@
       ;; Update total stake
       (var-set total-staked (- (var-get total-staked) amount))
 
-      ;; Increase cumm reward for new total staked
+      ;; Update cumm reward per stake now that total is updated
       (increase-cumm-reward-per-stake)
 
       ;; Burn stDIKO 
