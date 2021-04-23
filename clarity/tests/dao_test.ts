@@ -77,8 +77,8 @@ Clarinet.test({
     ]);
     block.receipts[0].result.expectOk().expectUint(3200) // status OK
 
-    call = chain.callReadOnlyFn("dao", "get-collateral-type-by-token", [types.ascii('STX-C')], wallet_1.address);
-    let collateralType = call.result.expectTuple();
+    call = chain.callReadOnlyFn("collateral-types", "get-collateral-type-by-name", [types.ascii('STX-C')], wallet_1.address);
+    let collateralType = call.result.expectOk().expectTuple();
     collateralType['liquidation-ratio'].expectUint(100);
     collateralType['stability-fee'].expectUint(29664);
     collateralType['liquidation-penalty'].expectUint(1);
