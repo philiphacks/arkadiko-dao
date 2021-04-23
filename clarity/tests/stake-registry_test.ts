@@ -348,7 +348,25 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
     // (43-0) * 100 = 4300
     call = chain.callReadOnlyFn("stake-pool-diko", "get-pending-rewards", [types.principal(wallet_1.address)], wallet_1.address);
     call.result.expectOk().expectUint(4300);   
-    
+
+
+    // Unstake funds
+    block = chain.mineBlock([
+    Tx.contractCall("stake-registry", "unstake", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token'),
+        types.uint(100)
+    ], wallet_1.address)
+    ]);
+    block.receipts[0].result.expectOk().expectUint(100);
+
+    // Was 43 which is now saved
+    call = chain.callReadOnlyFn("stake-pool-diko", "get-cumm-reward-per-stake", [], wallet_1.address);
+    call.result.expectUint(43);
+
+    // Start was 43. Adding 5 = 1000 rewards / 200 total staked
+    call = chain.callReadOnlyFn("stake-pool-diko", "calculate-cumm-reward-per-stake", [], wallet_1.address);
+    call.result.expectUint(48);
 }
 });
 
