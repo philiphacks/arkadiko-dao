@@ -38,7 +38,6 @@ describe("stacks reserve test suite", () => {
       await deployContract('sip10-reserve');
       await deployContract('freddie');
 
-      await deployContract('stacker-registry');
       await deployContract('auction-engine');
       await deployContract('liquidator');
     });

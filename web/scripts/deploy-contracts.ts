@@ -47,9 +47,6 @@ const contracts: Contract[] = [
     name: 'freddie'
   },
   {
-    name: 'stacker-registry'
-  },
-  {
     name: 'auction-engine'
   },
   {

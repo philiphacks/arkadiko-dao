@@ -46,10 +46,6 @@ path = "contracts/oracle.clar"
 depends_on = []
 path = "contracts/oracle-trait.clar"
 
-[contracts.stacker-registry]
-depends_on = []
-path = "contracts/stacker-registry.clar"
-
 [contracts.stacker]
 depends_on = ["stacker-trait"]
 path = "contracts/stacker.clar"
