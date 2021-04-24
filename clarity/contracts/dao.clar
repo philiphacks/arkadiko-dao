@@ -5,6 +5,12 @@
 ;; Keep contracts used in protocol. 
 ;; Emergency switch to shut down protocol.
 
+
+;; Errors
+(define-constant ERR-NOT-AUTHORIZED (err u0401))
+
+
+;; Constants
 (define-constant DAO-OWNER tx-sender)
 
 ;; Contract addresses
@@ -37,14 +43,15 @@
   (get qualified-name (map-get? contracts { name: name }))
 )
 
-;; Private methods
-;; TODO: governance should be able to add and remove contracts
-(define-private (set-contract-address (name (string-ascii 256)) (address principal) (qualified-name principal))
+;; Governance contract can setup DAO contracts
+(define-public (set-contract-address (name (string-ascii 256)) (address principal) (qualified-name principal))
   (begin
+    (asserts! (is-eq (unwrap-panic (get-qualified-name-by-name "governance")) tx-sender) ERR-NOT-AUTHORIZED)
     (map-set contracts { name: name } { address: address, qualified-name: qualified-name })
     (ok true)
   )
 )
+
 
 ;; TODO: make sip10 trait dynamic
 ;; Philip, why is this needed??
@@ -81,6 +88,13 @@
     {
       address: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7,
       qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.collateral-types
+    }
+  )
+    (map-set contracts
+    { name: "governance" }
+    {
+      address: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7,
+      qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.governance
     }
   )
 )

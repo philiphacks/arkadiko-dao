@@ -26,7 +26,8 @@
     start-block-height: uint,
     end-block-height: uint,
     yes-votes: uint,
-    no-votes: uint
+    no-votes: uint,
+    contract-changes: (list 10 (tuple (name (string-ascii 256)) (address principal) (qualified-name principal)))
   }
 )
 
@@ -64,7 +65,8 @@
       start-block-height: u0,
       end-block-height: u0,
       yes-votes: u0,
-      no-votes: u0
+      no-votes: u0,
+      contract-changes: (list { name: "", address: DAO-OWNER, qualified-name: DAO-OWNER} )
     }
     (map-get? proposals { id: proposal-id })
   )
@@ -96,7 +98,8 @@
         start-block-height: start-block-height,
         end-block-height: (+ start-block-height u1440),
         yes-votes: u0,
-        no-votes: u0
+        no-votes: u0,
+        contract-changes: (list { name: "", address: DAO-OWNER, qualified-name: DAO-OWNER} )
       }
     )
     (var-set proposal-count proposal-id)
@@ -165,75 +168,57 @@
   )
 )
 
+;; Make needed contract changes on DAO
 (define-private (execute-proposal (proposal-id uint))
-  (if (>= proposal-id u0)
-    (ok true)
-    (err ERR-PROPOSAL-NOT-RECOGNIZED)
+
+  (let (
+    (proposal (get-proposal-by-id proposal-id))
+    (contract-changes (get contract-changes proposal))
+
+    (change0 (default-to { name: "", address: DAO-OWNER, qualified-name: DAO-OWNER} (element-at contract-changes u0)))
+    (change1 (default-to { name: "", address: DAO-OWNER, qualified-name: DAO-OWNER} (element-at contract-changes u1)))
+    (change2 (default-to { name: "", address: DAO-OWNER, qualified-name: DAO-OWNER} (element-at contract-changes u2)))
+    (change3 (default-to { name: "", address: DAO-OWNER, qualified-name: DAO-OWNER} (element-at contract-changes u3)))
+    (change4 (default-to { name: "", address: DAO-OWNER, qualified-name: DAO-OWNER} (element-at contract-changes u4)))
+    (change5 (default-to { name: "", address: DAO-OWNER, qualified-name: DAO-OWNER} (element-at contract-changes u5)))
+    (change6 (default-to { name: "", address: DAO-OWNER, qualified-name: DAO-OWNER} (element-at contract-changes u6)))
+    (change7 (default-to { name: "", address: DAO-OWNER, qualified-name: DAO-OWNER} (element-at contract-changes u7)))
+    (change8 (default-to { name: "", address: DAO-OWNER, qualified-name: DAO-OWNER} (element-at contract-changes u8)))
+    (change9 (default-to { name: "", address: DAO-OWNER, qualified-name: DAO-OWNER} (element-at contract-changes u9)))
+  )
+    (if (>= proposal-id u0)
+      (begin
+        (try! (execute-proposal-change-contract change0))
+        (try! (execute-proposal-change-contract change1))
+        (try! (execute-proposal-change-contract change2))
+        (try! (execute-proposal-change-contract change3))
+        (try! (execute-proposal-change-contract change4))
+        (try! (execute-proposal-change-contract change5))
+        (try! (execute-proposal-change-contract change6))
+        (try! (execute-proposal-change-contract change7))
+        (try! (execute-proposal-change-contract change8))
+        (try! (execute-proposal-change-contract change9))
+
+        (ok true)
+      )
+      (err ERR-PROPOSAL-NOT-RECOGNIZED)
+    )
   )
 )
 
-;; (define-private (execute-proposal (proposal-id uint))
-;;   (let (
-;;     (proposal (get-proposal-by-id proposal-id))
-;;     (type (get type proposal))
-;;     (changes (get changes proposal))
-;;   )
-;;     (if (is-eq type "add_collateral_type")
-;;       (contract-call? .collateral-types add-collateral-type
-;;         (get token proposal)
-;;         (get token-name proposal)
-;;         (get url proposal)
-;;         (get collateral-type proposal)
-;;         (unwrap-panic (get new-value (element-at changes u0))) ;; liquidation ratio
-;;         (unwrap-panic (get new-value (element-at changes u1))) ;; liquidation penalty
-;;         (unwrap-panic (get new-value (element-at changes u2))) ;; stability fee
-;;         (unwrap-panic (get new-value (element-at changes u3))) ;; stability fee apy
-;;         (unwrap-panic (get new-value (element-at changes u4))) ;; maximum debt
-;;         (unwrap-panic (get new-value (element-at changes u5))) ;; collateralization ratio
-;;       )
-;;       (if (is-eq type "change_risk_parameter")
-;;         (contract-call? .collateral-types change-risk-parameters (get collateral-type proposal) changes)
-;;         (if (is-eq type "stacking_distribution")
-;;           (begin
-;;             (var-set stacker-yield (unwrap-panic (get new-value (element-at changes u0))))
-;;             (var-set governance-token-yield (unwrap-panic (get new-value (element-at changes u1))))
-;;             (var-set governance-reserve-yield (unwrap-panic (get new-value (element-at changes u2))))
-;;             (ok true)
-;;           )
-;;           (if (is-eq type "change_maximum_debt_surplus")
-;;             (begin
-;;               (var-set maximum-debt-surplus (unwrap-panic (get new-value (element-at changes u0))))
-;;               (ok true)
-;;             )
-;;             (if (is-eq type "emergency_shutdown")
-;;               (begin
-;;                 (var-set emergency-shutdown-activated (not (var-get emergency-shutdown-activated)))
-;;                 (ok true)
-;;               )
-;;               (if (is-eq type "change_staking_reward")
-;;                 (begin
-;;                   ;; TODO: set staking reward
-;;                   (ok true)
-;;                 )
-;;                 (if (is-eq type "change_smart_contract")
-;;                   (begin
-;;                     (map-set contracts
-;;                       { name: (get token-name proposal) }
-;;                       {
-;;                         address: (unwrap-panic (element-at (get contract-changes proposal) u0)),
-;;                         qualified-name: (unwrap-panic (element-at (get contract-changes proposal) u1))
-;;                       }
-;;                     )
-;;                     (ok true)
-;;                   )
-;;                   (err ERR-PROPOSAL-NOT-RECOGNIZED)
-;;                 )
-;;               )
-;;             )
-;;           )
-;;         )
-;;       )
-;;     )
-;;   )
-;; )
-
+;; Helper to execute proposal and change contracts
+(define-private (execute-proposal-change-contract (change (tuple (name (string-ascii 256)) (address principal) (qualified-name principal))))
+  (let (
+    (name (get name change))
+    (address (get address change))
+    (qualified-name (get qualified-name change))
+  )
+    (if (not (is-eq name ""))
+      (begin
+        (try! (contract-call? .dao set-contract-address name address qualified-name))
+        (ok true)
+      )
+      (ok false)
+    )
+  )
+)
