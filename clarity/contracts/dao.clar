@@ -1,4 +1,5 @@
 (use-trait mock-ft-trait .mock-ft-trait.mock-ft-trait)
+(use-trait dao-token-trait .dao-token-trait.dao-token-trait)
 
 ;; Arkadiko DAO 
 ;; 
@@ -8,7 +9,6 @@
 
 ;; Errors
 (define-constant ERR-NOT-AUTHORIZED (err u100401))
-
 
 ;; Constants
 (define-constant DAO-OWNER tx-sender)
@@ -52,12 +52,40 @@
   )
 )
 
+;; ---------------------------------------------------------
+;; Protocol tokens
+;; ---------------------------------------------------------
+
+;; Mint protocol tokens
+;; TODO: check if active contract is trying to mint/burn
+(define-public (mint-token (token <dao-token-trait>) (amount uint) (recipient principal))
+  (begin
+    ;; (asserts! (is-eq contract-caller .stake-pool-diko) (err ERR-NOT-AUTHORIZED))
+    (try! (contract-call? token mint-for-dao amount recipient))
+    (ok amount)
+  )
+)
+
+;; Burn protocol tokens
+;; TODO: check if active contract is trying to mint/burn
+(define-public (burn-token (token <dao-token-trait>) (amount uint) (recipient principal))
+  (begin
+    ;; (asserts! (is-eq contract-caller .stake-pool-diko) (err ERR-NOT-AUTHORIZED))
+    (try! (contract-call? token burn-for-dao amount recipient))
+    (ok amount)
+  )
+)
 
 ;; TODO: make sip10 trait dynamic
 ;; Philip, why is this needed??
 (define-public (request-diko-tokens (ft <mock-ft-trait>) (collateral-amount uint))
   (contract-call? ft transfer collateral-amount DAO-OWNER (as-contract .sip10-reserve))
 )
+
+
+;; ---------------------------------------------------------
+;; Contract initialisation
+;; ---------------------------------------------------------
 
 ;; Initialize the contract
 (begin
