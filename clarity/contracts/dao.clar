@@ -77,7 +77,6 @@
 ;; ---------------------------------------------------------
 
 ;; Mint protocol tokens
-;; TODO: check if active contract is trying to mint/burn
 (define-public (mint-token (token <dao-token-trait>) (amount uint) (recipient principal))
   (begin
     (asserts! (is-eq (get-contract-active-by-qualified-name contract-caller) true) ERR-NOT-AUTHORIZED)
@@ -86,7 +85,6 @@
 )
 
 ;; Burn protocol tokens
-;; TODO: check if active contract is trying to mint/burn
 (define-public (burn-token (token <dao-token-trait>) (amount uint) (recipient principal))
   (begin
     (asserts! (is-eq (get-contract-active-by-qualified-name contract-caller) true) ERR-NOT-AUTHORIZED)
