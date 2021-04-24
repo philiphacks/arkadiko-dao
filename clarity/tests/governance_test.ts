@@ -233,11 +233,91 @@ Clarinet.test({
     ]);
     block.receipts[0].result.expectOk().expectUint(3200);
 
-    // Check if DAO updated
-    let call = chain.callReadOnlyFn("dao", "get-contract-address-by-name", [types.ascii("oracle")], wallet_2.address);
-    call.result.expectPrincipal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7");
-    call = chain.callReadOnlyFn("dao", "get-qualified-name-by-name", [types.ascii("oracle")], wallet_2.address);
-    call.result.expectPrincipal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.new-oracle");
+    // Check if proposal updated
+    let call = chain.callReadOnlyFn("governance", "get-proposal-by-id", [types.uint(1)], wallet_1.address);
+    call.result.expectTuple()["is-open"].expectBool(false);
 
+    // Check if DAO updated
+    call = chain.callReadOnlyFn("dao", "get-contract-address-by-name", [types.ascii("oracle")], wallet_2.address);
+    call.result.expectSome().expectPrincipal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7");
+    call = chain.callReadOnlyFn("dao", "get-qualified-name-by-name", [types.ascii("oracle")], wallet_2.address);
+    call.result.expectSome().expectPrincipal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.new-oracle");
+  
+  }
+});
+
+Clarinet.test({
+  name: "governance: end proposal + do not execute",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    let deployer = accounts.get("deployer")!;
+    let wallet_1 = accounts.get("wallet_1")!;
+    let wallet_2 = accounts.get("wallet_2")!;
+
+    // Empty contract change used to fill list
+    let emptyContractChangeTuple = types.tuple({
+      name: types.ascii(""),
+      'address': types.principal(deployer.address),
+      'qualified-name': types.principal(deployer.address)
+    });
+    
+    // Create proposal to start at block 1
+    let block = chain.mineBlock([
+    Tx.contractCall("governance", "propose", [
+        types.uint(1),
+        types.utf8("test details"),
+        
+        types.list([
+          types.tuple({
+            name: types.ascii("oracle"),
+            'address': types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7"),
+            'qualified-name': types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.new-oracle")
+          }),
+          emptyContractChangeTuple,
+          emptyContractChangeTuple,
+          emptyContractChangeTuple,
+          emptyContractChangeTuple,
+          emptyContractChangeTuple,
+          emptyContractChangeTuple,
+          emptyContractChangeTuple,
+          emptyContractChangeTuple,
+          emptyContractChangeTuple
+        ])
+
+    ], wallet_1.address)
+    ]);
+    block.receipts[0].result.expectOk().expectBool(true);
+
+    // Vote for wallet_1
+    block = chain.mineBlock([
+    Tx.contractCall("governance", "vote-against", [
+        types.uint(1),
+        types.uint(10000000)
+    ], wallet_1.address)
+    ]);
+    block.receipts[0].result.expectOk().expectUint(3200);
+
+    // Advance
+    for (let index = 0; index < 1500; index++) {
+      chain.mineBlock([]);
+    }
+
+    // End proposal
+    block = chain.mineBlock([
+    Tx.contractCall("governance", "end-proposal", [
+        types.uint(1)
+    ], wallet_2.address)
+    ]);
+    block.receipts[0].result.expectOk().expectUint(3200);
+
+    // Check if proposal updated
+    let call = chain.callReadOnlyFn("governance", "get-proposal-by-id", [types.uint(1)], wallet_1.address);
+    call.result.expectTuple()["is-open"].expectBool(false);
+
+    // DAO should not be updated
+    call = chain.callReadOnlyFn("dao", "get-contract-address-by-name", [types.ascii("oracle")], wallet_2.address);
+    call.result.expectSome().expectPrincipal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7");
+    call = chain.callReadOnlyFn("dao", "get-qualified-name-by-name", [types.ascii("oracle")], wallet_2.address);
+    call.result.expectSome().expectPrincipal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.oracle");
+  
   }
 });
