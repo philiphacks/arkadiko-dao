@@ -456,7 +456,7 @@
       { id: auction-id }
       (merge auction { is-open: false })
     )
-    (try! (contract-call? .xusd-token burn (- (get total-debt-raised auction) (get total-debt-burned auction)) (as-contract tx-sender)))
+    (try! (contract-call? .dao burn-token .xusd-token (- (get total-debt-raised auction) (get total-debt-burned auction)) (as-contract tx-sender)))
     (if (>= (get total-debt-raised auction) (get debt-to-raise auction))
       (if (is-eq (get auction-type auction) "collateral")
         (contract-call?

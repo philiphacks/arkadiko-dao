@@ -116,6 +116,13 @@
       qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie
     }
   )
+  (map-set contracts-data
+    { qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie }
+    {
+      active: true
+    }
+  )
+
   (map-set contracts
     { name: "auction-engine" }
     {
@@ -123,6 +130,13 @@
       qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.auction-engine
     }
   )
+  (map-set contracts-data
+    { qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.auction-engine }
+    {
+      active: true
+    }
+  )
+
   (map-set contracts
     { name: "oracle" }
     {
@@ -151,6 +165,7 @@
       qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-registry
     }
   )
+
   (map-set contracts
     { name: "stake-pool-diko" }
     {
@@ -160,6 +175,34 @@
   )
   (map-set contracts-data
     { qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko }
+    {
+      active: true
+    }
+  )
+
+  (map-set contracts
+    { name: "stx-reserve" }
+    {
+      address: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7,
+      qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve
+    }
+  )
+  (map-set contracts-data
+    { qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve }
+    {
+      active: true
+    }
+  )
+
+  (map-set contracts
+    { name: "sip10-reserve" }
+    {
+      address: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7,
+      qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.sip10-reserve
+    }
+  )
+  (map-set contracts-data
+    { qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.sip10-reserve }
     {
       active: true
     }
