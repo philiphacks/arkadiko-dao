@@ -78,3 +78,4 @@ All errors thrown by the smart contracts are unsigned integers. The format used 
 15 - stdiko-token
 16 - diko-staker
 17 - collateral-types
+19 - stacker
