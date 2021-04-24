@@ -61,6 +61,7 @@
 (define-data-var last-auction-id uint u0)
 (define-data-var auction-ids (list 1500 uint) (list u0))
 (define-data-var lot-size uint u100000000) ;; 100 xUSD
+(define-data-var maximum-debt-surplus uint u10000000000000) ;; 10 million default
 
 (define-read-only (get-auction-by-id (id uint))
   (unwrap!
@@ -168,7 +169,7 @@
 (define-public (start-surplus-auction (vault-manager <vault-manager-trait>) (xusd-amount uint))
   (let (
     (auction-id (+ (var-get last-auction-id) u1))
-    (maximum-surplus (unwrap-panic (contract-call? .dao get-maximum-debt-surplus)))
+    (maximum-surplus (var-get maximum-debt-surplus))
     (current-balance (unwrap-panic (contract-call? vault-manager get-xusd-balance)))
   )
     (asserts! (>= current-balance maximum-surplus) (err ERR-AUCTION-NOT-ALLOWED))

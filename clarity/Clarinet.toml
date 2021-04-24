@@ -26,6 +26,10 @@ path = "contracts/collateral-types.clar"
 depends_on = ["arkadiko-token", "collateral-types", "vault-trait", "mock-pox"]
 path = "contracts/dao.clar"
 
+[contracts.governance]
+depends_on = ["arkadiko-token", "collateral-types", "vault-trait", "mock-pox"]
+path = "contracts/governance.clar"
+
 [contracts.freddie]
 depends_on = ["collateral-types", "stx-reserve", "vault-trait", "mock-ft-trait", "vault-manager-trait", "sip10-reserve"]
 path = "contracts/freddie.clar"
