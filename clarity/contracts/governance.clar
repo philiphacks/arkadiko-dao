@@ -7,8 +7,6 @@
 
 ;; Errors
 (define-constant ERR-NOT-ENOUGH-BALANCE u31)
-(define-constant ERR-TRANSFER-FAILED u32)
-(define-constant ERR-PROPOSAL-NOT-RECOGNIZED u33)
 (define-constant ERR-NOT-AUTHORIZED u3401)
 (define-constant STATUS-OK u3200)
 
@@ -47,6 +45,7 @@
 )
 
 ;; Get votes for a member on proposal
+;; Philip: why return tuple and not just number?
 (define-read-only (get-votes-by-member-by-id (proposal-id uint) (member principal))
   (default-to 
     { vote-count: u0 }
@@ -79,6 +78,7 @@
 (define-public (propose
     (start-block-height uint)
     (details (string-utf8 256))
+    (contract-changes (list 10 (tuple (name (string-ascii 256)) (address principal) (qualified-name principal))))
   )
   (let (
     (proposer-balance (unwrap-panic (contract-call? .arkadiko-token get-balance-of tx-sender)))
@@ -99,7 +99,7 @@
         end-block-height: (+ start-block-height u1440),
         yes-votes: u0,
         no-votes: u0,
-        contract-changes: (list { name: "", address: DAO-OWNER, qualified-name: DAO-OWNER} )
+        contract-changes: contract-changes
       }
     )
     (var-set proposal-count proposal-id)
@@ -186,23 +186,18 @@
     (change8 (default-to { name: "", address: DAO-OWNER, qualified-name: DAO-OWNER} (element-at contract-changes u8)))
     (change9 (default-to { name: "", address: DAO-OWNER, qualified-name: DAO-OWNER} (element-at contract-changes u9)))
   )
-    (if (>= proposal-id u0)
-      (begin
-        (try! (execute-proposal-change-contract change0))
-        (try! (execute-proposal-change-contract change1))
-        (try! (execute-proposal-change-contract change2))
-        (try! (execute-proposal-change-contract change3))
-        (try! (execute-proposal-change-contract change4))
-        (try! (execute-proposal-change-contract change5))
-        (try! (execute-proposal-change-contract change6))
-        (try! (execute-proposal-change-contract change7))
-        (try! (execute-proposal-change-contract change8))
-        (try! (execute-proposal-change-contract change9))
+    (try! (execute-proposal-change-contract change0))
+    (try! (execute-proposal-change-contract change1))
+    (try! (execute-proposal-change-contract change2))
+    (try! (execute-proposal-change-contract change3))
+    (try! (execute-proposal-change-contract change4))
+    (try! (execute-proposal-change-contract change5))
+    (try! (execute-proposal-change-contract change6))
+    (try! (execute-proposal-change-contract change7))
+    (try! (execute-proposal-change-contract change8))
+    (try! (execute-proposal-change-contract change9))
 
-        (ok true)
-      )
-      (err ERR-PROPOSAL-NOT-RECOGNIZED)
-    )
+    (ok true)
   )
 )
 

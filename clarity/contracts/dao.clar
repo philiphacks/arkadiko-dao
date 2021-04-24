@@ -7,7 +7,7 @@
 
 
 ;; Errors
-(define-constant ERR-NOT-AUTHORIZED (err u0401))
+(define-constant ERR-NOT-AUTHORIZED (err u100401))
 
 
 ;; Constants
@@ -33,12 +33,12 @@
   (ok (var-get emergency-shutdown-activated))
 )
 
-;; 
+;; Get contract address
 (define-read-only (get-contract-address-by-name (name (string-ascii 256)))
   (get address (map-get? contracts { name: name }))
 )
 
-;; 
+;; Get contract qualified name
 (define-read-only (get-qualified-name-by-name (name (string-ascii 256)))
   (get qualified-name (map-get? contracts { name: name }))
 )
@@ -46,7 +46,7 @@
 ;; Governance contract can setup DAO contracts
 (define-public (set-contract-address (name (string-ascii 256)) (address principal) (qualified-name principal))
   (begin
-    (asserts! (is-eq (unwrap-panic (get-qualified-name-by-name "governance")) tx-sender) ERR-NOT-AUTHORIZED)
+    (asserts! (is-eq (unwrap-panic (get-qualified-name-by-name "governance")) contract-caller) ERR-NOT-AUTHORIZED)
     (map-set contracts { name: name } { address: address, qualified-name: qualified-name })
     (ok true)
   )
@@ -61,7 +61,7 @@
 
 ;; Initialize the contract
 (begin
-  ;; add contracts
+  ;; Add initial contracts
   (map-set contracts
     { name: "freddie" }
     {
