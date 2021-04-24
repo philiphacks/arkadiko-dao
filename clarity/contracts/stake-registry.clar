@@ -47,68 +47,68 @@
 
 ;; Register and activate new pool
 (define-public (activate-pool (name (string-ascii 256)) (pool-trait <stake-pool-trait>))
-    (begin
-        (asserts! (is-eq DAO-OWNER tx-sender) ERR-NOT-AUTHORIZED)
-        (let ( 
-            (pool (contract-of pool-trait)) 
-            (pool-id (var-get pool-count)) 
-            (pool-does-not-exist (is-none (map-get? pools-data-map { pool: pool} )))
-            )
-            (begin
-                (asserts! (is-eq pool-does-not-exist true) ERR-POOL-EXIST)
-                (map-set pools-map { pool-id: pool-id } { pool: pool})
-                (map-set pools-data-map { pool: pool } { name: name, active: true, activated-block: block-height, deactivated-block: u0 })
-                (var-set pool-count (+ pool-id u1))
-                (ok true)
-            )
-        )
+  (begin
+    (asserts! (is-eq DAO-OWNER tx-sender) ERR-NOT-AUTHORIZED)
+    (let ( 
+      (pool (contract-of pool-trait)) 
+      (pool-id (var-get pool-count)) 
+      (pool-does-not-exist (is-none (map-get? pools-data-map { pool: pool} )))
     )
+      (begin
+        (asserts! (is-eq pool-does-not-exist true) ERR-POOL-EXIST)
+        (map-set pools-map { pool-id: pool-id } { pool: pool})
+        (map-set pools-data-map { pool: pool } { name: name, active: true, activated-block: block-height, deactivated-block: u0 })
+        (var-set pool-count (+ pool-id u1))
+        (ok true)
+      )
+    )
+  )
 )
 
 ;; Inactivate pool
 (define-public (deactivate-pool (pool-trait <stake-pool-trait>))
-    (begin
-        (asserts! (is-eq DAO-OWNER tx-sender) ERR-NOT-AUTHORIZED)
-        (let ( 
-            (pool (contract-of pool-trait)) 
-            (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) ERR-INVALID-POOL))
-            (name (get name pool-info))
-            (activated-block (get activated-block pool-info))
-            )
-            (begin
-                (map-set pools-data-map { pool: pool } { name: name, active: false, activated-block: activated-block, deactivated-block: block-height })
-                (ok true)
-            )
-        )
+  (begin
+    (asserts! (is-eq DAO-OWNER tx-sender) ERR-NOT-AUTHORIZED)
+    (let ( 
+      (pool (contract-of pool-trait)) 
+      (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) ERR-INVALID-POOL))
+      (name (get name pool-info))
+      (activated-block (get activated-block pool-info))
+      )
+      (begin
+        (map-set pools-data-map { pool: pool } { name: name, active: false, activated-block: activated-block, deactivated-block: block-height })
+        (ok true)
+      )
     )
+  )
 )
 
 
 ;; Stake tokens
 (define-public (stake (pool-trait <stake-pool-trait>) (token-trait <mock-ft-trait>) (amount uint))
-    (begin
-        (let (
-            (pool (contract-of pool-trait)) 
-            (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) ERR-POOL-EXIST))
-        )
-            (asserts! (is-eq (get active pool-info) true) ERR-POOL-INACTIVE)
-            (try! (contract-call? pool-trait stake token-trait tx-sender amount))
-            (ok amount)
-        )
+  (begin
+    (let (
+      (pool (contract-of pool-trait)) 
+      (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) ERR-POOL-EXIST))
     )
+      (asserts! (is-eq (get active pool-info) true) ERR-POOL-INACTIVE)
+      (try! (contract-call? pool-trait stake token-trait tx-sender amount))
+      (ok amount)
+    )
+  )
 )
 
 ;; Unstake tokens
 (define-public (unstake (pool-trait <stake-pool-trait>) (token-trait <mock-ft-trait>) (amount uint))
-    (begin
-        (let (
-            (pool (contract-of pool-trait)) 
-            (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) ERR-POOL-EXIST))
-        )
-            (try! (contract-call? pool-trait unstake token-trait tx-sender amount))
-            (ok amount)
-        )
+  (begin
+    (let (
+      (pool (contract-of pool-trait)) 
+      (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) ERR-POOL-EXIST))
     )
+      (try! (contract-call? pool-trait unstake token-trait tx-sender amount))
+      (ok amount)
+    )
+  )
 )
 
 ;; Get pending pool rewards
@@ -116,20 +116,20 @@
 ;; see https://github.com/blockstack/stacks-blockchain/issues/1981
 ;; Workaround: get-pending-rewards on pool directly
 ;; (define-read-only (get-pending-rewards (pool-trait <stake-pool-trait>))
-;;     (begin
-;;         (let (
-;;             (pool (contract-of pool-trait)) 
-;;             (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) ERR-POOL-EXIST))
-;;         )
-;;             (contract-call? pool-trait get-pending-rewards tx-sender)
-;;             (ok u1)
-;;         )
+;;   (begin
+;;     (let (
+;;       (pool (contract-of pool-trait)) 
+;;       (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) ERR-POOL-EXIST))
 ;;     )
+;;       (contract-call? pool-trait get-pending-rewards tx-sender)
+;;       (ok u1)
+;;     )
+;;   )
 ;; )
 
 ;; Claim pool rewards
 (define-public (claim-pending-rewards (pool-trait <stake-pool-trait>))
-    (begin
-        (contract-call? pool-trait claim-pending-rewards tx-sender)
-    )
+  (begin
+    (contract-call? pool-trait claim-pending-rewards tx-sender)
+  )
 )
