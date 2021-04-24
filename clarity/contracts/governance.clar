@@ -7,6 +7,7 @@
 
 ;; Errors
 (define-constant ERR-NOT-ENOUGH-BALANCE u31)
+(define-constant ERR-NO-CONTRACT-CHANGES u32)
 (define-constant ERR-NOT-AUTHORIZED u3401)
 (define-constant STATUS-OK u3200)
 
@@ -170,34 +171,17 @@
 
 ;; Make needed contract changes on DAO
 (define-private (execute-proposal (proposal-id uint))
-
   (let (
     (proposal (get-proposal-by-id proposal-id))
     (contract-changes (get contract-changes proposal))
-
-    (change0 (default-to { name: "", address: DAO-OWNER, qualified-name: DAO-OWNER} (element-at contract-changes u0)))
-    (change1 (default-to { name: "", address: DAO-OWNER, qualified-name: DAO-OWNER} (element-at contract-changes u1)))
-    (change2 (default-to { name: "", address: DAO-OWNER, qualified-name: DAO-OWNER} (element-at contract-changes u2)))
-    (change3 (default-to { name: "", address: DAO-OWNER, qualified-name: DAO-OWNER} (element-at contract-changes u3)))
-    (change4 (default-to { name: "", address: DAO-OWNER, qualified-name: DAO-OWNER} (element-at contract-changes u4)))
-    (change5 (default-to { name: "", address: DAO-OWNER, qualified-name: DAO-OWNER} (element-at contract-changes u5)))
-    (change6 (default-to { name: "", address: DAO-OWNER, qualified-name: DAO-OWNER} (element-at contract-changes u6)))
-    (change7 (default-to { name: "", address: DAO-OWNER, qualified-name: DAO-OWNER} (element-at contract-changes u7)))
-    (change8 (default-to { name: "", address: DAO-OWNER, qualified-name: DAO-OWNER} (element-at contract-changes u8)))
-    (change9 (default-to { name: "", address: DAO-OWNER, qualified-name: DAO-OWNER} (element-at contract-changes u9)))
   )
-    (try! (execute-proposal-change-contract change0))
-    (try! (execute-proposal-change-contract change1))
-    (try! (execute-proposal-change-contract change2))
-    (try! (execute-proposal-change-contract change3))
-    (try! (execute-proposal-change-contract change4))
-    (try! (execute-proposal-change-contract change5))
-    (try! (execute-proposal-change-contract change6))
-    (try! (execute-proposal-change-contract change7))
-    (try! (execute-proposal-change-contract change8))
-    (try! (execute-proposal-change-contract change9))
-
-    (ok true)
+    (if (> (len contract-changes) u0)
+      (begin
+        (map execute-proposal-change-contract contract-changes)
+        (ok true)
+      )
+      (err ERR-NO-CONTRACT-CHANGES)
+    )
   )
 )
 
@@ -213,7 +197,7 @@
         (try! (contract-call? .dao set-contract-address name address qualified-name))
         (ok true)
       )
-      (ok false)
+      (err u0)
     )
   )
 )

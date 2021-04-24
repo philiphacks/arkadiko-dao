@@ -196,15 +196,11 @@ Clarinet.test({
             'address': types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7"),
             'qualified-name': types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.new-oracle")
           }),
-          emptyContractChangeTuple,
-          emptyContractChangeTuple,
-          emptyContractChangeTuple,
-          emptyContractChangeTuple,
-          emptyContractChangeTuple,
-          emptyContractChangeTuple,
-          emptyContractChangeTuple,
-          emptyContractChangeTuple,
-          emptyContractChangeTuple
+          types.tuple({
+            name: types.ascii("freddie"),
+            'address': types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7"),
+            'qualified-name': types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.new-freddie")
+          })
         ])
 
     ], wallet_1.address)
@@ -242,7 +238,11 @@ Clarinet.test({
     call.result.expectSome().expectPrincipal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7");
     call = chain.callReadOnlyFn("dao", "get-qualified-name-by-name", [types.ascii("oracle")], wallet_2.address);
     call.result.expectSome().expectPrincipal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.new-oracle");
-  
+
+    call = chain.callReadOnlyFn("dao", "get-contract-address-by-name", [types.ascii("freddie")], wallet_2.address);
+    call.result.expectSome().expectPrincipal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7");
+    call = chain.callReadOnlyFn("dao", "get-qualified-name-by-name", [types.ascii("freddie")], wallet_2.address);
+    call.result.expectSome().expectPrincipal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.new-freddie");
   }
 });
 
@@ -318,6 +318,5 @@ Clarinet.test({
     call.result.expectSome().expectPrincipal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7");
     call = chain.callReadOnlyFn("dao", "get-qualified-name-by-name", [types.ascii("oracle")], wallet_2.address);
     call.result.expectSome().expectPrincipal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.oracle");
-  
   }
 });
