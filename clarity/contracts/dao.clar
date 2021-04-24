@@ -21,6 +21,12 @@
     qualified-name: principal ;; e.g. 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie
   }
 )
+(define-map contracts-data
+  { qualified-name: principal }
+  {
+    active: bool
+  }
+)
 
 ;; Variables
 (define-data-var emergency-shutdown-activated bool false)
@@ -43,12 +49,26 @@
   (get qualified-name (map-get? contracts { name: name }))
 )
 
+;; Check if contract is active in the protocol
+(define-read-only (get-contract-active-by-qualified-name (qualified-name principal))
+  (default-to 
+    false
+    (get active (map-get? contracts-data { qualified-name: qualified-name }))
+  )
+)
+
 ;; Governance contract can setup DAO contracts
 (define-public (set-contract-address (name (string-ascii 256)) (address principal) (qualified-name principal))
-  (begin
-    (asserts! (is-eq (unwrap-panic (get-qualified-name-by-name "governance")) contract-caller) ERR-NOT-AUTHORIZED)
-    (map-set contracts { name: name } { address: address, qualified-name: qualified-name })
-    (ok true)
+  (let (
+    (prev-qualified-name (get qualified-name (unwrap-panic (map-get? contracts { name: name }))))
+  )
+    (begin
+      (asserts! (is-eq (unwrap-panic (get-qualified-name-by-name "governance")) contract-caller) ERR-NOT-AUTHORIZED)
+      (map-set contracts { name: name } { address: address, qualified-name: qualified-name })
+      (map-set contracts-data { qualified-name: prev-qualified-name } { active: false })
+      (map-set contracts-data { qualified-name: qualified-name } { active: true })
+      (ok true)
+    )
   )
 )
 
@@ -60,9 +80,8 @@
 ;; TODO: check if active contract is trying to mint/burn
 (define-public (mint-token (token <dao-token-trait>) (amount uint) (recipient principal))
   (begin
-    ;; (asserts! (is-eq contract-caller .stake-pool-diko) (err ERR-NOT-AUTHORIZED))
-    (try! (contract-call? token mint-for-dao amount recipient))
-    (ok amount)
+    (asserts! (is-eq (get-contract-active-by-qualified-name contract-caller) true) ERR-NOT-AUTHORIZED)
+    (contract-call? token mint-for-dao amount recipient)
   )
 )
 
@@ -70,9 +89,9 @@
 ;; TODO: check if active contract is trying to mint/burn
 (define-public (burn-token (token <dao-token-trait>) (amount uint) (recipient principal))
   (begin
-    ;; (asserts! (is-eq contract-caller .stake-pool-diko) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq (get-contract-active-by-qualified-name contract-caller) true) ERR-NOT-AUTHORIZED)
     (try! (contract-call? token burn-for-dao amount recipient))
-    (ok amount)
+    (ok true)
   )
 )
 
@@ -118,11 +137,31 @@
       qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.collateral-types
     }
   )
-    (map-set contracts
+  (map-set contracts
     { name: "governance" }
     {
       address: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7,
       qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.governance
+    }
+  )
+  (map-set contracts
+    { name: "stake-registry" }
+    {
+      address: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7,
+      qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-registry
+    }
+  )
+  (map-set contracts
+    { name: "stake-pool-diko" }
+    {
+      address: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7,
+      qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko
+    }
+  )
+  (map-set contracts-data
+    { qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko }
+    {
+      active: true
     }
   )
 )
