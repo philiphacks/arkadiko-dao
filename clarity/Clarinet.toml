@@ -31,7 +31,7 @@ depends_on = ["arkadiko-token", "collateral-types", "vault-trait"]
 path = "contracts/dao.clar"
 
 [contracts.governance]
-depends_on = ["arkadiko-token", "collateral-types", "vault-trait"]
+depends_on = ["arkadiko-token", "mock-ft-trait"]
 path = "contracts/governance.clar"
 
 [contracts.freddie]
