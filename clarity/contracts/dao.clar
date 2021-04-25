@@ -179,6 +179,13 @@
   )
 
   (map-set contracts
+    { name: "stacker" }
+    {
+      address: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7,
+      qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stacker
+    }
+  )
+  (map-set contracts
     { name: "stx-reserve" }
     {
       address: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7,
