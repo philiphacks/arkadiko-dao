@@ -197,7 +197,7 @@
         (try! (contract-call? .dao set-contract-address name address qualified-name))
         (ok true)
       )
-      (err u0)
+      (ok false)
     )
   )
 )
