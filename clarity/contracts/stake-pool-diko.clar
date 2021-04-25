@@ -16,9 +16,8 @@
 (define-constant ERR-WRONG-TOKEN (err u18002))
 
 ;; Constants
-(define-constant CONTRACT-OWNER tx-sender)
-(define-constant STAKE-REGISTRY 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-registry)
-(define-constant POOL-TOKEN 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token)
+(define-constant CONTRACT-OWNER tx-sender) ;; TODO: should be DAO
+(define-constant POOL-TOKEN .arkadiko-token)
 (define-constant REWARDS-PER-BLOCK u1000000000) ;; TODO: set production value. Test value is 1000 DIKO per block with 6 decimals
 
 ;; Variables
@@ -55,7 +54,7 @@
 )
 
 (define-public (set-token-uri (value (string-utf8 256)))
-  (if (is-eq tx-sender CONTRACT-OWNER)
+  (if (is-eq tx-sender CONTRACT-OWNER) ;; TODO: should become DAO??
     (ok (var-set token-uri value))
     (err ERR-NOT-AUTHORIZED)
   )
@@ -118,7 +117,7 @@
 ;; Stake tokens
 (define-public (stake (token <mock-ft-trait>) (staker principal) (amount uint))
   (begin
-    (asserts! (is-eq contract-caller STAKE-REGISTRY) ERR-NOT-AUTHORIZED)
+    (asserts! (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "stake-registry"))) ERR-NOT-AUTHORIZED)
     (asserts! (is-eq POOL-TOKEN (contract-of token)) ERR-WRONG-TOKEN)
 
     ;; Save currrent cumm reward per stake
@@ -156,7 +155,7 @@
 ;; Unstake tokens
 (define-public (unstake (token <mock-ft-trait>) (staker principal) (amount uint))
   (begin
-    (asserts! (is-eq contract-caller STAKE-REGISTRY) ERR-NOT-AUTHORIZED)
+    (asserts! (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "stake-registry"))) ERR-NOT-AUTHORIZED)
     (asserts! (is-eq POOL-TOKEN (contract-of token)) ERR-WRONG-TOKEN)
 
     ;; Save currrent cumm reward per stake
@@ -205,7 +204,7 @@
 ;; Claim rewards for staker
 (define-public (claim-pending-rewards (staker principal))
   (begin
-    (asserts! (is-eq contract-caller STAKE-REGISTRY) ERR-NOT-AUTHORIZED)
+    (asserts! (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "stake-registry"))) ERR-NOT-AUTHORIZED)
     (let (
       (pending-rewards (unwrap! (get-pending-rewards staker) ERR-REWARDS-CALC))
     )
@@ -262,6 +261,7 @@
 ;; Return current block height, or block height when pool was deactivated
 (define-private (get-last-block-height)
   (let (
+    ;; TODO: stake-registry should be dynamic
     (pool-data (contract-call? .stake-registry get-pool-data .stake-pool-diko))
     (pool-active (get active pool-data))
     (deactivated-block (get deactivated-block pool-data))
