@@ -46,9 +46,10 @@
 )
 
 ;; Register and activate new pool
+;; TODO: DAO should keep track of active pool contracts
 (define-public (activate-pool (name (string-ascii 256)) (pool-trait <stake-pool-trait>))
   (begin
-    (asserts! (is-eq DAO-OWNER tx-sender) ERR-NOT-AUTHORIZED)
+    (asserts! (is-eq DAO-OWNER tx-sender) ERR-NOT-AUTHORIZED) ;; TODO: DAO needs to activate pools
     (let ( 
       (pool (contract-of pool-trait)) 
       (pool-id (var-get pool-count)) 
@@ -66,17 +67,16 @@
 )
 
 ;; Inactivate pool
+;; TODO: DAO should keep track of active pool contracts
 (define-public (deactivate-pool (pool-trait <stake-pool-trait>))
   (begin
-    (asserts! (is-eq DAO-OWNER tx-sender) ERR-NOT-AUTHORIZED)
+    (asserts! (is-eq DAO-OWNER tx-sender) ERR-NOT-AUTHORIZED) ;; TODO: DAO needs to deactivate pools
     (let ( 
       (pool (contract-of pool-trait)) 
       (pool-info (unwrap! (map-get? pools-data-map { pool: pool }) ERR-INVALID-POOL))
-      (name (get name pool-info))
-      (activated-block (get activated-block pool-info))
-      )
+    )
       (begin
-        (map-set pools-data-map { pool: pool } { name: name, active: false, activated-block: activated-block, deactivated-block: block-height })
+        (map-set pools-data-map { pool: pool } (merge pool-info { active: false, deactivated-block: block-height }))
         (ok true)
       )
     )
