@@ -94,7 +94,7 @@
 ;; if we cannot cover the vault's debt with the collateral sale,
 ;; we will have to sell some governance or STX tokens from the reserve
 (define-public (start-auction (vault-id uint) (uamount uint) (debt-to-raise uint))
-  (let ((vault (unwrap-panic (contract-call? .vault-data get-vault-by-id vault-id))))
+  (let ((vault (contract-call? .vault-data get-vault-by-id vault-id)))
     (asserts! (is-eq contract-caller .liquidator) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq (get is-liquidated vault) true) (err ERR-AUCTION-NOT-ALLOWED))
 
@@ -130,7 +130,7 @@
 ;; this is a private function since it should only be called
 ;; when a normal collateral liquidation auction can't raise enough debt
 (define-private (start-debt-auction (vault-id uint) (debt-to-raise uint))
-  (let ((vault (unwrap-panic (contract-call? .vault-data get-vault-by-id vault-id))))
+  (let ((vault (contract-call? .vault-data get-vault-by-id vault-id)))
     (asserts! (is-eq (get is-liquidated vault) true) (err ERR-AUCTION-NOT-ALLOWED))
 
     (let (
@@ -452,7 +452,6 @@
           (extend-auction auction-id)
           ;; no collateral left. Need to sell governance token to raise more xUSD
           (start-debt-auction
-            vault-manager
             (get vault-id auction)
             (- (get debt-to-raise auction) (get total-debt-raised auction))
           )

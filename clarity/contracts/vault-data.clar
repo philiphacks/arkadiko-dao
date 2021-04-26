@@ -80,16 +80,11 @@
   )
 )
 
-(define-read-only (get-collateral-type-for-vault (vault-id uint))
-  (let ((vault (get-vault-by-id vault-id)))
-    (ok (get collateral-type vault))
-  )
-)
-
 (define-public (update-vault (vault-id uint) (data (tuple (id uint) (owner principal) (collateral uint) (collateral-type (string-ascii 12)) (collateral-token (string-ascii 12)) (stacked-tokens uint) (revoked-stacking bool) (debt uint) (created-at-block-height uint) (updated-at-block-height uint) (stability-fee uint) (stability-fee-last-accrued uint) (is-liquidated bool) (auction-ended bool) (leftover-collateral uint))))
   (let ((vault (get-vault-by-id vault-id)))
     (asserts! (is-eq contract-caller .freddie) (err ERR-NOT-AUTHORIZED))
   
+    (map-set vaults (tuple (id vault-id)) data)
     (ok true)
   )
 )
@@ -100,5 +95,29 @@
 
     (map-set vault-entries { user: user } { ids: (unwrap-panic (as-max-len? (append entries vault-id) u1200)) })
     (ok true)
+  )
+)
+
+(define-private (remove-burned-vault (vault-id uint))
+  (let ((current-vault (unwrap-panic (map-get? closing-vault { user: tx-sender }))))
+    (if (is-eq vault-id (get vault-id current-vault))
+      false
+      true
+    )
+  )
+)
+
+(define-public (close-vault (vault-id uint))
+  (let (
+    (vault (get-vault-by-id vault-id))
+    (entries (get ids (get-vault-entries (get owner vault))))
+  )
+    (asserts! (is-eq contract-caller .freddie) (err ERR-NOT-AUTHORIZED))
+
+    (map-set closing-vault { user: (get owner vault) } { vault-id: vault-id })
+    (if (map-set vault-entries { user: tx-sender } { ids: (filter remove-burned-vault entries) })
+      (ok (map-delete vaults { id: vault-id }))
+      (err u0)
+    )
   )
 )
