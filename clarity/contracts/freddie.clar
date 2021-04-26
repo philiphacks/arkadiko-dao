@@ -519,16 +519,21 @@
   )
 )
 
+
+;; ---------------------------------------------------------
+;; Admin Functions
+;; ---------------------------------------------------------
+
+(define-read-only (get-xusd-balance)
+  (contract-call? .xusd-token get-balance-of (as-contract tx-sender))
+)
+
 (define-public (set-payout-address (address principal))
   (begin
     (asserts! (is-eq contract-caller CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
 
     (ok (var-set payout-address address))
   )
-)
-
-(define-read-only (get-xusd-balance)
-  (contract-call? .xusd-token get-balance-of (as-contract tx-sender))
 )
 
 ;; redeem xUSD working capital for the foundation
@@ -553,5 +558,45 @@
     )
       (contract-call? token transfer balance (as-contract tx-sender) (contract-of new-vault-manager))
     )
+  )
+)
+
+(define-public (set-stx-redeemable (new-stx-redeemable uint))
+  (begin
+    (asserts! (is-eq contract-caller CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
+
+    (var-set stx-redeemable new-stx-redeemable)
+    (ok true)
+  )
+)
+
+(define-public (set-block-height-last-paid (new-block-height-last-paid uint))
+  (begin
+    (asserts! (is-eq contract-caller CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
+
+    (var-set block-height-last-paid new-block-height-last-paid)
+    (ok true)
+  )
+)
+
+(define-public (set-maximum-debt-surplus (new-maximum-debt-surplus uint))
+  (begin
+    (asserts! (is-eq contract-caller CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
+
+    (var-set maximum-debt-surplus new-maximum-debt-surplus)
+    (ok true)
+  )
+)
+
+;; migrates stx-redeemable, block-height-last-paid and maximum-debt-surplus
+;; payout address has a separate setter that can be configured
+(define-public (migrate-state (new-vault-manager <vault-manager-trait>))
+  (begin
+    (asserts! (is-eq contract-caller CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
+
+    (try! (contract-call? new-vault-manager set-stx-redeemable (var-get stx-redeemable)))
+    (try! (contract-call? new-vault-manager set-block-height-last-paid (var-get block-height-last-paid)))
+    (try! (contract-call? new-vault-manager set-maximum-debt-surplus (var-get maximum-debt-surplus)))
+    (ok true)
   )
 )

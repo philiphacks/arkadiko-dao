@@ -14,5 +14,8 @@
     (redeem-auction-collateral (<mock-ft-trait> <vault-trait> uint principal) (response bool uint))
 
     (get-xusd-balance () (response uint bool))
+    (set-stx-redeemable (uint) (response bool uint))
+    (set-block-height-last-paid (uint) (response bool uint))
+    (set-maximum-debt-surplus (uint) (response bool uint))
   )
 )
