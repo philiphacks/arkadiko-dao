@@ -59,9 +59,11 @@ export const Stake = () => {
       const rewardsPerBlock = 1000000000; // TODO: fetch from stake-pool-diko smart contract
       const rewardPercentage = (totalStaked / dikoStaked);
       const dikoPerYear = 144 * 365 * (rewardsPerBlock * rewardPercentage) / 1000000;
-      setApy(((dikoPerYear / dikoStaked) * 100).toFixed(0));
-      console.log(dikoPerYear);
-      console.log('APY:', apy, '%');
+      if (dikoStaked > 0) {
+        setApy(((dikoPerYear / dikoStaked) * 100).toFixed(0));
+      } else {
+        setApy(0);
+      }
     };
     if (mounted) {
       void getData();
@@ -193,7 +195,7 @@ export const Stake = () => {
                 </h3>
                 <div className="mt-2">
                   <p className="text-sm text-gray-500">
-                    You are current staking {state.balance['stdiko'] / 1000000} stDIKO
+                    You are current staking {stakedAmount / 1000000} stDIKO
                   </p>
 
                   <div className="mt-4 relative rounded-md shadow-sm">
@@ -206,7 +208,7 @@ export const Stake = () => {
                           placeholder="0.00" aria-describedby="stake-diko" />
                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                       <span className="text-gray-500 sm:text-sm" id="stake-diko">
-                        DIKO
+                        stDIKO
                       </span>
                     </div>
                   </div>
