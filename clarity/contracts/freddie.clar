@@ -55,6 +55,7 @@
 (define-data-var stx-redeemable uint u0)
 (define-data-var block-height-last-paid uint u0)
 (define-data-var payout-address principal CONTRACT-OWNER)
+(define-data-var maximum-debt-surplus uint u10000000000000) ;; 10 million default
 
 ;; getters
 (define-read-only (get-vault-by-id (id uint))
