@@ -216,14 +216,18 @@
 (define-public (claim-pending-rewards (staker principal))
   (begin
     (asserts! (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "stake-registry"))) ERR-NOT-AUTHORIZED)
+    (increase-cumm-reward-per-stake)
+
     (let (
       (pending-rewards (unwrap! (get-pending-rewards staker) ERR-REWARDS-CALC))
+      (stake-of (get-stake-of staker))
     )
       ;; Only mint if enough pending rewards and amount is positive
       (if (>= pending-rewards u1)
         (begin
           ;; Mint DIKO rewards for staker
           (try! (contract-call? .dao mint-token .arkadiko-token pending-rewards staker))
+          (map-set stakes { staker: staker } (merge stake-of { cumm-reward-per-stake: (var-get cumm-reward-per-stake) }))
 
           (ok pending-rewards)
         )

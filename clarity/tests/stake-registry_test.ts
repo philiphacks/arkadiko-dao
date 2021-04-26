@@ -403,7 +403,6 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
       types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko')
     ], wallet_1.address)
   ]);
-  console.log(block.receipts[0].events);
   block.receipts[0].result.expectOk().expectUint(4000);
 
   // Check if user got rewards
@@ -411,9 +410,9 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
   call = chain.callReadOnlyFn("arkadiko-token", "get-balance-of", [types.principal(wallet_1.address)], wallet_1.address);
   call.result.expectOk().expectUint(153900000000);  
   
-  // leftover pending rewards should be 0 after claiming
+  // leftover pending rewards should be 1000 DIKO (only next block) after claiming
   call = chain.callReadOnlyFn("stake-pool-diko", "get-pending-rewards", [types.principal(wallet_1.address)], wallet_1.address);
-  call.result.expectOk().expectUint(0);
+  call.result.expectOk().expectUint(1000000000);
 }
 });
     
