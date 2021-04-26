@@ -59,7 +59,7 @@ export const Stake = () => {
       const rewardsPerBlock = 1000000000; // TODO: fetch from stake-pool-diko smart contract
       const rewardPercentage = (totalStaked / dikoStaked);
       const dikoPerYear = 144 * 365 * (rewardsPerBlock * rewardPercentage) / 1000000;
-      setApy((dikoPerYear / dikoStaked) * 100);
+      setApy(((dikoPerYear / dikoStaked) * 100).toFixed(0));
       console.log(dikoPerYear);
       console.log('APY:', apy, '%');
     };
@@ -318,7 +318,7 @@ export const Stake = () => {
                       </div>
                     </div>
 
-                    <div className="rounded-lg">
+                    <div className="rounded-lg col-span-2">
                       <div className="p-5">
                         <div className="flex items-center">
                           <div className="ml-5 w-0 flex-1">
@@ -326,23 +326,12 @@ export const Stake = () => {
                               <dd>
                                 <div className="text-lg font-medium text-gray-900">
                                   <button type="button" onClick={() => setShowStakeModal(true)} className="inline-flex items-right mr-4 px-4 py-2 border border-transparent shadow-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm">
-                                    Stake or Unstake
+                                    Stake
                                   </button>
-                                </div>
-                              </dd>
-                            </dl>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                                  <button type="button" onClick={() => setShowUnstakeModal(true)} className="inline-flex items-right mr-4 px-4 py-2 border border-transparent shadow-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm">
+                                    Unstake
+                                  </button>
 
-                    <div className="rounded-lg">
-                      <div className="p-5">
-                        <div className="flex items-center">
-                          <div className="ml-5 w-0 flex-1">
-                            <dl>
-                              <dd>
-                                <div className="text-lg font-medium text-gray-900">
                                   <button type="button" onClick={() => claimRewards()} className="inline-flex items-right mr-4 px-4 py-2 border border-transparent shadow-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm">
                                     Claim Rewards
                                   </button>
