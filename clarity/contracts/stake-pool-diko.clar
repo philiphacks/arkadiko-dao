@@ -193,8 +193,8 @@
 (define-read-only (get-apy-for (staker principal))
   (let (
     (diko-staked (get-stake-amount-of staker))
-    (reward-percentage (/ (var-get total-staked) diko-staked))
-    (diko-per-year (/ (* REWARDS-PER-BLOCK reward-percentage) u1000000))
+    (reward-percentage (/ u100 (/ (var-get total-staked) diko-staked)))
+    (diko-per-year (* REWARDS-PER-BLOCK reward-percentage))
   )
     (* (/ diko-per-year diko-staked) u100)
   )
