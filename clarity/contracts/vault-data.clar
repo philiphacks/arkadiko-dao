@@ -69,7 +69,8 @@
 
 (define-public (set-last-vault-id (vault-id uint))
   (begin
-    (asserts! (is-eq contract-caller .freddie) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "freddie"))) (err ERR-NOT-AUTHORIZED))
+
     (ok (var-set last-vault-id vault-id))
   )
 )
@@ -82,7 +83,7 @@
 
 (define-public (update-vault (vault-id uint) (data (tuple (id uint) (owner principal) (collateral uint) (collateral-type (string-ascii 12)) (collateral-token (string-ascii 12)) (stacked-tokens uint) (revoked-stacking bool) (debt uint) (created-at-block-height uint) (updated-at-block-height uint) (stability-fee uint) (stability-fee-last-accrued uint) (is-liquidated bool) (auction-ended bool) (leftover-collateral uint))))
   (let ((vault (get-vault-by-id vault-id)))
-    (asserts! (is-eq contract-caller .freddie) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "freddie"))) (err ERR-NOT-AUTHORIZED))
   
     (map-set vaults (tuple (id vault-id)) data)
     (ok true)
@@ -91,7 +92,7 @@
 
 (define-public (update-vault-entries (user principal) (vault-id uint))
   (let ((entries (get ids (get-vault-entries user))))
-    (asserts! (is-eq contract-caller .freddie) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "freddie"))) (err ERR-NOT-AUTHORIZED))
 
     (map-set vault-entries { user: user } { ids: (unwrap-panic (as-max-len? (append entries vault-id) u1200)) })
     (ok true)
@@ -112,7 +113,7 @@
     (vault (get-vault-by-id vault-id))
     (entries (get ids (get-vault-entries (get owner vault))))
   )
-    (asserts! (is-eq contract-caller .freddie) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "freddie"))) (err ERR-NOT-AUTHORIZED))
 
     (map-set closing-vault { user: (get owner vault) } { vault-id: vault-id })
     (if (map-set vault-entries { user: tx-sender } { ids: (filter remove-burned-vault entries) })
