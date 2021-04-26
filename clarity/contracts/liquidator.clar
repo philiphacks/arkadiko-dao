@@ -10,7 +10,7 @@
 
 (define-public (notify-risky-vault (vault-manager <vault-manager-trait>) (auction-engine <auction-engine-trait>) (vault-id uint))
   (let (
-    (collateral-type (unwrap! (contract-call? vault-manager get-collateral-type-for-vault vault-id) (err u12345)))
+    (collateral-type (unwrap-panic (contract-call? vault-manager get-collateral-type-for-vault vault-id)))
     (collateral-to-debt-ratio (unwrap-panic (contract-call? vault-manager calculate-current-collateral-to-debt-ratio vault-id)))
     (liquidation-ratio (unwrap-panic (contract-call? .collateral-types get-liquidation-ratio collateral-type)))
   )
