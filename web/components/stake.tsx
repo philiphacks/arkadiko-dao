@@ -191,11 +191,11 @@ export const Stake = () => {
               </div>
               <div className="mt-3 text-center sm:mt-5">
                 <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-headline">
-                  Unstake stDIKO
+                  Unstake DIKO
                 </h3>
                 <div className="mt-2">
                   <p className="text-sm text-gray-500">
-                    You are current staking {stakedAmount / 1000000} stDIKO
+                    You are current staking {stakedAmount / 1000000} DIKO
                   </p>
 
                   <div className="mt-4 relative rounded-md shadow-sm">
@@ -208,7 +208,7 @@ export const Stake = () => {
                           placeholder="0.00" aria-describedby="stake-diko" />
                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                       <span className="text-gray-500 sm:text-sm" id="stake-diko">
-                        stDIKO
+                        DIKO
                       </span>
                     </div>
                   </div>
@@ -263,7 +263,7 @@ export const Stake = () => {
                               </dt>
                               <dd>
                                 <div className="text-lg font-medium text-gray-900">
-                                  {stakedAmount / 1000000} stDIKO
+                                  {stakedAmount / 1000000} DIKO
                                 </div>
                               </dd>
                             </dl>
