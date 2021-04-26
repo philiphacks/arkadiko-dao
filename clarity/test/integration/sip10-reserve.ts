@@ -49,6 +49,7 @@ describe("freddie test suite", () => {
       await deployContract('sip10-reserve');
       await deployContract('freddie');
       await deployContract('stake-registry');
+      await deployContract('stake-pool-diko');
 
       await deployContract('auction-engine');
       await deployContract('liquidator');

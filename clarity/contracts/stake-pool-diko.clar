@@ -19,6 +19,7 @@
 (define-constant CONTRACT-OWNER tx-sender) ;; TODO: should be DAO
 (define-constant POOL-TOKEN .arkadiko-token)
 (define-constant REWARDS-PER-BLOCK u1000000000) ;; TODO: set production value. Test value is 1000 DIKO per block with 6 decimals
+(define-constant BLOCKS-PER-YEAR u52560)
 
 ;; Variables
 (define-data-var token-uri (string-utf8 256) u"")
@@ -186,6 +187,16 @@
 
       (ok new-stake-amount)
     )
+  )
+)
+
+(define-read-only (get-apy-for (staker principal))
+  (let (
+    (diko-staked (get-stake-amount-of staker))
+    (reward-percentage (/ (var-get total-staked) diko-staked))
+    (diko-per-year (/ (* REWARDS-PER-BLOCK reward-percentage) u1000000))
+  )
+    (* (/ diko-per-year diko-staked) u100)
   )
 )
 

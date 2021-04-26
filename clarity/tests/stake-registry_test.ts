@@ -400,15 +400,20 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
   // Claim
   block = chain.mineBlock([
     Tx.contractCall("stake-registry", "claim-pending-rewards", [
-        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko')
+      types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko')
     ], wallet_1.address)
   ]);
+  console.log(block.receipts[0].events);
   block.receipts[0].result.expectOk().expectUint(4000);
 
   // Check if user got rewards
   // 150000 initial - 100 invested + 4000 rewards = 153900
   call = chain.callReadOnlyFn("arkadiko-token", "get-balance-of", [types.principal(wallet_1.address)], wallet_1.address);
-  call.result.expectOk().expectUint(153900000000);   
+  call.result.expectOk().expectUint(153900000000);  
+  
+  // leftover pending rewards should be 0 after claiming
+  call = chain.callReadOnlyFn("stake-pool-diko", "get-pending-rewards", [types.principal(wallet_1.address)], wallet_1.address);
+  call.result.expectOk().expectUint(0);
 }
 });
     
