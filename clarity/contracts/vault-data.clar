@@ -31,6 +31,7 @@
 (define-map stacking-payout
   { vault-id: uint }
   {
+    collateral-amount: uint,
     principals: (list 500 (tuple (collateral-amount uint) (recipient principal)))
   }
 )
@@ -75,7 +76,7 @@
 
 (define-read-only (get-stacking-payout (vault-id uint))
   (default-to
-    { principals: (list) }
+    { collateral-amount: u0, principals: (list) }
     (map-get? stacking-payout { vault-id: vault-id })
   )
 )
@@ -96,7 +97,13 @@
 
 (define-public (update-vault (vault-id uint) (data (tuple (id uint) (owner principal) (collateral uint) (collateral-type (string-ascii 12)) (collateral-token (string-ascii 12)) (stacked-tokens uint) (revoked-stacking bool) (debt uint) (created-at-block-height uint) (updated-at-block-height uint) (stability-fee uint) (stability-fee-last-accrued uint) (is-liquidated bool) (auction-ended bool) (leftover-collateral uint))))
   (let ((vault (get-vault-by-id vault-id)))
-    (asserts! (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "freddie"))) (err ERR-NOT-AUTHORIZED))
+    (asserts!
+      (or
+        (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "freddie")))
+        (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "stacker")))
+      )
+      (err ERR-NOT-AUTHORIZED)
+    )
   
     (map-set vaults (tuple (id vault-id)) data)
     (ok true)
@@ -145,7 +152,7 @@
     (map-set stacking-payout
       { vault-id: vault-id }
       ;;{ principals: (list (tuple (percentage-basis-points u0) (recipient CONTRACT-OWNER))) }
-      { principals: (list) }
+      { collateral-amount: u0, principals: (list) }
     )
 
     (ok true)
@@ -154,7 +161,8 @@
 
 (define-public (add-stacker-payout (vault-id uint) (collateral-amount uint) (recipient principal))
   (let (
-    (principals (get principals (get-stacking-payout vault-id)))
+    (stacking-payout-entry (get-stacking-payout vault-id))
+    (principals (get principals stacking-payout-entry))
   )
     (asserts!
       (or
@@ -166,7 +174,10 @@
 
     (map-set stacking-payout
       { vault-id: vault-id }
-      { principals: (unwrap-panic (as-max-len? (append principals (tuple (collateral-amount collateral-amount) (recipient recipient))) u500)) }
+      {
+        collateral-amount: (+ collateral-amount (get collateral-amount stacking-payout-entry)),
+        principals: (unwrap-panic (as-max-len? (append principals (tuple (collateral-amount collateral-amount) (recipient recipient))) u500))
+      }
     )
     (ok true)
   )

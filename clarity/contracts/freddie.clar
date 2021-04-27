@@ -252,7 +252,6 @@
   (let ((vault (get-vault-by-id vault-id))
        (new-collateral (+ uamount (get collateral vault)))
        (updated-vault (merge vault {
-          stacked-tokens: (+ (get stacked-tokens vault) (resolve-stacking-amount uamount (get collateral-token vault))),
           collateral: new-collateral,
           updated-at-block-height: block-height
         })))
@@ -436,6 +435,7 @@
     (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
     (asserts! (is-eq contract-caller .liquidator) (err ERR-NOT-AUTHORIZED))
 
+    (try! (contract-call? .vault-data reset-stacking-payouts vault-id))
     (let ((collateral (get collateral vault)))
       (if
         (and
@@ -453,7 +453,6 @@
               leftover-collateral: u0
             }))
           )
-          (try! (contract-call? .vault-data reset-stacking-payouts vault-id))
           (try! (contract-call? .sip10-reserve mint-xstx collateral))
           (let ((debt (/ (* (unwrap-panic (contract-call? .collateral-types get-liquidation-penalty (get collateral-type vault))) (get debt vault)) u100)))
             (ok (tuple (ustx-amount collateral) (debt (+ debt (get debt vault)))))

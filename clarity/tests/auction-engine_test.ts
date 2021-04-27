@@ -6,6 +6,8 @@ import {
   types,
 } from "https://deno.land/x/clarinet@v0.6.0/index.ts";
 
+const bidSize = 100000000; // 100 xUSD
+
 Clarinet.test({
   name:
     "auction engine: bid on normal collateral auction with enough collateral to cover bad xUSD debt",
@@ -71,7 +73,7 @@ Clarinet.test({
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.oracle'),
         types.uint(1),
         types.uint(0),
-        types.uint(100000000)
+        types.uint(bidSize)
       ], deployer.address)
     ]);
     block.receipts[0].result.expectOk().expectBool(true);
@@ -230,10 +232,10 @@ Clarinet.test({
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.oracle'),
         types.uint(1),
         types.uint(0),
-        types.uint(100000000)
+        types.uint(bidSize)
       ], deployer.address)
     ]);
-    block.receipts[0].result.expectOk().expectUint(100000000);
+    block.receipts[0].result.expectOk().expectUint(bidSize);
     block.receipts[1].result.expectOk().expectBool(true);
 
     // The auction sold off all of its collateral now, but not enough debt was raised
@@ -364,7 +366,7 @@ Clarinet.test({
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.oracle'),
         types.uint(1),
         types.uint(0),
-        types.uint(100000000)
+        types.uint(bidSize)
       ], wallet_1.address)
     ]);
     block.receipts[0].result.expectOk().expectBool(true);
@@ -472,7 +474,7 @@ Clarinet.test({
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.oracle'),
         types.uint(1),
         types.uint(0),
-        types.uint(100000000)
+        types.uint(bidSize)
       ], deployer.address)
     ]);
     block.receipts[0].result.expectOk().expectBool(true);
@@ -533,7 +535,7 @@ Clarinet.test({
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.oracle'),
         types.uint(1),
         types.uint(0),
-        types.uint(100000000)
+        types.uint(bidSize)
       ], wallet_1.address)
     ]);
     block.receipts[0].result.expectOk().expectBool(true);
@@ -544,7 +546,7 @@ Clarinet.test({
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.oracle'),
         types.uint(1),
         types.uint(0),
-        types.uint(100000000)
+        types.uint(bidSize)
       ], deployer.address)
     ]);
     block.receipts[0].result.expectErr().expectUint(21); // bid declined since lot is sold

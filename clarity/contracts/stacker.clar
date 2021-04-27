@@ -21,7 +21,10 @@
 (define-constant ERR-FAILED-STACK-STX u192)
 (define-constant CONTRACT-OWNER tx-sender)
 
-(define-data-var stacking-unlock-burn-height uint u0)
+(define-data-var stacking-unlock-burn-height uint u0) ;; when is this cycle over
+(define-data-var stacking-stx-stacked uint u0) ;; how many stx did we stack in this cycle
+(define-data-var stacking-stx-received uint u0) ;; how many btc did we convert into STX tokens to add to vault collateral
+
 (define-data-var stacker-yield uint u9000) ;; 90%
 (define-data-var governance-token-yield uint u500) ;; 5%
 (define-data-var governance-reserve-yield uint u500) ;; 5%
@@ -66,6 +69,7 @@
           )
         )
           (var-set stacking-unlock-burn-height (get unlock-burn-height result))
+          (var-set stacking-stx-stacked (get lock-amount result))
           (ok (get lock-amount result))
         )
       )
@@ -85,15 +89,51 @@
 )
 
 ;; Pay all parties:
-;; - Owners of vaults
+;; - Owner of vault
 ;; - DAO Reserve
 ;; - Owners of gov tokens
 ;; Unfortunately this cannot happen trustless
 ;; The bitcoin arrives at the bitcoin address passed to the initiate-stacking function
 ;; it is not possible to transact bitcoin txs from clarity right now
 ;; this means we will need to do this manually until some way exists to do this trustless (if ever?)
-(define-public (payout)
+;; we pay out the yield in STX tokens
+(define-public (payout (vault-id uint))
+  (let (
+    (vault (contract-call? .vault-data get-vault-by-id vault-id))
+    (vault-collateral (get collateral vault))
+    (stacking-entry (contract-call? .vault-data get-stacking-payout vault-id))
+    (collateral-amount (get collateral-amount stacking-entry))
+  )
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
+    (if (and (get is-liquidated vault) (get auction-ended vault))
+      (payout-liquidated-vault vault-id)
+      (payout-vault vault-id)
+    )
+  )
+)
+
+(define-private (payout-liquidated-vault (vault-id uint))
+  ;; TODO
   (ok true)
+)
+
+(define-private (payout-vault (vault-id uint))
+  (let (
+    (vault (contract-call? .vault-data get-vault-by-id vault-id))
+    (basis-points (/ (* u100 (get stacked-tokens vault)) (var-get stacking-stx-stacked)))
+    (earned-amount (* (var-get stacking-stx-received) basis-points))
+    (new-collateral-amount (+ earned-amount (get collateral vault)))
+  )
+    (asserts! (is-eq (get is-liquidated vault) false) (err ERR-NOT-AUTHORIZED))
+    (asserts! (> (get stacked-tokens vault) u0) (err ERR-NOT-AUTHORIZED))
+
+    (try! (contract-call? .vault-data update-vault vault-id (merge vault { collateral: new-collateral-amount })))
+    (if (get revoked-stacking vault)
+      (try! (contract-call? .vault-data update-vault vault-id (merge vault { updated-at-block-height: block-height, stacked-tokens: u0 })))
+      (try! (contract-call? .vault-data update-vault vault-id (merge vault { updated-at-block-height: block-height, stacked-tokens: new-collateral-amount })))
+    )
+    (ok true)
+  )
 )
 
 (define-read-only (get-stx-balance)
