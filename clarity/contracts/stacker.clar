@@ -24,6 +24,7 @@
 (define-data-var stacking-unlock-burn-height uint u0) ;; when is this cycle over
 (define-data-var stacking-stx-stacked uint u0) ;; how many stx did we stack in this cycle
 (define-data-var stacking-stx-received uint u0) ;; how many btc did we convert into STX tokens to add to vault collateral
+(define-data-var stacking-stx-in-vault uint u0)
 
 (define-data-var stacker-yield uint u9000) ;; 90%
 (define-data-var governance-token-yield uint u500) ;; 5%
@@ -112,11 +113,32 @@
   )
 )
 
+;; TODO: write method
 (define-private (payout-liquidated-vault (vault-id uint))
-  ;; TODO
-  (ok true)
+  (let (
+    (vault (contract-call? .vault-data get-vault-by-id vault-id))
+    (stacking-entry (contract-call? .vault-data get-stacking-payout vault-id))
+  )
+    (asserts! (is-eq (get is-liquidated vault) true) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq (get auction-ended vault) true) (err ERR-NOT-AUTHORIZED))
+    (asserts! (> (get stacked-tokens vault) u0) (err ERR-NOT-AUTHORIZED))
+
+    (var-set stacking-stx-in-vault (get collateral-amount stacking-entry))
+    (map payout-bidder (get principals stacking-entry))
+    (ok true)
+  )
 )
 
+(define-private (payout-bidder (data (tuple (collateral-amount uint) (recipient principal))))
+  (let (
+    (stx-in-vault (var-get stacking-stx-in-vault))
+    (percentage (/ (* u100 (get collateral-amount data) stx-in-vault))) ;; in basis points
+  )
+    (ok true)
+  )
+)
+
+;; TODO: calculate correct earned amount
 (define-private (payout-vault (vault-id uint))
   (let (
     (vault (contract-call? .vault-data get-vault-by-id vault-id))
