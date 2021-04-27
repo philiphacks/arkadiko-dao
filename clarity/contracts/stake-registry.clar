@@ -15,7 +15,6 @@
 (define-constant ERR-POOL-INACTIVE (err u19003))
 
 ;; Variables
-(define-constant DAO-OWNER tx-sender) ;; TODO: needs to become DAO
 (define-data-var pool-count uint u0)
 
 ;; Pool maps

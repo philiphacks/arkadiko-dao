@@ -18,7 +18,6 @@
 ;; Constants
 (define-constant CONTRACT-OWNER tx-sender) ;; TODO: should be DAO
 (define-constant POOL-TOKEN .arkadiko-token)
-(define-constant REWARDS-PER-BLOCK u1000000000) ;; TODO: set production value. Test value is 1000 DIKO per block with 6 decimals
 (define-constant BLOCKS-PER-YEAR u52560)
 
 ;; Variables
