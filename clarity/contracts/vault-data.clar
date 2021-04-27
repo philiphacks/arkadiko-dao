@@ -73,6 +73,13 @@
   (var-get last-vault-id)
 )
 
+(define-read-only (get-stacking-payout (vault-id uint))
+  (default-to
+    { principals: (list) }
+    (map-get? stacking-payout { vault-id: vault-id })
+  )
+)
+
 (define-public (set-last-vault-id (vault-id uint))
   (begin
     (asserts! (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "freddie"))) (err ERR-NOT-AUTHORIZED))
@@ -141,6 +148,20 @@
       { principals: (list) }
     )
 
+    (ok true)
+  )
+)
+
+(define-public (add-stacker-payout (vault-id uint) (percentage uint) (recipient principal))
+  (let (
+    (principals (get principals (get-stacking-payout vault-id)))
+  )
+    (asserts! (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "freddie"))) (err ERR-NOT-AUTHORIZED))
+
+    (map-set stacking-payout
+      { vault-id: vault-id }
+      { principals: (unwrap-panic (as-max-len? (append principals (tuple (percentage-basis-points percentage) (recipient recipient))) u500)) }
+    )
     (ok true)
   )
 )
