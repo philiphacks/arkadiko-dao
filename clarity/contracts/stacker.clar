@@ -137,7 +137,7 @@
     (earned-amount-vault (/ (* (var-get stacking-stx-received) basis-points) u100))
     (earned-amount-bidder (/ (* percentage earned-amount-vault) u100))
   )
-    ;; (as-contract (stx-transfer? earned-amount-bidder (as-contract tx-sender) (get recipient data)))
+    (try! (as-contract (stx-transfer? earned-amount-bidder (as-contract tx-sender) (get recipient data))))
     (ok true)
   )
 )
@@ -151,7 +151,6 @@
   )
 )
 
-;; TODO: calculate correct earned amount
 (define-private (payout-vault (vault-id uint))
   (let (
     (vault (contract-call? .vault-data get-vault-by-id vault-id))
