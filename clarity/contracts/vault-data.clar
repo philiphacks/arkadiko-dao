@@ -28,6 +28,12 @@
   { user: principal }
   { vault-id: uint }
 )
+(define-map stacking-payout
+  { vault-id: uint }
+  {
+    principals: (list 500 (tuple (percentage-basis-points uint) (recipient principal)))
+  }
+)
 (define-data-var last-vault-id uint u0)
 (define-constant CONTRACT-OWNER tx-sender)
 (define-constant ERR-NOT-AUTHORIZED u7401)
@@ -120,5 +126,21 @@
       (ok (map-delete vaults { id: vault-id }))
       (err u0)
     )
+  )
+)
+
+;; called on liquidation
+;; when a vault gets liquidated, the vault owner is no longer eligible for the yield
+(define-public (reset-stacking-payouts (vault-id uint))
+  (begin
+    (asserts! (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "freddie"))) (err ERR-NOT-AUTHORIZED))
+
+    (map-set stacking-payout
+      { vault-id: vault-id }
+      ;;{ principals: (list (tuple (percentage-basis-points u0) (recipient CONTRACT-OWNER))) }
+      { principals: (list) }
+    )
+
+    (ok true)
   )
 )
