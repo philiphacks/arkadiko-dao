@@ -150,7 +150,6 @@
       (ok new-stake-amount)
     )
   )
-
 )
 
 ;; Unstake tokens
@@ -184,6 +183,38 @@
 
       ;; Update sender stake info
       (map-set stakes { staker: staker } { uamount: new-stake-amount, cumm-reward-per-stake: (var-get cumm-reward-per-stake) })
+
+      (ok new-stake-amount)
+    )
+  )
+)
+
+;; Sender can unstake all tokens without claiming rewards
+(define-public (emergency-withdraw)
+  (begin
+    ;; Save currrent cumm reward per stake
+    (increase-cumm-reward-per-stake)
+
+    (let (
+      ;; Calculate new stake amount
+      (amount (unwrap! (get-balance-of tx-sender) ERR-NOT-AUTHORIZED))
+      (stake-amount (get-stake-amount-of tx-sender))
+      (new-stake-amount (- stake-amount amount))
+    )
+      ;; Update total stake
+      (var-set total-staked (- (var-get total-staked) amount))
+
+      ;; Update cumm reward per stake now that total is updated
+      (increase-cumm-reward-per-stake)
+
+      ;; Burn stDIKO 
+      (try! (ft-burn? stdiko amount tx-sender))
+
+      ;; Transfer DIKO back from this contract to the user
+      (try! (contract-call? .arkadiko-token transfer amount (as-contract tx-sender) tx-sender))
+
+      ;; Update sender stake info
+      (map-set stakes { staker: tx-sender } { uamount: new-stake-amount, cumm-reward-per-stake: (var-get cumm-reward-per-stake) })
 
       (ok new-stake-amount)
     )
