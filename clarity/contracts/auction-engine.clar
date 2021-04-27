@@ -340,6 +340,7 @@
       )
       (if accepted-bid
         (let ((lots (get-winning-lots tx-sender)))
+          (try! (contract-call? .vault-data add-stacker-payout (get vault-id auction) collateral-amount tx-sender))
           (map-set winning-lots
             { user: tx-sender }
             {

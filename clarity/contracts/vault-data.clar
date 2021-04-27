@@ -31,7 +31,7 @@
 (define-map stacking-payout
   { vault-id: uint }
   {
-    principals: (list 500 (tuple (percentage-basis-points uint) (recipient principal)))
+    principals: (list 500 (tuple (collateral-amount uint) (recipient principal)))
   }
 )
 (define-data-var last-vault-id uint u0)
@@ -152,15 +152,21 @@
   )
 )
 
-(define-public (add-stacker-payout (vault-id uint) (percentage uint) (recipient principal))
+(define-public (add-stacker-payout (vault-id uint) (collateral-amount uint) (recipient principal))
   (let (
     (principals (get principals (get-stacking-payout vault-id)))
   )
-    (asserts! (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "freddie"))) (err ERR-NOT-AUTHORIZED))
+    (asserts!
+      (or
+        (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "freddie")))
+        (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "auction-engine")))
+      )
+      (err ERR-NOT-AUTHORIZED)
+    )
 
     (map-set stacking-payout
       { vault-id: vault-id }
-      { principals: (unwrap-panic (as-max-len? (append principals (tuple (percentage-basis-points percentage) (recipient recipient))) u500)) }
+      { principals: (unwrap-panic (as-max-len? (append principals (tuple (collateral-amount collateral-amount) (recipient recipient))) u500)) }
     )
     (ok true)
   )
