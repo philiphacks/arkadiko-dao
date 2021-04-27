@@ -453,6 +453,7 @@
               leftover-collateral: u0
             }))
           )
+          (try! (contract-call? .vault-data reset-stacking-payouts vault-id))
           (try! (contract-call? .sip10-reserve mint-xstx collateral))
           (let ((debt (/ (* (unwrap-panic (contract-call? .collateral-types get-liquidation-penalty (get collateral-type vault))) (get debt vault)) u100)))
             (ok (tuple (ustx-amount collateral) (debt (+ debt (get debt vault)))))
