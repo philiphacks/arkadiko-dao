@@ -19,12 +19,6 @@
 (define-data-var pool-count uint u0)
 
 ;; Pool maps
-(define-map pools-map
-  { pool-id: uint }
-  {
-    pool: principal
-  }
-)
 (define-map pools-data-map
   { pool: principal }
   {
@@ -33,11 +27,6 @@
     activated-block: uint,
     deactivated-block: uint
   }
-)
-
-;; Get pool contract
-(define-read-only (get-pool-contract (pool-id uint))
-  (unwrap-panic (map-get? pools-map { pool-id: pool-id }))
 )
 
 ;; Get pool info
@@ -57,7 +46,6 @@
     )
       (begin
         (asserts! (is-eq pool-does-not-exist true) ERR-POOL-EXIST)
-        (map-set pools-map { pool-id: pool-id } { pool: pool})
         (map-set pools-data-map { pool: pool } { name: name, active: true, activated-block: block-height, deactivated-block: u0 })
         (var-set pool-count (+ pool-id u1))
         (ok true)

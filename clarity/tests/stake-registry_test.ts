@@ -22,10 +22,7 @@ Clarinet.test({
     block.receipts[0].result.expectOk().expectBool(true);
 
     // Get pool info
-    let call = chain.callReadOnlyFn("stake-registry", "get-pool-contract", [types.uint(0)], wallet_1.address);
-    call.result.expectTuple()['pool'].expectPrincipal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko');
-
-    call = chain.callReadOnlyFn("stake-registry", "get-pool-data", [types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko')], wallet_1.address);
+    let call = chain.callReadOnlyFn("stake-registry", "get-pool-data", [types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko')], wallet_1.address);
     call.result.expectTuple()['name'].expectAscii('test-pool');
     call.result.expectTuple()['active'].expectBool(true);
   }
@@ -56,10 +53,7 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
   block.receipts[0].result.expectErr().expectUint(19002)
 
   // Get pool info
-  let call = chain.callReadOnlyFn("stake-registry", "get-pool-contract", [types.uint(0)], wallet_1.address);
-  call.result.expectTuple()['pool'].expectPrincipal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko');
-
-  call = chain.callReadOnlyFn("stake-registry", "get-pool-data", [types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko')], wallet_1.address);
+  let call = chain.callReadOnlyFn("stake-registry", "get-pool-data", [types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko')], wallet_1.address);
   call.result.expectTuple()['name'].expectAscii('test-pool');
   call.result.expectTuple()['active'].expectBool(true);
 }
