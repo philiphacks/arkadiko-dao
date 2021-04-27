@@ -25,7 +25,8 @@
     name: (string-ascii 256),
     active: bool,
     activated-block: uint,
-    deactivated-block: uint
+    deactivated-block: uint,
+    rewards-per-block: uint
   }
 )
 
@@ -96,8 +97,9 @@
     {
       name: "Diko",
       active: true,
-      activated-block: u1,
-      deactivated-block: u0
+      activated-block: block-height,
+      deactivated-block: u0,
+      rewards-per-block: u1000000000 ;; TODO: set production value. Test value is 1000 DIKO per block with 6 decimals
     }
   )
 

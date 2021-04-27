@@ -192,9 +192,10 @@
 
 (define-read-only (get-apy-for (staker principal))
   (let (
+    (pool-data (contract-call? .stake-registry get-pool-data .stake-pool-diko))
     (diko-staked (get-stake-amount-of staker))
     (reward-percentage (/ u100 (/ (var-get total-staked) diko-staked)))
-    (diko-per-year (* REWARDS-PER-BLOCK reward-percentage))
+    (diko-per-year (* (get rewards-per-block pool-data) reward-percentage))
   )
     (* (/ diko-per-year diko-staked) u100)
   )
@@ -254,6 +255,7 @@
 ;; Calculate current cumm reward per stake
 (define-read-only (calculate-cumm-reward-per-stake)
   (let (
+    (pool-data (contract-call? .stake-registry get-pool-data .stake-pool-diko))
     (current-total-staked (var-get total-staked))
     (last-block-height (get-last-block-height))
     (block-diff (- last-block-height (var-get last-reward-increase-block)))
@@ -261,7 +263,7 @@
   )
     (if (> current-total-staked u0)
       (let (
-        (total-rewards-to-distribute (* REWARDS-PER-BLOCK block-diff))
+        (total-rewards-to-distribute (* (get rewards-per-block pool-data) block-diff))
         (reward-added-per-token (/ (* total-rewards-to-distribute u1000000) current-total-staked))
         (new-cumm-reward-per-stake (+ current-cumm-reward-per-stake reward-added-per-token))
       )
