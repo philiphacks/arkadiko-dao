@@ -160,12 +160,25 @@
     (map-set proposals
       { id: proposal-id }
       (merge proposal { is-open: false }))
-    ;; TODO: (try! (return-diko)
     (if (> (get yes-votes proposal) (get no-votes proposal))
       (try! (execute-proposal proposal-id))
       false
     )
     (ok STATUS-OK)
+  )
+)
+
+;; Return votes to voter
+(define-public (return-votes-to-member (proposal-id uint) (member principal))
+  (let (
+    (vote-count (get vote-count (get-votes-by-member-by-id proposal-id tx-sender)))
+    (proposal (get-proposal-by-id proposal-id))
+  )
+    (asserts! (is-eq (get is-open proposal) false) (err ERR-NOT-AUTHORIZED))
+    (asserts! (>= block-height (get end-block-height proposal)) (err ERR-NOT-AUTHORIZED))
+
+    ;; Return DIKO
+    (contract-call? .arkadiko-token transfer vote-count (as-contract tx-sender) member)
   )
 )
 
