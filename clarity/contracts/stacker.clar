@@ -124,17 +124,30 @@
     (asserts! (> (get stacked-tokens vault) u0) (err ERR-NOT-AUTHORIZED))
 
     (var-set stacking-stx-in-vault (get collateral-amount stacking-entry))
-    (map payout-bidder (get principals stacking-entry))
+    (map payout-lot-bidder (get principals stacking-entry))
     (ok true)
   )
 )
 
-(define-private (payout-bidder (data (tuple (collateral-amount uint) (recipient principal))))
+(define-private (payout-lot-bidder (data (tuple (collateral-amount uint) (recipient principal))))
   (let (
     (stx-in-vault (var-get stacking-stx-in-vault))
-    (percentage (/ (* u100 (get collateral-amount data) stx-in-vault))) ;; in basis points
+    (percentage (/ (* u10000 (get collateral-amount data) stx-in-vault))) ;; in basis points
+    (basis-points (/ (* u10000 stx-in-vault (var-get stacking-stx-stacked))))
+    (earned-amount-vault (/ (* (var-get stacking-stx-received) basis-points) u100))
+    (earned-amount-bidder (/ (* percentage earned-amount-vault) u100))
   )
+    ;; (as-contract (stx-transfer? earned-amount-bidder (as-contract tx-sender) (get recipient data)))
     (ok true)
+  )
+)
+
+(define-private (calculate-vault-reward (vault-id uint))
+  (let (
+    (vault (contract-call? .vault-data get-vault-by-id vault-id))
+    (basis-points (/ (* u10000 (get stacked-tokens vault)) (var-get stacking-stx-stacked))) ;; (100 * 100 * vault-stacked-tokens / stx-stacked)
+  )
+    (/ (* (var-get stacking-stx-received) basis-points) u100)
   )
 )
 
@@ -142,8 +155,7 @@
 (define-private (payout-vault (vault-id uint))
   (let (
     (vault (contract-call? .vault-data get-vault-by-id vault-id))
-    (basis-points (/ (* u100 (get stacked-tokens vault)) (var-get stacking-stx-stacked)))
-    (earned-amount (* (var-get stacking-stx-received) basis-points))
+    (earned-amount (calculate-vault-reward vault-id))
     (new-collateral-amount (+ earned-amount (get collateral vault)))
   )
     (asserts! (is-eq (get is-liquidated vault) false) (err ERR-NOT-AUTHORIZED))
