@@ -10,6 +10,7 @@ Clarinet.test({
   name: "stacker: initiate stacking in PoX contract with enough STX tokens",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     let deployer = accounts.get("deployer")!;
+    let wallet_1 = accounts.get("wallet_1")!;
     let block = chain.mineBlock([
       Tx.contractCall("oracle", "update-price", [
         types.ascii("STX"),
@@ -25,21 +26,34 @@ Clarinet.test({
         types.principal(
           "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
         ),
-      ], deployer.address)
+      ], deployer.address),
+      Tx.contractCall("freddie", "collateralize-and-mint", [
+        types.uint(500000000),
+        types.uint(400000000), // mint 400 xUSD
+        types.principal(wallet_1.address),
+        types.ascii("STX-A"),
+        types.ascii("STX"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+        types.principal(
+          "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
+        ),
+      ], wallet_1.address)
     ]);
 
     let call = await chain.callReadOnlyFn("stx-reserve", "get-tokens-to-stack", [], deployer.address);
-    call.result.expectOk().expectUint(1000000000); // 1000 STX
+    call.result.expectOk().expectUint(1500000000); // 1500 STX
 
     block = chain.mineBlock([
+      Tx.contractCall("freddie", "toggle-stacking", [types.uint(2)], wallet_1.address),
       Tx.contractCall("stacker", "initiate-stacking", [
         types.tuple({ 'version': '0x00', 'hashbytes': '0xf632e6f9d29bfb07bc8948ca6e0dd09358f003ac'}),
         types.uint(1), // start block height
         types.uint(1) // 1 cycle lock period
       ], deployer.address)
     ]);
-    block.receipts[0].result.expectOk().expectUint(1000000000);
+    block.receipts[1].result.expectOk().expectUint(1000000000);
 
+    // only 1000 STX stacked since wallet 1 revoked stacking on their vault before stacking initiated
     call = await chain.callReadOnlyFn("stacker", "get-stx-balance", [], deployer.address);
     call.result.expectOk().expectUint(1000000000);
 
@@ -129,7 +143,7 @@ Clarinet.test({
 });
 
 Clarinet.test({
-  name: "stacker: payout multiple vaults",
+  name: "stacker: payout two vaults",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     let wallet_1 = accounts.get("wallet_1")!;
     let deployer = accounts.get("deployer")!;
@@ -191,7 +205,6 @@ Clarinet.test({
         types.uint(2)
       ], deployer.address)
     ]);
-    console.log(block);
 
     call = await chain.callReadOnlyFn("vault-data", "get-vault-by-id", [types.uint(1)], deployer.address);
     let vault = call.result.expectTuple();

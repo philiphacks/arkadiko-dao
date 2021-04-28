@@ -433,7 +433,8 @@
       (merge auction { is-open: false })
     )
     (try! (contract-call? .dao burn-token .xusd-token (- (get total-debt-raised auction) (get total-debt-burned auction)) (as-contract tx-sender)))
-    (try! (if (>= (get total-debt-raised auction) (get debt-to-raise auction))
+    (try!
+      (if (>= (get total-debt-raised auction) (get debt-to-raise auction))
         (if (is-eq (get auction-type auction) "collateral")
           (contract-call?
             vault-manager

@@ -95,7 +95,7 @@
     (asserts! (is-eq tx-sender (get owner vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq "STX" (get collateral-token vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq false (get is-liquidated vault)) (err ERR-NOT-AUTHORIZED))
-    (try! (contract-call? .stx-reserve toggle-stacking (get revoked-stacking vault) (get collateral vault)))
+    (try! (contract-call? .stx-reserve toggle-stacking (not (get revoked-stacking vault)) (get collateral vault)))
 
     (try!
       (contract-call? .vault-data update-vault vault-id (merge vault {

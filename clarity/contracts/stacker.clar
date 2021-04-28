@@ -114,16 +114,16 @@
   (let (
     (vault (contract-call? .vault-data get-vault-by-id vault-id))
     (vault-collateral (get collateral vault))
-    (stacking-entry (contract-call? .vault-data get-stacking-payout vault-id))
-    (collateral-amount (get collateral-amount stacking-entry))
   )
     (asserts! (is-eq tx-sender CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
     (asserts! (>= burn-block-height (var-get stacking-unlock-burn-height)) (err ERR-BURN-HEIGHT-NOT-REACHED))
 
     (if (and (get is-liquidated vault) (get auction-ended vault))
-      (payout-liquidated-vault vault-id)
-      (payout-vault vault-id)
+      (try! (payout-liquidated-vault vault-id))
+      (try! (payout-vault vault-id))
     )
+    ;; (var-set stacking-stx-received u0) ;; set back to 0 after we paid everyone
+    (ok true)
   )
 )
 

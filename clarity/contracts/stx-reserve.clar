@@ -44,8 +44,8 @@
     (asserts! (is-eq contract-caller .freddie) (err ERR-NOT-AUTHORIZED))
 
     (if (is-eq true revoked-stacking)
-      (ok (try! (add-tokens-to-stack ustx-collateral)))
       (ok (try! (subtract-tokens-to-stack ustx-collateral)))
+      (ok (try! (add-tokens-to-stack ustx-collateral)))
     )
   )
 )
