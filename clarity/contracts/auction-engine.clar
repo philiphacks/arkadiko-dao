@@ -61,7 +61,7 @@
 
 (define-data-var last-auction-id uint u0)
 (define-data-var auction-ids (list 1500 uint) (list u0))
-(define-data-var lot-size uint u100000000) ;; 100 xUSD
+(define-data-var lot-size uint u1000000000) ;; 1000 xUSD
 
 (define-read-only (get-auction-by-id (id uint))
   (default-to
