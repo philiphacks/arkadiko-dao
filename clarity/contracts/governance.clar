@@ -202,7 +202,7 @@
 ;; Return votes to voter
 (define-public (return-votes-to-member (token <mock-ft-trait>) (proposal-id uint) (member principal))
   (let (
-    (token-count (get amount (get-tokens-by-member-by-id proposal-id tx-sender token)))
+    (token-count (get amount (get-tokens-by-member-by-id proposal-id member token)))
     (proposal (get-proposal-by-id proposal-id))
   )
     (asserts! (is-eq (is-token-accepted token) true) (err ERR-WRONG-TOKEN))
