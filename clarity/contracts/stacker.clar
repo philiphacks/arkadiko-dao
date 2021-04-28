@@ -20,6 +20,7 @@
 (define-constant ERR-CANNOT-STACK u191)
 (define-constant ERR-FAILED-STACK-STX u192)
 (define-constant ERR-BURN-HEIGHT-NOT-REACHED u193)
+(define-constant ERR-ALREADY-STACKING u194)
 (define-constant CONTRACT-OWNER tx-sender)
 
 (define-data-var stacking-unlock-burn-height uint u0) ;; when is this cycle over
@@ -62,6 +63,7 @@
     (stx-balance (unwrap-panic (get-stx-balance)))
   )
     (asserts! (is-eq tx-sender CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
+    (asserts! (>= burn-block-height (var-get stacking-unlock-burn-height)) (err ERR-ALREADY-STACKING))
 
     ;; check if we can stack - if not, then probably cause we have not reached the minimum with (var-get tokens-to-stack)
     (if (unwrap! can-stack (err ERR-CANNOT-STACK))

@@ -190,6 +190,16 @@ Clarinet.test({
     call = await chain.callReadOnlyFn("stacker", "get-stx-balance", [], deployer.address);
     call.result.expectOk().expectUint(1500000000);
 
+    // try stacking again, should fail
+    block = chain.mineBlock([
+      Tx.contractCall("stacker", "initiate-stacking", [
+        types.tuple({ 'version': '0x00', 'hashbytes': '0xf632e6f9d29bfb07bc8948ca6e0dd09358f003ac'}),
+        types.uint(1), // start block height
+        types.uint(1) // 1 cycle lock period
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(194);
+
     chain.mineEmptyBlock(300);
 
     // now imagine we receive 450 STX for stacking
@@ -203,7 +213,8 @@ Clarinet.test({
       ], deployer.address),
       Tx.contractCall("stacker", "payout", [
         types.uint(2)
-      ], deployer.address)
+      ], deployer.address),
+      Tx.contractCall("stacker", "set-stacking-stx-received", [types.uint(0)], deployer.address)
     ]);
 
     call = await chain.callReadOnlyFn("vault-data", "get-vault-by-id", [types.uint(1)], deployer.address);
