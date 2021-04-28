@@ -163,6 +163,12 @@
       qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-registry
     }
   )
+  (map-set contracts-data
+    { qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-registry }
+    {
+      active: true
+    }
+  )
 
   (map-set contracts
     { name: "stake-pool-diko" }
