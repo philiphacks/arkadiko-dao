@@ -51,11 +51,13 @@
 )
 
 ;; transfers (var-get tokens-to-stack) tokens to the stacker contract
-(define-public (request-stx-to-stack)
+(define-public (request-stx-to-stack (requested-ustx uint))
   (begin
     (asserts! (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "stacker"))) (err ERR-NOT-AUTHORIZED))
+    (asserts! (<= requested-ustx (var-get tokens-to-stack)) (err ERR-NOT-AUTHORIZED))
+
     (as-contract
-      (stx-transfer? (var-get tokens-to-stack) (as-contract tx-sender) (unwrap-panic (contract-call? .dao get-qualified-name-by-name "stacker")))
+      (stx-transfer? requested-ustx (as-contract tx-sender) (unwrap-panic (contract-call? .dao get-qualified-name-by-name "stacker")))
     )
   )
 )

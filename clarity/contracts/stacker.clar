@@ -19,6 +19,7 @@
 (define-constant ERR-NOT-AUTHORIZED u19401)
 (define-constant ERR-CANNOT-STACK u191)
 (define-constant ERR-FAILED-STACK-STX u192)
+(define-constant ERR-BURN-HEIGHT-NOT-REACHED u193)
 (define-constant CONTRACT-OWNER tx-sender)
 
 (define-data-var stacking-unlock-burn-height uint u0) ;; when is this cycle over
@@ -46,6 +47,10 @@
   (ok (var-get stacking-unlock-burn-height))
 )
 
+(define-public (set-stacking-stx-received (stx-received uint))
+  (ok (var-set stacking-stx-received stx-received))
+)
+
 (define-public (initiate-stacking (pox-addr (tuple (version (buff 1)) (hashbytes (buff 20))))
                                   (start-burn-ht uint)
                                   (lock-period uint))
@@ -54,13 +59,14 @@
   (let (
     (tokens-to-stack (unwrap! (contract-call? .stx-reserve get-tokens-to-stack) (ok u0)))
     (can-stack (as-contract (contract-call? 'ST000000000000000000002AMW42H.pox can-stack-stx pox-addr tokens-to-stack start-burn-ht lock-period)))
+    (stx-balance (unwrap-panic (get-stx-balance)))
   )
     (asserts! (is-eq tx-sender CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
 
     ;; check if we can stack - if not, then probably cause we have not reached the minimum with (var-get tokens-to-stack)
     (if (unwrap! can-stack (err ERR-CANNOT-STACK))
       (begin
-        (try! (contract-call? .stx-reserve request-stx-to-stack))
+        (try! (contract-call? .stx-reserve request-stx-to-stack (- tokens-to-stack stx-balance)))
         (let (
           (result
             (unwrap!
@@ -82,7 +88,13 @@
 ;; can be called by the stx reserve to request STX tokens for withdrawal
 (define-public (request-stx-for-withdrawal (ustx-amount uint))
   (begin
-    (asserts! (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "freddie"))) (err ERR-NOT-AUTHORIZED))
+    (asserts!
+      (or
+        (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "freddie")))
+        (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "stacker")))
+      )
+      (err ERR-NOT-AUTHORIZED)
+    )
     (as-contract
       (stx-transfer? ustx-amount (as-contract tx-sender) (unwrap-panic (contract-call? .dao get-qualified-name-by-name "stx-reserve")))
     )
@@ -106,6 +118,8 @@
     (collateral-amount (get collateral-amount stacking-entry))
   )
     (asserts! (is-eq tx-sender CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
+    (asserts! (>= burn-block-height (var-get stacking-unlock-burn-height)) (err ERR-BURN-HEIGHT-NOT-REACHED))
+
     (if (and (get is-liquidated vault) (get auction-ended vault))
       (payout-liquidated-vault vault-id)
       (payout-vault vault-id)
@@ -147,7 +161,7 @@
     (vault (contract-call? .vault-data get-vault-by-id vault-id))
     (basis-points (/ (* u10000 (get stacked-tokens vault)) (var-get stacking-stx-stacked))) ;; (100 * 100 * vault-stacked-tokens / stx-stacked)
   )
-    (/ (* (var-get stacking-stx-received) basis-points) u100)
+    (/ (* (var-get stacking-stx-received) basis-points) u10000)
   )
 )
 
@@ -159,11 +173,19 @@
   )
     (asserts! (is-eq (get is-liquidated vault) false) (err ERR-NOT-AUTHORIZED))
     (asserts! (> (get stacked-tokens vault) u0) (err ERR-NOT-AUTHORIZED))
+    (print earned-amount)
 
     (try! (contract-call? .vault-data update-vault vault-id (merge vault { collateral: new-collateral-amount })))
     (if (get revoked-stacking vault)
-      (try! (contract-call? .vault-data update-vault vault-id (merge vault { updated-at-block-height: block-height, stacked-tokens: u0 })))
-      (try! (contract-call? .vault-data update-vault vault-id (merge vault { updated-at-block-height: block-height, stacked-tokens: new-collateral-amount })))
+      (begin
+        (try! (contract-call? .vault-data update-vault vault-id (merge vault { updated-at-block-height: block-height, stacked-tokens: u0 })))
+        (try! (request-stx-for-withdrawal new-collateral-amount))
+      )
+      (try! (contract-call? .vault-data update-vault vault-id (merge vault {
+        updated-at-block-height: block-height,
+        stacked-tokens: new-collateral-amount,
+        collateral: new-collateral-amount
+      })))
     )
     (ok true)
   )
