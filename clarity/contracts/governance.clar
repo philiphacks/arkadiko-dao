@@ -8,6 +8,7 @@
 ;; Errors
 (define-constant ERR-NOT-ENOUGH-BALANCE u31)
 (define-constant ERR-NO-CONTRACT-CHANGES u32)
+(define-constant ERR-WRONG-TOKEN u33)
 (define-constant ERR-NOT-AUTHORIZED u3401)
 (define-constant STATUS-OK u3200)
 
@@ -33,6 +34,7 @@
 (define-data-var proposal-count uint u0)
 (define-data-var proposal-ids (list 100 uint) (list u0))
 (define-map votes-by-member { proposal-id: uint, member: principal } { vote-count: uint })
+;; TODO: add key "asset: principal" so we know which token the voter can claim back
 
 
 ;; Get all proposals
@@ -72,6 +74,14 @@
   )
 )
 
+(define-read-only (is-token-accepted (token <mock-ft-trait>))
+  (let (
+    (is-diko (is-eq (contract-of token) .arkadiko-token))
+    (is-stdiko (is-eq (contract-of token) .stake-pool-diko))
+  )
+    (or is-diko is-stdiko)
+  )
+)
 
 ;; Start a proposal
 ;; Requires 1% of the supply in your wallet
@@ -109,16 +119,19 @@
   )
 )
 
-(define-public (vote-for (proposal-id uint) (amount uint))
+(define-public (vote-for (token <mock-ft-trait>) (proposal-id uint) (amount uint))
   (let (
     (proposal (get-proposal-by-id proposal-id))
-    (vote-count (get vote-count (get-votes-by-member-by-id proposal-id tx-sender))))
+    (vote-count (get vote-count (get-votes-by-member-by-id proposal-id tx-sender)))
+  )
+    ;; Can vote with DIKO and stDIKO
+    (asserts! (is-eq (is-token-accepted token) true) (err ERR-WRONG-TOKEN))
     ;; Proposal should be open for voting
     (asserts! (is-eq (get is-open proposal) true) (err ERR-NOT-AUTHORIZED))
     ;; Vote should be casted after the start-block-height
     (asserts! (>= block-height (get start-block-height proposal)) (err ERR-NOT-AUTHORIZED))
     ;; Voter should be able to stake
-    (try! (contract-call? .arkadiko-token transfer amount tx-sender (as-contract tx-sender)))
+    (try! (contract-call? token transfer amount tx-sender (as-contract tx-sender)))
     ;; Mutate
     (map-set proposals
       { id: proposal-id }
@@ -130,16 +143,19 @@
   )
 )
 
-(define-public (vote-against (proposal-id uint) (amount uint))
+(define-public (vote-against (token <mock-ft-trait>) (proposal-id uint) (amount uint))
   (let (
     (proposal (get-proposal-by-id proposal-id))
-    (vote-count (get vote-count (get-votes-by-member-by-id proposal-id tx-sender))))
+    (vote-count (get vote-count (get-votes-by-member-by-id proposal-id tx-sender)))
+  )
+    ;; Can vote with DIKO and stDIKO
+    (asserts! (is-eq (is-token-accepted token) true) (err ERR-WRONG-TOKEN))
     ;; Proposal should be open for voting
     (asserts! (is-eq (get is-open proposal) true) (err ERR-NOT-AUTHORIZED))
     ;; Vote should be casted after the start-block-height
     (asserts! (>= block-height (get start-block-height proposal)) (err ERR-NOT-AUTHORIZED))
     ;; Voter should be able to stake
-    (try! (contract-call? .arkadiko-token transfer amount tx-sender (as-contract tx-sender)))
+    (try! (contract-call? token transfer amount tx-sender (as-contract tx-sender)))
     ;; Mutate
     (map-set proposals
       { id: proposal-id }
@@ -169,16 +185,17 @@
 )
 
 ;; Return votes to voter
-(define-public (return-votes-to-member (proposal-id uint) (member principal))
+(define-public (return-votes-to-member (token <mock-ft-trait>) (proposal-id uint) (member principal))
   (let (
     (vote-count (get vote-count (get-votes-by-member-by-id proposal-id tx-sender)))
     (proposal (get-proposal-by-id proposal-id))
   )
+    (asserts! (is-eq (is-token-accepted token) true) (err ERR-WRONG-TOKEN))
     (asserts! (is-eq (get is-open proposal) false) (err ERR-NOT-AUTHORIZED))
     (asserts! (>= block-height (get end-block-height proposal)) (err ERR-NOT-AUTHORIZED))
 
     ;; Return DIKO
-    (contract-call? .arkadiko-token transfer vote-count (as-contract tx-sender) member)
+    (contract-call? token transfer vote-count (as-contract tx-sender) member)
   )
 )
 

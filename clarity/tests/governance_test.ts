@@ -90,6 +90,7 @@ Clarinet.test({
     // Vote for wallet_1
     block = chain.mineBlock([
     Tx.contractCall("governance", "vote-for", [
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
         types.uint(1),
         types.uint(10000000)
     ], wallet_1.address)
@@ -110,6 +111,7 @@ Clarinet.test({
     // Vote for wallet_2
     block = chain.mineBlock([
     Tx.contractCall("governance", "vote-for", [
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
         types.uint(1),
         types.uint(20000000)
     ], wallet_2.address)
@@ -119,6 +121,7 @@ Clarinet.test({
     // Vote against wallet_2
     block = chain.mineBlock([
     Tx.contractCall("governance", "vote-against", [
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
         types.uint(1),
         types.uint(1000000)
     ], wallet_2.address)
@@ -178,6 +181,7 @@ Clarinet.test({
     // Vote for wallet_1
     block = chain.mineBlock([
     Tx.contractCall("governance", "vote-for", [
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
         types.uint(1),
         types.uint(10000000)
     ], wallet_1.address)
@@ -242,6 +246,7 @@ Clarinet.test({
     // Vote for wallet_1
     block = chain.mineBlock([
     Tx.contractCall("governance", "vote-against", [
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
         types.uint(1),
         types.uint(10000000)
     ], wallet_1.address)
@@ -313,6 +318,7 @@ Clarinet.test({
     // Vote for wallet_1
     block = chain.mineBlock([
     Tx.contractCall("governance", "vote-for", [
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
         types.uint(1),
         types.uint(10000000)
     ], wallet_1.address)
@@ -335,6 +341,7 @@ Clarinet.test({
     // Return DIKO to members
     block = chain.mineBlock([
     Tx.contractCall("governance", "return-votes-to-member", [
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
         types.uint(1),
         types.principal(wallet_1.address)
     ], wallet_1.address)
