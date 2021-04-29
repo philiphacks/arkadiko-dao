@@ -121,6 +121,7 @@
     (vault (contract-call? .vault-data get-vault-by-id vault-id))
   )
     (asserts! (is-eq tx-sender CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq "STX" (get collateral-token vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (>= burn-block-height (var-get stacking-unlock-burn-height)) (err ERR-BURN-HEIGHT-NOT-REACHED))
 
     (if (and (get is-liquidated vault) (get auction-ended vault))
