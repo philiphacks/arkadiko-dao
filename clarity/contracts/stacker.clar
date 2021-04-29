@@ -119,7 +119,6 @@
 (define-public (payout (vault-id uint))
   (let (
     (vault (contract-call? .vault-data get-vault-by-id vault-id))
-    (vault-collateral (get collateral vault))
   )
     (asserts! (is-eq tx-sender CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
     (asserts! (>= burn-block-height (var-get stacking-unlock-burn-height)) (err ERR-BURN-HEIGHT-NOT-REACHED))
