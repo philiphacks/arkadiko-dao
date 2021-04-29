@@ -132,7 +132,7 @@
 ;; start an auction to sell off DIKO gov tokens
 ;; this is a private function since it should only be called
 ;; when a normal collateral liquidation auction can't raise enough debt
-(define-private (start-debt-auction (vault-id uint) (debt-to-raise uint))
+(define-private (start-debt-auction (vault-id uint) (debt-to-raise uint) (discount uint))
   (let ((vault (contract-call? .vault-data get-vault-by-id vault-id)))
     (asserts! (is-eq (get is-liquidated vault) true) (err ERR-AUCTION-NOT-ALLOWED))
 
@@ -145,7 +145,7 @@
         collateral-amount: (/ (* u100 debt-to-raise) price-in-cents),
         collateral-token: "DIKO",
         debt-to-raise: debt-to-raise,
-        discount: u0, ;; TODO
+        discount: discount,
         vault-id: vault-id,
         lot-size: (var-get lot-size),
         lots-sold: u0,
@@ -381,6 +381,13 @@
   )
 )
 
+(define-private (min-of (i1 uint) (i2 uint))
+  (if (< i1 i2)
+    i1
+    i2
+  )
+)
+
 ;; DONE     1. flag auction on map as closed
 ;; DONE     2. allow person to collect collateral from reserve manually
 ;; DONE     3. check if vault debt is covered (sum of xUSD in lots >= debt-to-raise)
@@ -399,11 +406,21 @@
     (asserts! (is-eq (get is-open auction) true) (err ERR-AUCTION-NOT-OPEN))
     (asserts! (is-eq (contract-of vault-manager) (unwrap-panic (contract-call? .dao get-qualified-name-by-name "freddie"))) (err ERR-NOT-AUTHORIZED))
 
-    (map-set auctions
-      { id: auction-id }
-      (merge auction { is-open: false })
+    (let ((vault (contract-call? .vault-data get-vault-by-id (get vault-id auction))))
+      (if (> (get debt vault) (get total-debt-burned auction))
+        (begin
+          (try! (contract-call? .dao burn-token .xusd-token
+            (min-of (get total-debt-raised auction) (- (get debt vault) (get total-debt-burned auction)))
+            (as-contract tx-sender))
+          )
+          (map-set auctions
+            { id: auction-id }
+            (merge auction { is-open: false, total-debt-burned: (min-of (get total-debt-raised auction) (- (get debt vault) (get total-debt-burned auction))) })
+          )
+        )
+        (map-set auctions { id: auction-id } (merge auction { is-open: false }))
+      )
     )
-    (try! (contract-call? .dao burn-token .xusd-token (- (get total-debt-raised auction) (get total-debt-burned auction)) (as-contract tx-sender)))
     (try!
       (if (>= (get total-debt-raised auction) (get debt-to-raise auction))
         (if (is-eq (get auction-type auction) "collateral")
@@ -427,6 +444,7 @@
           (start-debt-auction
             (get vault-id auction)
             (- (get debt-to-raise auction) (get total-debt-raised auction))
+            u0
           )
         )
       )
