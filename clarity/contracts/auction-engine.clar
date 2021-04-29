@@ -165,9 +165,12 @@
   )
 )
 
-(define-read-only (discounted-auction-price (price-in-cents uint) (discount-percentage uint))
+(define-read-only (discounted-auction-price (price-in-cents uint) (auction-id uint))
   ;; price * 3% = price * 3 / 100
-  (let ((discount (* price-in-cents discount-percentage)))
+  (let (
+    (auction (get-auction-by-id auction-id))
+    (discount (* price-in-cents (get discount auction)))
+  )
     (ok (/ (- (* u100 price-in-cents) discount) u100))
   )
 )
@@ -191,7 +194,7 @@
     (auction (get-auction-by-id auction-id))
     (collateral-left (- (get collateral-amount auction) (get total-collateral-sold auction)))
     (debt-left-to-raise (- (get debt-to-raise auction) (get total-debt-raised auction)))
-    (discounted-price (unwrap-panic (discounted-auction-price collateral-price-in-cents (get discount auction))))
+    (discounted-price (unwrap-panic (discounted-auction-price collateral-price-in-cents auction-id)))
   )
     (if (< debt-left-to-raise (get lot-size auction))
       (let ((collateral-amount (/ (* u100 debt-left-to-raise) discounted-price)))

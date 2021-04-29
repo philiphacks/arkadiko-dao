@@ -158,7 +158,7 @@
   (let (
     (stx-in-vault (var-get stacking-stx-in-vault))
     (percentage (/ (* u100000 (get collateral-amount data)) stx-in-vault)) ;; in basis points
-    (basis-points (/ (* u100000 stx-in-vault) (var-get stacking-stx-stacked)))
+    (basis-points (/ (* u100000 stx-in-vault) (var-get stacking-stx-stacked))) ;; this gives the percentage of collateral bought in auctions vs stx stacked
     (earned-amount-vault (/ (* (var-get stacking-stx-received) basis-points) u100000))
     (earned-amount-bidder (/ (* percentage earned-amount-vault) u100000))
   )
