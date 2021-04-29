@@ -20,7 +20,7 @@ export const Auction: React.FC<AuctionProps> = ({ id, lotId, collateralToken, en
     const fetchPrice = async () => {
       let price = await getPrice(collateralToken);
       setPrice(price);
-      setDiscountedPrice(price - (price * 0.03)); // TODO: change for discounted-auction-price on auction-engine SC
+      setDiscountedPrice(price - (price * 0.04)); // TODO: change for discounted-auction-price on auction-engine SC. 4% = 40% of 10% liquidation penalty
     };
 
     fetchPrice();
