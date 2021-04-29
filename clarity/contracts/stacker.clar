@@ -49,7 +49,11 @@
 )
 
 (define-public (set-stacking-stx-received (stx-received uint))
-  (ok (var-set stacking-stx-received stx-received))
+  (begin
+    (asserts! (is-eq tx-sender CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
+
+    (ok (var-set stacking-stx-received stx-received))
+  )
 )
 
 (define-public (initiate-stacking (pox-addr (tuple (version (buff 1)) (hashbytes (buff 20))))
