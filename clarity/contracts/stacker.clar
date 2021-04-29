@@ -178,7 +178,6 @@
   )
     (asserts! (is-eq (get is-liquidated vault) false) (err ERR-NOT-AUTHORIZED))
     (asserts! (> (get stacked-tokens vault) u0) (err ERR-NOT-AUTHORIZED))
-    (print earned-amount)
 
     (try! (contract-call? .vault-data update-vault vault-id (merge vault { collateral: new-collateral-amount })))
     (if (get revoked-stacking vault)
