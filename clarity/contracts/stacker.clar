@@ -128,7 +128,7 @@
       (try! (payout-liquidated-vault vault-id))
       (try! (payout-vault vault-id))
     )
-    ;; (var-set stacking-stx-received u0) ;; set back to 0 after we paid everyone
+    ;; (var-set stacking-stx-received u0) ;; set manually back to 0 after we paid everyone, since this method is for 1 vault only
     (ok true)
   )
 )
