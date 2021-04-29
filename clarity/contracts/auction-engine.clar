@@ -1,4 +1,4 @@
-;; (impl-trait .auction-engine-trait.auction-engine-trait)
+(impl-trait .auction-engine-trait.auction-engine-trait)
 (use-trait vault-trait .vault-trait.vault-trait)
 (use-trait mock-ft-trait .mock-ft-trait.mock-ft-trait)
 (use-trait vault-manager-trait .vault-manager-trait.vault-manager-trait)
