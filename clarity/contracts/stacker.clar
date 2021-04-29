@@ -133,7 +133,6 @@
   )
 )
 
-;; TODO: write method
 (define-private (payout-liquidated-vault (vault-id uint))
   (let (
     (vault (contract-call? .vault-data get-vault-by-id vault-id))
