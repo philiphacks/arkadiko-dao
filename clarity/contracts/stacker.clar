@@ -148,10 +148,10 @@
 (define-private (payout-lot-bidder (data (tuple (collateral-amount uint) (recipient principal))))
   (let (
     (stx-in-vault (var-get stacking-stx-in-vault))
-    (percentage (/ (* u10000 (get collateral-amount data) stx-in-vault))) ;; in basis points
-    (basis-points (/ (* u10000 stx-in-vault (var-get stacking-stx-stacked))))
-    (earned-amount-vault (/ (* (var-get stacking-stx-received) basis-points) u100))
-    (earned-amount-bidder (/ (* percentage earned-amount-vault) u100))
+    (percentage (/ (* u10000 (get collateral-amount data)) stx-in-vault)) ;; in basis points
+    (basis-points (/ (* u10000 stx-in-vault) (var-get stacking-stx-stacked)))
+    (earned-amount-vault (/ (* (var-get stacking-stx-received) basis-points) u10000))
+    (earned-amount-bidder (/ (* percentage earned-amount-vault) u10000))
   )
     (try! (as-contract (stx-transfer? earned-amount-bidder (as-contract tx-sender) (get recipient data))))
     (ok true)

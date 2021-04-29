@@ -228,3 +228,111 @@ Clarinet.test({
     vault['collateral'].expectUint(649985000);
   }
 });
+
+Clarinet.test({
+  name:
+    "stacker: auction winners receive yield from PoX vault",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    let deployer = accounts.get("deployer")!;
+    let wallet_1 = accounts.get("wallet_1")!;
+    let block = chain.mineBlock([
+      // Initialize price of STX to $2 in the oracle
+      Tx.contractCall("oracle", "update-price", [
+        types.ascii("STX"),
+        types.uint(200),
+      ], deployer.address),
+      Tx.contractCall("freddie", "collateralize-and-mint", [
+        types.uint(1000000000), // 1000 STX
+        types.uint(1300000000), // mint 1300 xUSD
+        types.principal(deployer.address),
+        types.ascii("STX-A"),
+        types.ascii("STX"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
+      ], deployer.address),
+      Tx.contractCall("stacker", "initiate-stacking", [
+        types.tuple({ 'version': '0x00', 'hashbytes': '0xf632e6f9d29bfb07bc8948ca6e0dd09358f003ac'}),
+        types.uint(1), // start block height
+        types.uint(1) // 1 cycle lock period
+      ], deployer.address)
+    ]);
+
+    block = chain.mineBlock([
+      Tx.contractCall("oracle", "update-price", [
+        types.ascii("STX"),
+        types.uint(150),
+      ], deployer.address),
+      Tx.contractCall("liquidator", "notify-risky-vault", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.auction-engine'),
+        types.uint(1),
+      ], deployer.address),
+    ]);
+    block.receipts[1].result
+      .expectOk()
+      .expectUint(5200);
+
+    block = chain.mineBlock([
+      Tx.contractCall("auction-engine", "bid", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.oracle'),
+        types.uint(1),
+        types.uint(0),
+        types.uint(1000000000)
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectOk().expectBool(true);
+
+    block = chain.mineBlock([
+      Tx.contractCall("auction-engine", "bid", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.freddie'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.oracle'),
+        types.uint(1),
+        types.uint(1),
+        types.uint(296551724 * 1.5) // 1.5 (price of STX) * minimum collateral
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectOk().expectBool(true);
+
+    let call = await chain.callReadOnlyFn(
+      "auction-engine",
+      "get-auction-by-id",
+      [types.uint(1)],
+      wallet_1.address,
+    );
+    let auction = call.result.expectTuple();
+    auction['is-open'].expectBool(false);
+
+    call = await chain.callReadOnlyFn(
+      "freddie",
+      "get-vault-by-id",
+      [types.uint(1)],
+      wallet_1.address
+    );
+    let vault = call.result.expectTuple();
+    vault['leftover-collateral'].expectUint(13793104);
+    vault['is-liquidated'].expectBool(true);
+    vault['auction-ended'].expectBool(true);
+
+    chain.mineEmptyBlock(300);
+
+    block = chain.mineBlock([
+      Tx.contractCall("stacker", "set-stacking-stx-received", [
+        types.uint(450000000),
+      ], deployer.address),
+      Tx.contractCall("stacker", "payout", [
+        types.uint(1)
+      ], deployer.address)
+    ]);
+
+    // Check if transfer of yields is approx 450 STX
+    let [stxTransferEvent1, stxTransferEvent2] = block.receipts[1].events;
+    stxTransferEvent1.stx_transfer_event.sender.expectPrincipal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stacker");
+    stxTransferEvent1.stx_transfer_event.recipient.expectPrincipal(deployer.address);
+    stxTransferEvent1.stx_transfer_event.amount.expectInt(310342347);
+
+    stxTransferEvent2.stx_transfer_event.sender.expectPrincipal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stacker");
+    stxTransferEvent2.stx_transfer_event.recipient.expectPrincipal(deployer.address);
+    stxTransferEvent2.stx_transfer_event.amount.expectInt(133403274);
+  }
+});
