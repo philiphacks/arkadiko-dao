@@ -22,7 +22,7 @@ import BN from 'bn.js';
 export const ManageVault = ({ match }) => {
   const { doContractCall } = useConnect();
   const senderAddress = useSTXAddress();
-  const state = useContext(AppContext);
+  const [state, _] = useContext(AppContext);
   const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS || '';
 
   const [showDepositModal, setShowDepositModal] = useState(false);

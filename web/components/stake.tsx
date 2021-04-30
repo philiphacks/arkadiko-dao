@@ -10,7 +10,7 @@ import { useConnect } from '@stacks/connect-react';
 import { connectWebSocketClient } from '@stacks/blockchain-api-client';
 
 export const Stake = () => {
-  const state = useContext(AppContext);
+  const [state, _] = useContext(AppContext);
   const stxAddress = useSTXAddress();
   const [showStakeModal, setShowStakeModal] = useState(false);
   const [showUnstakeModal, setShowUnstakeModal] = useState(false);

@@ -4,7 +4,7 @@ import { useSTXAddress } from './use-stx-address';
 import { stacksNetwork as network } from '@common/utils';
 import { callReadOnlyFunction, cvToJSON, uintCV } from '@stacks/transactions';
 
-export const getCollateralToDebtRatio = (vaultId: string) => {
+export const WebsocketTxUpdater = (vaultId: string) => {
   const stxAddress = useSTXAddress();
   const [state, _] = useContext(AppContext);
   const [collateralToDebt, setCollateralToDebt] = useState(0);
@@ -26,7 +26,7 @@ export const getCollateralToDebtRatio = (vaultId: string) => {
       }
     };
     void getCollateralToDebtRatio();
-  }, [state.userData]);
+  }, [state.currentTx]);
 
   return {
     collateralToDebt,

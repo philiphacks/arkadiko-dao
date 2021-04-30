@@ -59,4 +59,4 @@ export const defaultState = (): AppState => {
   };
 };
 
-export const AppContext = createContext<AppState>(defaultState());
+export const AppContext = createContext<Array<AppState>>([defaultState(), () => {}])
