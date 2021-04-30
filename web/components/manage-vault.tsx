@@ -10,19 +10,19 @@ import {
   createAssetInfo, FungibleConditionCode, makeStandardSTXPostCondition } from '@stacks/transactions';
 import { AppContext, CollateralTypeProps } from '@common/context';
 import { getCollateralToDebtRatio } from '@common/get-collateral-to-debt-ratio';
+import { websocketTxUpdater } from '@common/websocket-tx-updater';
 import { debtClass, VaultProps } from './vault';
 import { getPrice } from '@common/get-price';
 import { getLiquidationPrice, availableCollateralToWithdraw, availableCoinsToMint } from '@common/vault-utils';
 import { Link } from '@components/link';
 import { Redirect } from 'react-router-dom';
-import { connectWebSocketClient } from '@stacks/blockchain-api-client';
 import { resolveReserveName, tokenTraits } from '@common/vault-utils';
 import BN from 'bn.js';
 
 export const ManageVault = ({ match }) => {
   const { doContractCall } = useConnect();
   const senderAddress = useSTXAddress();
-  const [state, _] = useContext(AppContext);
+  const [state, setState] = useContext(AppContext);
   const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS || '';
 
   const [showDepositModal, setShowDepositModal] = useState(false);
@@ -32,8 +32,6 @@ export const ManageVault = ({ match }) => {
   const [extraCollateralDeposit, setExtraCollateralDeposit] = useState('');
   const [isLiquidated, setIsLiquidated] = useState(false);
   const [auctionEnded, setAuctionEnded] = useState(false);
-  const [txId, setTxId] = useState<string>('');
-  const [txStatus, setTxStatus] = useState<string>('');
   const [collateralToWithdraw, setCollateralToWithdraw] = useState('');
   const [maximumCollateralToWithdraw, setMaximumCollateralToWithdraw] = useState(0);
   const [usdToMint, setUsdToMint] = useState('');
@@ -118,28 +116,6 @@ export const ManageVault = ({ match }) => {
     }
   }, [collateralType?.collateralToDebtRatio, price]);
 
-  useEffect(() => {
-    let sub;
-
-    const subscribe = async (txId:string) => {
-      const client = await connectWebSocketClient('ws://localhost:3999');
-      sub = await client.subscribeTxUpdates(txId, update => {
-        console.log('Got an update:', update);
-        if (update['tx_status'] == 'success') {
-          window.location.reload(true);
-        } else if (update['tx_status'] == 'abort_by_response') {
-          setTxStatus('error');
-        }
-      });
-      console.log({ client, sub });
-    };
-    if (txId) {
-      console.log('Subscribing on updates with TX id:', txId);
-      subscribe(txId);
-      setShowDepositModal(false);
-    }
-  }, [txId]);
-
   const payStabilityFee = async () => {
     // const postConditions = [
     //   makeStandardFungiblePostCondition(
@@ -166,8 +142,7 @@ export const ManageVault = ({ match }) => {
       // postConditions,
       finished: data => {
         console.log('finished paying stability fee!', data);
-        setTxId(data.txId);
-        setTxStatus('pending');
+        setState(prevState => ({ ...prevState, currentTxId: data.txId, currentTxStatus: 'pending' }));
       },
     });
   };
@@ -189,8 +164,7 @@ export const ManageVault = ({ match }) => {
       postConditionMode: 0x01,
       finished: data => {
         console.log('finished burn!', data);
-        setTxId(data.txId);
-        setTxStatus('pending');
+        setState(prevState => ({ ...prevState, currentTxId: data.txId, currentTxStatus: 'pending' }));
         setShowBurnModal(false);
       },
     });
@@ -198,6 +172,7 @@ export const ManageVault = ({ match }) => {
   let debtRatio = 0;
   if (match.params.id) {
     debtRatio = getCollateralToDebtRatio(match.params.id)?.collateralToDebt;
+    websocketTxUpdater();
   }
 
   const addDeposit = async () => {
@@ -245,8 +220,8 @@ export const ManageVault = ({ match }) => {
       postConditions,
       finished: data => {
         console.log('finished deposit!', data);
-        setTxId(data.txId);
-        setTxStatus('pending');
+        setState(prevState => ({ ...prevState, currentTxId: data.txId, currentTxStatus: 'pending' }));
+        setShowDepositModal(false);
       },
     });
   };
@@ -303,8 +278,7 @@ export const ManageVault = ({ match }) => {
       postConditionMode: 0x01,
       finished: data => {
         console.log('finished mint!', data, data.txId);
-        setTxId(data.txId);
-        setTxStatus('pending');
+        setState(prevState => ({ ...prevState, currentTxId: data.txId, currentTxStatus: 'pending' }));
         setShowMintModal(false);
       },
     });
@@ -320,8 +294,7 @@ export const ManageVault = ({ match }) => {
       postConditionMode: 0x01,
       finished: data => {
         console.log('finished toggling stacking!', data, data.txId);
-        setTxId(data.txId);
-        setTxStatus('pending');
+        setState(prevState => ({ ...prevState, currentTxId: data.txId, currentTxStatus: 'pending' }));
       },
     });
   };
@@ -336,8 +309,7 @@ export const ManageVault = ({ match }) => {
       postConditionMode: 0x01,
       finished: data => {
         console.log('finished stacking!', data, data.txId);
-        setTxId(data.txId);
-        setTxStatus('pending');
+        setState(prevState => ({ ...prevState, currentTxId: data.txId, currentTxStatus: 'pending' }));
       },
     });
   };
@@ -362,8 +334,7 @@ export const ManageVault = ({ match }) => {
       postConditionMode: 0x01,
       finished: data => {
         console.log('finished withdraw!', data);
-        setTxId(data.txId);
-        setTxStatus('pending');
+        setState(prevState => ({ ...prevState, currentTxId: data.txId, currentTxStatus: 'pending' }));
         setShowWithdrawModal(false);
       },
     });
@@ -379,8 +350,7 @@ export const ManageVault = ({ match }) => {
       postConditionMode: 0x01,
       finished: data => {
         console.log('finished notify risky reserve!', data);
-        setTxId(data.txId);
-        setTxStatus('pending');
+        setState(prevState => ({ ...prevState, currentTxId: data.txId, currentTxStatus: 'pending' }));
       },
     });
   };
@@ -389,7 +359,7 @@ export const ManageVault = ({ match }) => {
     <Container>
       {auctionEnded && <Redirect to="/vaults" />}
 
-      {txId ? (
+      {state.currentTxId ? (
         <div className="fixed inset-0 flex items-end justify-center px-4 py-6 pointer-events-none sm:p-6 sm:items-start sm:justify-end">
           <div className="max-w-sm w-full bg-white shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden">
             <div className="p-4">
@@ -404,7 +374,7 @@ export const ManageVault = ({ match }) => {
                     Successfully broadcasted transaction!
                   </p>
                   <p className="mt-1 text-sm text-gray-500">
-                    Status: {txStatus}
+                    Status: {state.currentTxStatus}
                   </p>
                   <p className="mt-1 text-sm text-gray-500">
                     This page will be reloaded automatically when the transaction succeeds.
