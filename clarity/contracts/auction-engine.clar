@@ -379,7 +379,7 @@
 
 (define-private (return-xusd (owner principal) (xusd uint))
   (if (> xusd u0)
-    (ok (unwrap-panic (as-contract (contract-call? .xusd-token transfer xusd (as-contract tx-sender) owner))))
+    (as-contract (contract-call? .xusd-token transfer xusd (as-contract tx-sender) owner))
     (err u0) ;; don't really care if this fails.
   )
 )

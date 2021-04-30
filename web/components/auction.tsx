@@ -29,10 +29,8 @@ export const Auction: React.FC<AuctionProps> = ({ id, lotId, collateralToken, en
         senderAddress: stxAddress || '',
         network: network,
       });
-      console.log(discountedPriceCall);
       const json = cvToJSON(discountedPriceCall);
-      console.log(json);
-      setDiscountedPrice(price - (price * 0.04)); // TODO: change for discounted-auction-price on auction-engine SC. 4% = 40% of 10% liquidation penalty
+      setDiscountedPrice(json.value.value);
     };
 
     fetchPrice();
@@ -53,7 +51,7 @@ export const Auction: React.FC<AuctionProps> = ({ id, lotId, collateralToken, en
 
       const collJson = cvToJSON(minimumCollateralAmount);
       setMinimumCollateralAmount(collJson.value.value);
-      const debtMax = 100000000;
+      const debtMax = 1000000000;
       setDebtToRaise(Math.min(debtMax, collJson.value.value * discountedPrice / 100));
 
       const currentBid = await callReadOnlyFunction({
@@ -75,12 +73,12 @@ export const Auction: React.FC<AuctionProps> = ({ id, lotId, collateralToken, en
       setIsClosed(json.value['is-accepted'].value);
     };
 
-    if (mounted) {
+    if (mounted && price !== 0 && discountedPrice !== 0) {
       void getData();
     }
 
     return () => { mounted = false; }
-  }, [price]);
+  }, [price, discountedPrice]);
 
   const setBidParams = () => {
     setBidAuctionId(id);
