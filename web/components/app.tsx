@@ -121,10 +121,9 @@ export const App: React.FC = () => {
         stabilityFee: json.value['stability-fee'].value,
         stabilityFeeApy: json.value['stability-fee-apy'].value
       };
-
       setState(prevState => ({
         ...prevState,
-        collateralTypes: collTypes
+        collateralTypes: {...collTypes}
       }));
     });
   };
