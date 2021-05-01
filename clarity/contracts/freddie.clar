@@ -394,6 +394,17 @@
   )
 )
 
+(define-read-only (get-stability-fee-per-block (vault-id uint))
+  (let (
+    (vault (get-vault-by-id vault-id))
+    (number-of-blocks (- block-height (get stability-fee-last-accrued vault)))
+    (fee (unwrap-panic (contract-call? .collateral-types get-stability-fee (get collateral-type vault))))
+    (interest (/ (* (get debt vault) fee) (pow u10 u15)))
+  )
+    (ok (* number-of-blocks interest))
+  )
+)
+
 ;; should be called ~weekly per open (i.e. non-liquidated) vault
 (define-public (accrue-stability-fee (vault-id uint))
   (let ((fee (unwrap-panic (get-stability-fee-for-vault vault-id))))

@@ -110,6 +110,40 @@ Clarinet.test({
 });
 
 Clarinet.test({
+  name: "freddie: get stability fee per block",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    let deployer = accounts.get("deployer")!;
+    let block = chain.mineBlock([
+      Tx.contractCall("oracle", "update-price", [
+        types.ascii("STX"),
+        types.uint(200),
+      ], deployer.address),
+      Tx.contractCall("freddie", "collateralize-and-mint", [
+        types.uint(1000000000),
+        types.uint(1000000000), // mint 1000 xUSD
+        types.principal(deployer.address),
+        types.ascii("STX-A"),
+        types.ascii("STX"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+        types.principal(
+          "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
+        ),
+      ], deployer.address),
+    ]);
+
+    // mine 1 year of blocks
+    for (let index = 0; index < 365*144; index++) {
+      if (index % 1008 === 0) { // 7 * 144 ~= 1 week
+        let call = await chain.callReadOnlyFn("freddie", "get-stability-fee-per-block", [types.uint(1)], deployer.address);
+        console.log(call);
+      } else {
+        chain.mineBlock([]);
+      }
+    }
+  }
+});
+
+Clarinet.test({
   name: "freddie: calculate and pay stability fee",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     let deployer = accounts.get("deployer")!;
