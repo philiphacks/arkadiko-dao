@@ -313,6 +313,8 @@
       )
       (err ERR-MAXIMUM-DEBT-REACHED)
     )
+
+    (try! (pay-stability-fee vault-id))
     (unwrap! (contract-call? 
                 reserve 
                 mint 
@@ -335,9 +337,10 @@
     (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
     (asserts! (is-eq (get is-liquidated vault) false) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq tx-sender (get owner vault)) (err ERR-NOT-AUTHORIZED))
-    (asserts! (< (- block-height (get stability-fee-last-accrued vault)) BLOCKS-PER-DAY) (err ERR-STABILITY-FEE-NOT-PAID)) ;; 1 day to burn your vault
+    ;; (asserts! (< (- block-height (get stability-fee-last-accrued vault)) BLOCKS-PER-DAY) (err ERR-STABILITY-FEE-NOT-PAID)) ;; 1 day to burn your vault
     (asserts! (<= debt (get debt vault)) (err ERR-NOT-AUTHORIZED))
 
+    (try! (pay-stability-fee vault-id))
     (if (is-eq debt (get debt vault))
       (close-vault vault-id reserve ft)
       (burn-partial-debt vault-id debt reserve ft)
@@ -390,9 +393,13 @@
 )
 
 (define-public (pay-stability-fee (vault-id uint))
-  (let ((vault (get-vault-by-id vault-id)))
-    (if (is-ok (contract-call? .xusd-token transfer (unwrap-panic (get-stability-fee-for-vault vault-id)) tx-sender (as-contract tx-sender)))
+  (let (
+    (vault (get-vault-by-id vault-id))
+    (fee (unwrap-panic (get-stability-fee-for-vault vault-id)))
+  )
+    (if (> fee u0)
       (begin
+        (try! (contract-call? .xusd-token transfer fee tx-sender (as-contract tx-sender)))
         (try! (contract-call? .vault-data update-vault vault-id (merge vault {
             updated-at-block-height: block-height,
             stability-fee-last-accrued: block-height
@@ -400,7 +407,7 @@
         )
         (ok true)
       )
-      (err u5)
+      (ok true)
     )
   )
 )
