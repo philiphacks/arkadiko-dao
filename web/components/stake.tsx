@@ -7,11 +7,11 @@ import { stacksNetwork as network } from '@common/utils';
 import { callReadOnlyFunction, contractPrincipalCV, uintCV, standardPrincipalCV, cvToJSON } from '@stacks/transactions';
 import { useSTXAddress } from '@common/use-stx-address';
 import { useConnect } from '@stacks/connect-react';
-import { connectWebSocketClient } from '@stacks/blockchain-api-client';
 import { TxStatus } from '@components/tx-status';
+import { websocketTxUpdater } from '@common/websocket-tx-updater';
 
 export const Stake = () => {
-  const [state, _] = useContext(AppContext);
+  const [state, setState] = useContext(AppContext);
   const stxAddress = useSTXAddress();
   const [showStakeModal, setShowStakeModal] = useState(false);
   const [showUnstakeModal, setShowUnstakeModal] = useState(false);
@@ -19,10 +19,9 @@ export const Stake = () => {
   const [pendingRewards, setPendingRewards] = useState(0);
   const [apy, setApy] = useState(0);
   const [stakedAmount, setStakedAmount] = useState(0);
-  const [txId, setTxId] = useState<string>('');
-  const [txStatus, setTxStatus] = useState<string>('');
   const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS || '';
   const { doContractCall } = useConnect();
+  websocketTxUpdater();
 
   useEffect(() => {
     let mounted = true;
@@ -75,27 +74,6 @@ export const Stake = () => {
     return () => { mounted = false; }
   }, []);
 
-  useEffect(() => {
-    let sub;
-
-    const subscribe = async (txId:string) => {
-      const client = await connectWebSocketClient('ws://localhost:3999');
-      sub = await client.subscribeTxUpdates(txId, update => {
-        console.log('Got an update:', update);
-        if (update['tx_status'] == 'success') {
-          window.location.reload(true);
-        } else if (update['tx_status'] == 'abort_by_response') {
-          setTxStatus('error');
-        }
-      });
-      console.log({ client, sub });
-    };
-    if (txId) {
-      console.log('Subscribing on updates with TX id:', txId);
-      subscribe(txId);
-    }
-  }, [txId]);
-
   const onInputStakeChange = (event:any) => {
     const value = event.target.value;
     setStakeAmount(value);
@@ -115,8 +93,7 @@ export const Stake = () => {
       postConditionMode: 0x01,
       finished: data => {
         console.log('finished broadcasting staking tx!', data);
-        setTxId(data.txId);
-        setTxStatus('pending');
+        setState(prevState => ({ ...prevState, currentTxId: data.txId, currentTxStatus: 'pending' }));
         setShowStakeModal(false);
       },
     });
@@ -134,8 +111,7 @@ export const Stake = () => {
       postConditionMode: 0x01,
       finished: data => {
         console.log('finished broadcasting claim rewards tx!', data);
-        setTxId(data.txId);
-        setTxStatus('pending');
+        setState(prevState => ({ ...prevState, currentTxId: data.txId, currentTxStatus: 'pending' }));
       }
     });
   };
@@ -154,8 +130,7 @@ export const Stake = () => {
       postConditionMode: 0x01,
       finished: data => {
         console.log('finished broadcasting unstaking tx!', data);
-        setTxId(data.txId);
-        setTxStatus('pending');
+        setState(prevState => ({ ...prevState, currentTxId: data.txId, currentTxStatus: 'pending' }));
         setShowUnstakeModal(false);
       },
     });
