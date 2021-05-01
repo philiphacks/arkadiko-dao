@@ -21,6 +21,7 @@
 (define-constant ERR-MAXIMUM-DEBT-REACHED u410)
 (define-constant ERR-EMERGENCY-SHUTDOWN-ACTIVATED u411)
 (define-constant ERR-BURN-HEIGHT-NOT-REACHED u412)
+(define-constant ERR-STABILITY-FEE-NOT-PAID u413)
 
 ;; constants
 (define-constant BLOCKS-PER-DAY u144)
@@ -334,7 +335,7 @@
     (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
     (asserts! (is-eq (get is-liquidated vault) false) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq tx-sender (get owner vault)) (err ERR-NOT-AUTHORIZED))
-    (asserts! (<= u1000000 (unwrap-panic (get-stability-fee-for-vault vault-id))) (err ERR-NOT-AUTHORIZED))
+    (asserts! (< (- block-height (get stability-fee-last-accrued vault)) BLOCKS-PER-DAY) (err ERR-STABILITY-FEE-NOT-PAID)) ;; 1 day to burn your vault
     (asserts! (<= debt (get debt vault)) (err ERR-NOT-AUTHORIZED))
 
     (if (is-eq debt (get debt vault))
