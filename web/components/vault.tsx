@@ -49,7 +49,7 @@ export const Vault: React.FC<VaultProps> = ({
       const feeCall = await callReadOnlyFunction({
         contractAddress,
         contractName: "freddie",
-        functionName: "get-stability-fee-per-block",
+        functionName: "get-stability-fee-for-vault",
         functionArgs: [uintCV(id)],
         senderAddress: contractAddress || '',
         network: network,

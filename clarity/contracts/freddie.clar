@@ -231,7 +231,6 @@
         debt: debt,
         created-at-block-height: block-height,
         updated-at-block-height: block-height,
-        stability-fee: u0,
         stability-fee-last-accrued: block-height,
         is-liquidated: false,
         auction-ended: false,
@@ -335,7 +334,7 @@
     (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
     (asserts! (is-eq (get is-liquidated vault) false) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq tx-sender (get owner vault)) (err ERR-NOT-AUTHORIZED))
-    (asserts! (is-eq u0 (get stability-fee vault)) (err ERR-NOT-AUTHORIZED))
+    (asserts! (<= u1000000 (unwrap-panic (get-stability-fee-for-vault vault-id))) (err ERR-NOT-AUTHORIZED))
     (asserts! (<= debt (get debt vault)) (err ERR-NOT-AUTHORIZED))
 
     (if (is-eq debt (get debt vault))
@@ -378,23 +377,7 @@
   )
 )
 
-;; Calculate stability fee based on time
-;; 144 blocks = 1 day
-;; to be fair, this is a very rough approximation
-;; the goal is not to get the exact interest,
-;; but rather to (dis)incentivize the user to mint stablecoins or not
 (define-read-only (get-stability-fee-for-vault (vault-id uint))
-  (let (
-    (vault (get-vault-by-id vault-id))
-    (days (/ (- block-height (get stability-fee-last-accrued vault)) BLOCKS-PER-DAY))
-    (debt (/ (get debt vault) u100000)) ;; we can round to 1 number after comma, e.g. 1925000 uxUSD == 1.9 xUSD
-    (daily-interest (/ (* debt (unwrap-panic (contract-call? .collateral-types get-stability-fee (get collateral-type vault)))) u100))
-  )
-    (ok (tuple (fee (* daily-interest days)) (decimals u12) (days days))) ;; 12 decimals so u5233 means 5233/10^12 xUSD daily interest
-  )
-)
-
-(define-read-only (get-stability-fee-per-block (vault-id uint))
   (let (
     (vault (get-vault-by-id vault-id))
     (number-of-blocks (- block-height (get stability-fee-last-accrued vault)))
@@ -405,33 +388,13 @@
   )
 )
 
-;; should be called ~weekly per open (i.e. non-liquidated) vault
-(define-public (accrue-stability-fee (vault-id uint))
-  (let ((fee (unwrap-panic (get-stability-fee-for-vault vault-id))))
-    (if (> (get days fee) u7)
-      (begin
-        (let ((vault (get-vault-by-id vault-id)))
-          (try! (contract-call? .vault-data update-vault vault-id (merge vault {
-              updated-at-block-height: block-height,
-              stability-fee: (+ (/ (get fee fee) (get decimals fee)) (get stability-fee vault)),
-              stability-fee-last-accrued: (+ (get stability-fee-last-accrued vault) (* (get days fee) BLOCKS-PER-DAY))
-            }))
-          )
-          (ok true)
-        )
-      )
-      (ok true) ;; nothing to accrue
-    )
-  )
-)
-
 (define-public (pay-stability-fee (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
-    (if (is-ok (contract-call? .xusd-token transfer (get stability-fee vault) tx-sender (as-contract tx-sender)))
+    (if (is-ok (contract-call? .xusd-token transfer (unwrap-panic (get-stability-fee-for-vault vault-id)) tx-sender (as-contract tx-sender)))
       (begin
         (try! (contract-call? .vault-data update-vault vault-id (merge vault {
             updated-at-block-height: block-height,
-            stability-fee: u0
+            stability-fee-last-accrued: block-height
           }))
         )
         (ok true)
