@@ -32,6 +32,7 @@ export interface AppState {
   collateralTypes: object;
   currentTxId: string;
   currentTxStatus: string;
+  currentTxMessage: string;
 }
 
 export const defaultBalance = () => {
@@ -50,7 +51,8 @@ export const defaultState = (): AppState => {
       definedCollateralTypes: ['STX-A', 'STX-B', 'DIKO-A'],
       collateralTypes: [],
       currentTxId: '',
-      currentTxStatus: ''
+      currentTxStatus: '',
+      currentTxMessage: ''
     };
   }
 
@@ -61,7 +63,8 @@ export const defaultState = (): AppState => {
     definedCollateralTypes: ['STX-A', 'STX-B', 'DIKO-A'],
     collateralTypes: [],
     currentTxId: '',
-    currentTxStatus: ''
+    currentTxStatus: '',
+    currentTxMessage: ''
   };
 };
 

@@ -21,12 +21,33 @@ export const websocketTxUpdater = () => {
         if (update['tx_status'] == 'success') {
           window.location.reload(true);
         } else if (update['tx_status'] == 'abort_by_response') {
-          setState(prevState => ({ ...prevState, currentTxStatus: 'error' }));
+          let url = `http://localhost:3999/extended/v1/tx/${txId}`;
+          fetch(url).then(response => response.json()).then(data => {
+            const error = errToHumanReadable(data['tx_result']['repr']);
+            setState(prevState => ({
+              ...prevState,
+              currentTxStatus: 'error',
+              currentTxMessage: error
+            }));
+          });
         }
       });
     };
     if (state.currentTxId) {
+      setState(prevState => ({
+        ...prevState,
+        currentTxMessage: ''
+      }));
       subscribe(state.currentTxId);
     }
   }, [state.currentTxId]);
+};
+
+const errToHumanReadable = (err: string) => {
+  const errId = err.split("(err")[1].replace(/ /g, '').replace(')', '');
+  if (errId === 'none') {
+    return 'An unknown error occurred. Please try again';
+  }
+
+  return '<ERR_ID_TO_TEXT>';
 };

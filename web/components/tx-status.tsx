@@ -23,9 +23,15 @@ export const TxStatus = () => {
                   <p className="mt-1 text-sm text-gray-500">
                     Status: {state.currentTxStatus}
                   </p>
-                  <p className="mt-1 text-sm text-gray-500">
-                    This page will be reloaded automatically when the transaction succeeds.
-                  </p>
+                  {state.currentTxMessage ? (
+                    <p className="mt-1 text-sm text-red-500">
+                      {state.currentTxMessage}
+                    </p>
+                  ) : (
+                    <p className="mt-1 text-sm text-gray-500">
+                      This page will be reloaded automatically when the transaction succeeds.
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
