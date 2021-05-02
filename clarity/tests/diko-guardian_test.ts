@@ -15,7 +15,7 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
   // Use to print rewards per step
   // console.log("---------------");
   // for (let step = 0; step < 8*26; step++) {
-  //   let call = chain.callReadOnlyFn("diko-guardian", "get-staking-rewards-per-block-test", [], wallet_1.address);
+  //   let call = chain.callReadOnlyFn("diko-guardian", "get-staking-rewards-per-block", [], wallet_1.address);
   //   console.log(call.result);
   //   chain.mineEmptyBlock(2016);
   // }
@@ -211,3 +211,62 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
   block.receipts[0].result.expectOk().expectBool(true);
 }
 });
+
+Clarinet.test({
+name: "diko-guardian: print vault distribution",
+async fn(chain: Chain, accounts: Map<string, Account>) {
+  let deployer = accounts.get("deployer")!;
+  let wallet_1 = accounts.get("wallet_1")!;
+
+  // Use to print rewards per step
+  // console.log("---------------");
+  // for (let step = 0; step < 8*26; step++) {
+  //   let call = chain.callReadOnlyFn("diko-guardian", "get-vault-rewards-per-block", [], wallet_1.address);
+  //   console.log(call.result);
+  //   chain.mineEmptyBlock(2016);
+  // }
+  // console.log("---------------");
+}
+});
+
+
+Clarinet.test({
+name: "diko-guardian: vault rewards",
+async fn(chain: Chain, accounts: Map<string, Account>) {
+  let deployer = accounts.get("deployer")!;
+  let wallet_1 = accounts.get("wallet_1")!;
+
+  // Get rewards at start
+  let call = chain.callReadOnlyFn("diko-guardian", "get-vault-rewards-per-block", [], wallet_1.address);
+  call.result.expectUint(55962555)
+
+  // Advance 1 month
+  chain.mineEmptyBlock(30*144);
+
+  // Get rewards at start
+  call = chain.callReadOnlyFn("diko-guardian", "get-vault-rewards-per-block", [], wallet_1.address);
+  call.result.expectUint(53810149)
+
+  // Advance 1 month
+  chain.mineEmptyBlock(30*144);
+
+  // Get rewards at start
+  call = chain.callReadOnlyFn("diko-guardian", "get-vault-rewards-per-block", [], wallet_1.address);
+  call.result.expectUint(51657743)
+
+  // Advance 9 month
+  chain.mineEmptyBlock(10*30*144);
+
+  // Get rewards at start
+  call = chain.callReadOnlyFn("diko-guardian", "get-vault-rewards-per-block", [], wallet_1.address);
+  call.result.expectUint(29057481)
+
+  // Advance 1 month
+  chain.mineEmptyBlock(30*144);
+
+  // Get rewards at start
+  call = chain.callReadOnlyFn("diko-guardian", "get-vault-rewards-per-block", [], wallet_1.address);
+  call.result.expectUint(0)
+}
+});
+  
