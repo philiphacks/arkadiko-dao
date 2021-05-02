@@ -15,7 +15,7 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
   // Use to print rewards per step
   // console.log("---------------");
   // for (let step = 0; step < 8*26; step++) {
-  //   let call = chain.callReadOnlyFn("diko-guardian", "get-staking-rewards-per-block-test", [], wallet_1.address);
+  //   let call = chain.callReadOnlyFn("diko-guardian", "get-staking-rewards-per-block", [], wallet_1.address);
   //   console.log(call.result);
   //   chain.mineEmptyBlock(2016);
   // }
