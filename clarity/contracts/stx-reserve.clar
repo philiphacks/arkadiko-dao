@@ -10,6 +10,7 @@
 (define-constant ERR-DEPOSIT-FAILED u115)
 (define-constant ERR-WITHDRAW-FAILED u116)
 (define-constant ERR-MINT-FAILED u117)
+(define-constant ERR-WRONG-TOKEN u118)
 
 (define-constant CONTRACT-OWNER tx-sender)
 
@@ -44,18 +45,20 @@
     (asserts! (is-eq contract-caller .freddie) (err ERR-NOT-AUTHORIZED))
 
     (if (is-eq true revoked-stacking)
-      (ok (try! (add-tokens-to-stack ustx-collateral)))
       (ok (try! (subtract-tokens-to-stack ustx-collateral)))
+      (ok (try! (add-tokens-to-stack ustx-collateral)))
     )
   )
 )
 
 ;; transfers (var-get tokens-to-stack) tokens to the stacker contract
-(define-public (request-stx-to-stack)
+(define-public (request-stx-to-stack (requested-ustx uint))
   (begin
     (asserts! (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "stacker"))) (err ERR-NOT-AUTHORIZED))
+    (asserts! (<= requested-ustx (var-get tokens-to-stack)) (err ERR-NOT-AUTHORIZED))
+
     (as-contract
-      (stx-transfer? (var-get tokens-to-stack) (as-contract tx-sender) (unwrap-panic (contract-call? .dao get-qualified-name-by-name "stacker")))
+      (stx-transfer? requested-ustx (as-contract tx-sender) (unwrap-panic (contract-call? .dao get-qualified-name-by-name "stacker")))
     )
   )
 )
@@ -87,9 +90,11 @@
 ;; accept collateral in STX tokens
 ;; save STX in stx-reserve-address
 ;; calculate price and collateralisation ratio
-(define-public (collateralize-and-mint (token <mock-ft-trait>) (ustx-amount uint) (debt uint) (sender principal))
+(define-public (collateralize-and-mint (token <mock-ft-trait>) (token-string (string-ascii 12)) (type (string-ascii 12)) (ustx-amount uint) (debt uint) (sender principal))
   (begin
     (asserts! (is-eq contract-caller .freddie) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq token-string "STX") (err ERR-WRONG-TOKEN))
+    (asserts! (is-eq (get token (unwrap-panic (contract-call? .collateral-types get-collateral-type-by-name type))) "STX") (err ERR-WRONG-TOKEN))
 
     (match (print (stx-transfer? ustx-amount sender (as-contract tx-sender)))
       success (begin

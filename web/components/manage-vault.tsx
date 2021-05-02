@@ -10,19 +10,20 @@ import {
   createAssetInfo, FungibleConditionCode, makeStandardSTXPostCondition } from '@stacks/transactions';
 import { AppContext, CollateralTypeProps } from '@common/context';
 import { getCollateralToDebtRatio } from '@common/get-collateral-to-debt-ratio';
+import { websocketTxUpdater } from '@common/websocket-tx-updater';
 import { debtClass, VaultProps } from './vault';
 import { getPrice } from '@common/get-price';
 import { getLiquidationPrice, availableCollateralToWithdraw, availableCoinsToMint } from '@common/vault-utils';
 import { Link } from '@components/link';
 import { Redirect } from 'react-router-dom';
-import { connectWebSocketClient } from '@stacks/blockchain-api-client';
 import { resolveReserveName, tokenTraits } from '@common/vault-utils';
 import BN from 'bn.js';
+import { TxStatus } from '@components/tx-status';
 
 export const ManageVault = ({ match }) => {
   const { doContractCall } = useConnect();
   const senderAddress = useSTXAddress();
-  const state = useContext(AppContext);
+  const [state, setState] = useContext(AppContext);
   const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS || '';
 
   const [showDepositModal, setShowDepositModal] = useState(false);
@@ -32,8 +33,6 @@ export const ManageVault = ({ match }) => {
   const [extraCollateralDeposit, setExtraCollateralDeposit] = useState('');
   const [isLiquidated, setIsLiquidated] = useState(false);
   const [auctionEnded, setAuctionEnded] = useState(false);
-  const [txId, setTxId] = useState<string>('');
-  const [txStatus, setTxStatus] = useState<string>('');
   const [collateralToWithdraw, setCollateralToWithdraw] = useState('');
   const [maximumCollateralToWithdraw, setMaximumCollateralToWithdraw] = useState(0);
   const [usdToMint, setUsdToMint] = useState('');
@@ -43,6 +42,7 @@ export const ManageVault = ({ match }) => {
   const [price, setPrice] = useState(0);
   const [collateralType, setCollateralType] = useState<CollateralTypeProps>();
   const [isVaultOwner, setIsVaultOwner] = useState(false);
+  const [stabilityFee, setStabilityFee] = useState(0);
 
   useEffect(() => {
     const fetchVault = async () => {
@@ -63,7 +63,6 @@ export const ManageVault = ({ match }) => {
           collateral: data['collateral'].value,
           collateralType: data['collateral-type'].value,
           collateralToken: data['collateral-token'].value,
-          stabilityFee: data['stability-fee'].value,
           isLiquidated: data['is-liquidated'].value,
           auctionEnded: data['auction-ended'].value,
           leftoverCollateral: data['leftover-collateral'].value,
@@ -96,7 +95,7 @@ export const ManageVault = ({ match }) => {
           url: json.value['url'].value,
           totalDebt: json.value['total-debt'].value,
           collateralToDebtRatio: json.value['collateral-to-debt-ratio'].value,
-          liquidationPenalty: json.value['liquidation-penalty'].value,
+          liquidationPenalty: json.value['liquidation-penalty'].value / 100,
           liquidationRatio: json.value['liquidation-ratio'].value,
           maximumDebt: json.value['maximum-debt'].value,
           stabilityFee: json.value['stability-fee'].value,
@@ -109,6 +108,25 @@ export const ManageVault = ({ match }) => {
   }, [match.params.id]);
 
   useEffect(() => {
+    const fetchFees = async () => {
+      const feeCall = await callReadOnlyFunction({
+        contractAddress,
+        contractName: "freddie",
+        functionName: "get-stability-fee-for-vault",
+        functionArgs: [uintCV(vault?.id)],
+        senderAddress: contractAddress || '',
+        network: network,
+      });
+      const fee = cvToJSON(feeCall);
+      setStabilityFee(fee.value.value);
+    };
+
+    if (vault?.id) {
+      fetchFees();
+    }
+  }, [vault]);
+
+  useEffect(() => {
     if (vault && collateralType?.collateralToDebtRatio) {
       if (vault.stackedTokens === 0) {
         setMaximumCollateralToWithdraw(availableCollateralToWithdraw(price, collateralLocked(), outstandingDebt(), collateralType?.collateralToDebtRatio));
@@ -117,28 +135,6 @@ export const ManageVault = ({ match }) => {
       }
     }
   }, [collateralType?.collateralToDebtRatio, price]);
-
-  useEffect(() => {
-    let sub;
-
-    const subscribe = async (txId:string) => {
-      const client = await connectWebSocketClient('ws://localhost:3999');
-      sub = await client.subscribeTxUpdates(txId, update => {
-        console.log('Got an update:', update);
-        if (update['tx_status'] == 'success') {
-          window.location.reload(true);
-        } else if (update['tx_status'] == 'abort_by_response') {
-          setTxStatus('error');
-        }
-      });
-      console.log({ client, sub });
-    };
-    if (txId) {
-      console.log('Subscribing on updates with TX id:', txId);
-      subscribe(txId);
-      setShowDepositModal(false);
-    }
-  }, [txId]);
 
   const payStabilityFee = async () => {
     // const postConditions = [
@@ -166,8 +162,7 @@ export const ManageVault = ({ match }) => {
       // postConditions,
       finished: data => {
         console.log('finished paying stability fee!', data);
-        setTxId(data.txId);
-        setTxStatus('pending');
+        setState(prevState => ({ ...prevState, currentTxId: data.txId, currentTxStatus: 'pending' }));
       },
     });
   };
@@ -189,8 +184,7 @@ export const ManageVault = ({ match }) => {
       postConditionMode: 0x01,
       finished: data => {
         console.log('finished burn!', data);
-        setTxId(data.txId);
-        setTxStatus('pending');
+        setState(prevState => ({ ...prevState, currentTxId: data.txId, currentTxStatus: 'pending' }));
         setShowBurnModal(false);
       },
     });
@@ -198,6 +192,7 @@ export const ManageVault = ({ match }) => {
   let debtRatio = 0;
   if (match.params.id) {
     debtRatio = getCollateralToDebtRatio(match.params.id)?.collateralToDebt;
+    websocketTxUpdater();
   }
 
   const addDeposit = async () => {
@@ -245,8 +240,8 @@ export const ManageVault = ({ match }) => {
       postConditions,
       finished: data => {
         console.log('finished deposit!', data);
-        setTxId(data.txId);
-        setTxStatus('pending');
+        setState(prevState => ({ ...prevState, currentTxId: data.txId, currentTxStatus: 'pending' }));
+        setShowDepositModal(false);
       },
     });
   };
@@ -303,8 +298,7 @@ export const ManageVault = ({ match }) => {
       postConditionMode: 0x01,
       finished: data => {
         console.log('finished mint!', data, data.txId);
-        setTxId(data.txId);
-        setTxStatus('pending');
+        setState(prevState => ({ ...prevState, currentTxId: data.txId, currentTxStatus: 'pending' }));
         setShowMintModal(false);
       },
     });
@@ -320,8 +314,7 @@ export const ManageVault = ({ match }) => {
       postConditionMode: 0x01,
       finished: data => {
         console.log('finished toggling stacking!', data, data.txId);
-        setTxId(data.txId);
-        setTxStatus('pending');
+        setState(prevState => ({ ...prevState, currentTxId: data.txId, currentTxStatus: 'pending' }));
       },
     });
   };
@@ -336,8 +329,7 @@ export const ManageVault = ({ match }) => {
       postConditionMode: 0x01,
       finished: data => {
         console.log('finished stacking!', data, data.txId);
-        setTxId(data.txId);
-        setTxStatus('pending');
+        setState(prevState => ({ ...prevState, currentTxId: data.txId, currentTxStatus: 'pending' }));
       },
     });
   };
@@ -362,8 +354,7 @@ export const ManageVault = ({ match }) => {
       postConditionMode: 0x01,
       finished: data => {
         console.log('finished withdraw!', data);
-        setTxId(data.txId);
-        setTxStatus('pending');
+        setState(prevState => ({ ...prevState, currentTxId: data.txId, currentTxStatus: 'pending' }));
         setShowWithdrawModal(false);
       },
     });
@@ -379,8 +370,7 @@ export const ManageVault = ({ match }) => {
       postConditionMode: 0x01,
       finished: data => {
         console.log('finished notify risky reserve!', data);
-        setTxId(data.txId);
-        setTxStatus('pending');
+        setState(prevState => ({ ...prevState, currentTxId: data.txId, currentTxStatus: 'pending' }));
       },
     });
   };
@@ -389,32 +379,7 @@ export const ManageVault = ({ match }) => {
     <Container>
       {auctionEnded && <Redirect to="/vaults" />}
 
-      {txId ? (
-        <div className="fixed inset-0 flex items-end justify-center px-4 py-6 pointer-events-none sm:p-6 sm:items-start sm:justify-end">
-          <div className="max-w-sm w-full bg-white shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden">
-            <div className="p-4">
-              <div className="flex items-start">
-                <div className="flex-shrink-0">
-                  <svg className="h-6 w-6 text-green-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div className="ml-3 w-0 flex-1 pt-0.5">
-                  <p className="text-sm font-medium text-gray-900">
-                    Successfully broadcasted transaction!
-                  </p>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Status: {txStatus}
-                  </p>
-                  <p className="mt-1 text-sm text-gray-500">
-                    This page will be reloaded automatically when the transaction succeeds.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : null }
+      <TxStatus />
 
       <Modal isOpen={showDepositModal}>
         <div className="flex pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -960,7 +925,7 @@ export const ManageVault = ({ match }) => {
 
                       <div className="max-w-xl text-sm text-gray-500">
                         <p>
-                        ${vault?.stabilityFee / 1000000} xUSD
+                        ${stabilityFee / 1000000} xUSD
                         </p>
                       </div>
 

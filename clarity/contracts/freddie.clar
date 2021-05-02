@@ -71,7 +71,12 @@
       (begin
         (let ((stx-price-in-cents (contract-call? .oracle get-price (get collateral-token vault))))
           (if (> (get debt vault) u0)
-            (ok (/ (* (get collateral vault) (get last-price-in-cents stx-price-in-cents)) (get debt vault)))
+            (ok
+              (/
+                (* (get collateral vault) (get last-price-in-cents stx-price-in-cents))
+                (+ (get debt vault) (unwrap-panic (get-stability-fee-for-vault vault-id)))
+              )
+            )
             (err u0)
           )
         )
@@ -95,7 +100,7 @@
     (asserts! (is-eq tx-sender (get owner vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq "STX" (get collateral-token vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq false (get is-liquidated vault)) (err ERR-NOT-AUTHORIZED))
-    (try! (contract-call? .stx-reserve toggle-stacking (get revoked-stacking vault) (get collateral vault)))
+    (try! (contract-call? .stx-reserve toggle-stacking (not (get revoked-stacking vault)) (get collateral vault)))
 
     (try!
       (contract-call? .vault-data update-vault vault-id (merge vault {
@@ -215,8 +220,8 @@
       )
       (err ERR-MAXIMUM-DEBT-REACHED)
     )
-    (try! (contract-call? reserve collateralize-and-mint ft collateral-amount debt sender))
 
+    (try! (contract-call? reserve collateralize-and-mint ft collateral-token collateral-type collateral-amount debt sender))
     (try! (as-contract (contract-call? .dao mint-token .xusd-token debt sender)))
     (let (
       (vault-id (+ (contract-call? .vault-data get-last-vault-id) u1))
@@ -231,7 +236,6 @@
         debt: debt,
         created-at-block-height: block-height,
         updated-at-block-height: block-height,
-        stability-fee: u0,
         stability-fee-last-accrued: block-height,
         is-liquidated: false,
         auction-ended: false,
@@ -252,7 +256,6 @@
   (let ((vault (get-vault-by-id vault-id))
        (new-collateral (+ uamount (get collateral vault)))
        (updated-vault (merge vault {
-          stacked-tokens: (+ (get stacked-tokens vault) (resolve-stacking-amount uamount (get collateral-token vault))),
           collateral: new-collateral,
           updated-at-block-height: block-height
         })))
@@ -314,6 +317,8 @@
       )
       (err ERR-MAXIMUM-DEBT-REACHED)
     )
+
+    (try! (pay-stability-fee vault-id))
     (unwrap! (contract-call? 
                 reserve 
                 mint 
@@ -336,9 +341,9 @@
     (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
     (asserts! (is-eq (get is-liquidated vault) false) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq tx-sender (get owner vault)) (err ERR-NOT-AUTHORIZED))
-    (asserts! (is-eq u0 (get stability-fee vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (<= debt (get debt vault)) (err ERR-NOT-AUTHORIZED))
 
+    (try! (pay-stability-fee vault-id))
     (if (is-eq debt (get debt vault))
       (close-vault vault-id reserve ft)
       (burn-partial-debt vault-id debt reserve ft)
@@ -379,54 +384,34 @@
   )
 )
 
-;; Calculate stability fee based on time
-;; 144 blocks = 1 day
-;; to be fair, this is a very rough approximation
-;; the goal is not to get the exact interest,
-;; but rather to (dis)incentivize the user to mint stablecoins or not
 (define-read-only (get-stability-fee-for-vault (vault-id uint))
   (let (
     (vault (get-vault-by-id vault-id))
-    (days (/ (- block-height (get stability-fee-last-accrued vault)) BLOCKS-PER-DAY))
-    (debt (/ (get debt vault) u100000)) ;; we can round to 1 number after comma, e.g. 1925000 uxUSD == 1.9 xUSD
-    (daily-interest (/ (* debt (unwrap-panic (contract-call? .collateral-types get-stability-fee (get collateral-type vault)))) u100))
+    (number-of-blocks (- block-height (get stability-fee-last-accrued vault)))
+    (fee (unwrap-panic (contract-call? .collateral-types get-stability-fee (get collateral-type vault))))
+    (decimals (unwrap-panic (contract-call? .collateral-types get-stability-fee-decimals (get collateral-type vault))))
+    (interest (/ (* (get debt vault) fee) (pow u10 decimals)))
   )
-    (ok (tuple (fee (* daily-interest days)) (decimals u12) (days days))) ;; 12 decimals so u5233 means 5233/10^12 xUSD daily interest
-  )
-)
-
-;; should be called ~weekly per open (i.e. non-liquidated) vault
-(define-public (accrue-stability-fee (vault-id uint))
-  (let ((fee (unwrap-panic (get-stability-fee-for-vault vault-id))))
-    (if (> (get days fee) u7)
-      (begin
-        (let ((vault (get-vault-by-id vault-id)))
-          (try! (contract-call? .vault-data update-vault vault-id (merge vault {
-              updated-at-block-height: block-height,
-              stability-fee: (+ (/ (get fee fee) (get decimals fee)) (get stability-fee vault)),
-              stability-fee-last-accrued: (+ (get stability-fee-last-accrued vault) (* (get days fee) BLOCKS-PER-DAY))
-            }))
-          )
-          (ok true)
-        )
-      )
-      (ok true) ;; nothing to accrue
-    )
+    (ok (* number-of-blocks interest))
   )
 )
 
 (define-public (pay-stability-fee (vault-id uint))
-  (let ((vault (get-vault-by-id vault-id)))
-    (if (is-ok (contract-call? .xusd-token transfer (get stability-fee vault) tx-sender (as-contract tx-sender)))
+  (let (
+    (vault (get-vault-by-id vault-id))
+    (fee (unwrap-panic (get-stability-fee-for-vault vault-id)))
+  )
+    (if (> fee u0)
       (begin
+        (try! (contract-call? .xusd-token transfer fee tx-sender (as-contract tx-sender)))
         (try! (contract-call? .vault-data update-vault vault-id (merge vault {
             updated-at-block-height: block-height,
-            stability-fee: u0
+            stability-fee-last-accrued: block-height
           }))
         )
         (ok true)
       )
-      (err u5)
+      (ok true)
     )
   )
 )
@@ -436,7 +421,15 @@
     (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
     (asserts! (is-eq contract-caller .liquidator) (err ERR-NOT-AUTHORIZED))
 
-    (let ((collateral (get collateral vault)))
+    (try! (contract-call? .vault-data reset-stacking-payouts vault-id))
+    (let (
+      (collateral (get collateral vault))
+      (liquidation-penalty (unwrap-panic (contract-call? .collateral-types get-liquidation-penalty (get collateral-type vault))))
+      (fee (unwrap-panic (get-stability-fee-for-vault vault-id)))
+      (penalty (/ (* liquidation-penalty (+ fee (get debt vault))) u10000))
+      (extra-debt (/ (* u60 penalty) u100)) ;; 60% of the penalty is extra debt.
+      (discount (/ (* u40 liquidation-penalty) u10000)) ;; 40% of liquidation penalty is discount % for liquidator
+    )
       (if
         (and
           (is-eq "STX" (get collateral-token vault))
@@ -454,9 +447,7 @@
             }))
           )
           (try! (contract-call? .sip10-reserve mint-xstx collateral))
-          (let ((debt (/ (* (unwrap-panic (contract-call? .collateral-types get-liquidation-penalty (get collateral-type vault))) (get debt vault)) u100)))
-            (ok (tuple (ustx-amount collateral) (debt (+ debt (get debt vault)))))
-          )
+          (ok (tuple (ustx-amount collateral) (extra-debt extra-debt) (vault-debt (get debt vault)) (discount discount)))
         )
         (begin
           (try! (contract-call? .vault-data update-vault vault-id (merge vault {
@@ -467,9 +458,7 @@
               leftover-collateral: u0
             }))
           )
-          (let ((debt (/ (* (unwrap-panic (contract-call? .collateral-types get-liquidation-penalty (get collateral-type vault))) (get debt vault)) u100)))
-            (ok (tuple (ustx-amount collateral) (debt (+ debt (get debt vault)))))
-          )
+          (ok (tuple (ustx-amount collateral) (extra-debt extra-debt) (vault-debt (get debt vault)) (discount discount)))
         )
       )
     )
