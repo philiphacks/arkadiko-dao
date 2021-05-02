@@ -304,6 +304,16 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
   ]);
   block.receipts[0].result.expectErr().expectUint(18401)
 
+  // Try to unstake in pool directly as user - unauthorised
+  block = chain.mineBlock([
+    Tx.contractCall("stake-pool-diko", "unstake", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token'),
+        types.uint(100)
+    ], wallet_1.address)
+  ]);
+  block.receipts[0].result.expectErr().expectUint(18401)
+
   // Try to claim rewards on pool directly - unauthorised
   block = chain.mineBlock([
     Tx.contractCall("stake-pool-diko", "claim-pending-rewards", [
@@ -311,6 +321,7 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
     ], wallet_1.address)
   ]);
   block.receipts[0].result.expectErr().expectUint(18401)
+
 }
 });
 
@@ -437,5 +448,62 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
     ], wallet_1.address)
   ]);
   block.receipts[0].result.expectErr().expectUint(18003);
+}
+});
+
+Clarinet.test({
+name: "staking - stake/unstake 0",
+async fn(chain: Chain, accounts: Map<string, Account>) {
+  let deployer = accounts.get("deployer")!;
+  let wallet_1 = accounts.get("wallet_1")!;
+  let wallet_2 = accounts.get("wallet_2")!;
+
+  // Stake
+  let block = chain.mineBlock([
+    Tx.contractCall("stake-registry", "stake", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token'),
+        types.uint(0)
+    ], wallet_1.address)
+  ]);
+  // Can not mint 0 tokens
+  block.receipts[0].result.expectErr().expectUint(1);
+ 
+  // Unstake funds
+  block = chain.mineBlock([
+    Tx.contractCall("stake-registry", "unstake", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token'),
+        types.uint(25000000000)
+    ], wallet_1.address)
+  ]);
+  // Can not burn 0 tokens
+  block.receipts[0].result.expectErr().expectUint(1);
+}
+});
+
+Clarinet.test({
+name: "staking - stake and claim in same block",
+async fn(chain: Chain, accounts: Map<string, Account>) {
+  let deployer = accounts.get("deployer")!;
+  let wallet_1 = accounts.get("wallet_1")!;
+  let wallet_2 = accounts.get("wallet_2")!;
+
+  // Stake
+  let block = chain.mineBlock([
+    Tx.contractCall("stake-registry", "stake", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token'),
+        types.uint(10000000)
+    ], wallet_1.address),
+
+    Tx.contractCall("stake-registry", "claim-pending-rewards", [
+      types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko')
+    ], wallet_1.address)
+  ]);
+  // Should have staked, but no rewards yet as not advanced
+  block.receipts[0].result.expectOk().expectUint(10000000);
+  block.receipts[1].result.expectOk().expectUint(0);
+ 
 }
 });
