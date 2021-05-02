@@ -17,7 +17,6 @@
 (define-constant ERR-INSUFFICIENT-STAKE (err u18003))
 
 ;; Constants
-(define-constant CONTRACT-OWNER tx-sender) ;; TODO: should be DAO
 (define-constant POOL-TOKEN .arkadiko-token)
 (define-constant BLOCKS-PER-YEAR u52560)
 

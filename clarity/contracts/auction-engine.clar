@@ -19,7 +19,6 @@
 (define-constant ERR-DIKO-REQUEST-FAILED u211)
 (define-constant ERR-TOKEN-TYPE-MISMATCH u212)
 
-(define-constant CONTRACT-OWNER tx-sender)
 (define-constant blocks-per-day u144)
 
 (define-map auctions
@@ -229,7 +228,7 @@
       xusd: u0,
       collateral-amount: u0,
       collateral-token: "",
-      owner: CONTRACT-OWNER,
+      owner: (contract-call? .dao get-dao-owner),
       is-accepted: false
     }
     (map-get? bids { auction-id: auction-id, lot-index: lot-index })
@@ -507,7 +506,7 @@
 ;; auction engine should only contain xUSD from bids
 (define-public (migrate-funds (auction-engine <auction-engine-trait>) (token <mock-ft-trait>))
   (begin
-    (asserts! (is-eq contract-caller CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq contract-caller (contract-call? .dao get-dao-owner)) (err ERR-NOT-AUTHORIZED))
 
     (let (
       (balance (unwrap-panic (contract-call? token get-balance-of (as-contract tx-sender))))
