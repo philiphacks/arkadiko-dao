@@ -75,3 +75,139 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
 
 }
 });
+
+Clarinet.test({
+name: "diko-guardian: founders tokens calculation",
+async fn(chain: Chain, accounts: Map<string, Account>) {
+  let deployer = accounts.get("deployer")!;
+  let wallet_1 = accounts.get("wallet_1")!;
+
+  // Get rewards at start
+  let call = chain.callReadOnlyFn("diko-guardian", "get-pending-founders-tokens", [], wallet_1.address);
+  // call.result.expectOk().expectUint(0)
+
+  // 12 months, 30 days, 144 block per day 
+  chain.mineEmptyBlock((12*30*144)-2);
+
+  // Get rewards
+  call = chain.callReadOnlyFn("diko-guardian", "get-pending-founders-tokens", [], wallet_1.address);
+  call.result.expectOk().expectUint(0)
+ 
+  // 1 block later, cliff of 1 year is over
+  chain.mineEmptyBlock(1);
+
+  // Get rewards
+  call = chain.callReadOnlyFn("diko-guardian", "get-pending-founders-tokens", [], wallet_1.address);
+  call.result.expectOk().expectUint(437500000000)
+
+  // 1 year later
+  chain.mineEmptyBlock(12*30*144);
+
+  // Get rewards
+  call = chain.callReadOnlyFn("diko-guardian", "get-pending-founders-tokens", [], wallet_1.address);
+  call.result.expectOk().expectUint(5687500000000)
+
+  // 3 year later - max
+  chain.mineEmptyBlock(3*12*30*144);4
+
+  // Get rewards
+  call = chain.callReadOnlyFn("diko-guardian", "get-pending-founders-tokens", [], wallet_1.address);
+  call.result.expectOk().expectUint(21000000000000)
+
+  // 1 year later - still at max
+  chain.mineEmptyBlock(12*30*144);
+
+  // Get rewards
+  call = chain.callReadOnlyFn("diko-guardian", "get-pending-founders-tokens", [], wallet_1.address);
+  call.result.expectOk().expectUint(21000000000000)
+}
+});
+
+Clarinet.test({
+name: "diko-guardian: founders tokens claim",
+async fn(chain: Chain, accounts: Map<string, Account>) {
+  let deployer = accounts.get("deployer")!;
+  let wallet_1 = accounts.get("wallet_1")!;
+
+  // Start balance
+  let call = chain.callReadOnlyFn("arkadiko-token", "get-balance-of", [types.principal(deployer.address)], deployer.address);
+  call.result.expectOk().expectUint(890000000000);
+
+  // 12 months, 30 days, 144 block per day 
+  chain.mineEmptyBlock(12*30*144);
+
+  // Get rewards at start
+  call = chain.callReadOnlyFn("diko-guardian", "get-pending-founders-tokens", [], wallet_1.address);
+  call.result.expectOk().expectUint(437500000000)
+
+  // Claim tokens
+  let block = chain.mineBlock([
+    Tx.contractCall("diko-guardian", "founders-claim-tokens", [
+        types.uint(437500000000)
+    ], deployer.address)
+  ]);
+  block.receipts[0].result.expectOk().expectBool(true);
+
+  // New balance
+  call = chain.callReadOnlyFn("arkadiko-token", "get-balance-of", [types.principal(deployer.address)], deployer.address);
+  call.result.expectOk().expectUint(1327500000000);
+
+  // Number of tokens claimed already
+  call = chain.callReadOnlyFn("diko-guardian", "get-claimed-founders-tokens", [], deployer.address);
+  call.result.expectUint(437500000000);
+
+    // Get rewards at start
+    call = chain.callReadOnlyFn("diko-guardian", "get-pending-founders-tokens", [], deployer.address);
+    call.result.expectOk().expectUint(0)
+
+  // 3 year later - max
+  chain.mineEmptyBlock(4*12*30*144);
+
+  // Get rewards (max minus claimed)
+  call = chain.callReadOnlyFn("diko-guardian", "get-pending-founders-tokens", [], deployer.address);
+  call.result.expectOk().expectUint(20562500000000)
+}
+});
+  
+Clarinet.test({
+name: "diko-guardian: change founder address",
+async fn(chain: Chain, accounts: Map<string, Account>) {
+  let deployer = accounts.get("deployer")!;
+  let wallet_1 = accounts.get("wallet_1")!;
+
+  // 12 months, 30 days, 144 block per day 
+  chain.mineEmptyBlock(12*30*144);
+
+  // Try to claim - should fail
+  let block = chain.mineBlock([
+    Tx.contractCall("diko-guardian", "founders-claim-tokens", [
+        types.uint(437500000000)
+    ], wallet_1.address)
+  ]);
+  block.receipts[0].result.expectErr().expectUint(22401)
+
+  // Try to change - should fail
+  block = chain.mineBlock([
+    Tx.contractCall("diko-guardian", "set-founders-wallet", [
+        types.principal(wallet_1.address)
+    ], wallet_1.address)
+  ]);
+  block.receipts[0].result.expectErr().expectUint(22401)
+
+  // Deployer can change address to wallet_1
+  block = chain.mineBlock([
+    Tx.contractCall("diko-guardian", "set-founders-wallet", [
+        types.principal(wallet_1.address)
+    ], deployer.address)
+  ]);
+  block.receipts[0].result.expectOk().expectBool(true);
+
+  // Try to claim - ok
+  block = chain.mineBlock([
+    Tx.contractCall("diko-guardian", "founders-claim-tokens", [
+        types.uint(437500000000)
+    ], wallet_1.address)
+  ]);
+  block.receipts[0].result.expectOk().expectBool(true);
+}
+});
