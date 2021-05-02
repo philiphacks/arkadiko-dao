@@ -177,9 +177,42 @@ Clarinet.test({
     ], deployer.address);
     call.result.expectOk().expectUint(694444444);
 
-    // ultimately we want STX tokens though, so turn those xSTX into STX with the Arkadiko pool (if any)
-    // TODO: test release-stacked-stx
+    // At this point, no STX are redeemable yet
+    call = await chain.callReadOnlyFn("freddie", "get-stx-redeemable", [], deployer.address);
+    call.result.expectOk().expectUint(0);
+
+    // Release stacked STX and make them redeemable
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "release-stacked-stx", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stacker'),
+        types.uint(1)
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectOk().expectBool(true);
+
+    // Original vault had 1000 STX which is now redeemable
+    call = await chain.callReadOnlyFn("freddie", "get-stx-redeemable", [], deployer.address);
+    call.result.expectOk().expectUint(1000000000);
+    
+    // Redeem STX
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "redeem-stx", [
+        types.uint(694444444)
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectOk().expectBool(true);
+
+    // Balance
+    call = await chain.callReadOnlyFn("xstx-token", "get-balance-of", [
+      types.principal(deployer.address),
+    ], deployer.address);
+    call.result.expectOk().expectUint(0);
+
+
+
     // TODO: test withdraw-leftover-collateral
+
+
   }
 });
 
