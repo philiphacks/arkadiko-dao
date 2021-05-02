@@ -22,8 +22,6 @@
 (define-constant CONTRACT-OWNER tx-sender)
 (define-constant blocks-per-day u144)
 
-(define-data-var payout-address principal CONTRACT-OWNER) ;; to which address the foundation is paid
-
 (define-map auctions
   { id: uint }
   {
@@ -519,12 +517,8 @@
   )
 )
 
-;; TODO: make payout-address flexible with setters
-;; TODO: put payout-address in DAO and make it the same one as in freddie
 ;; redeem xUSD to burn DIKO gov token from open market
 ;; taken from auctions, paid by liquidation penalty on vaults
 (define-public (redeem-xusd (xusd-amount uint))
-  (begin
-    (contract-call? .xusd-token transfer xusd-amount (as-contract tx-sender) (var-get payout-address))
-  )
+  (contract-call? .xusd-token transfer xusd-amount (as-contract tx-sender) (contract-call? .dao get-payout-address))
 )

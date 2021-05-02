@@ -28,7 +28,6 @@
 
 (define-data-var stx-redeemable uint u0) ;; how much STX is available to trade for xSTX
 (define-data-var block-height-last-paid uint u0) ;; when the foundation was last paid
-(define-data-var payout-address principal CONTRACT-OWNER) ;; to which address the foundation is paid
 (define-data-var maximum-debt-surplus uint u10000000000000) ;; 10 million default - above that we sell the xUSD on the DIKO/xUSD pair to burn DIKO
 
 ;; getters
@@ -517,14 +516,6 @@
   (contract-call? .xusd-token get-balance-of (as-contract tx-sender))
 )
 
-(define-public (set-payout-address (address principal))
-  (begin
-    (asserts! (is-eq contract-caller CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
-
-    (ok (var-set payout-address address))
-  )
-)
-
 ;; redeem xUSD working capital for the foundation
 ;; taken from stability fees paid by vault owners
 (define-public (redeem-xusd (xusd-amount uint))
@@ -532,7 +523,7 @@
     (asserts! (> (- block-height (var-get block-height-last-paid)) (* BLOCKS-PER-DAY u31)) (err ERR-NOT-AUTHORIZED))
 
     (var-set block-height-last-paid block-height)
-    (contract-call? .xusd-token transfer xusd-amount (as-contract tx-sender) (var-get payout-address))
+    (contract-call? .xusd-token transfer xusd-amount (as-contract tx-sender) (contract-call? .dao get-payout-address))
   )
 )
 

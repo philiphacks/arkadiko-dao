@@ -30,6 +30,19 @@
 
 ;; Variables
 (define-data-var emergency-shutdown-activated bool false)
+(define-data-var payout-address principal DAO-OWNER) ;; to which address the foundation is paid
+
+(define-read-only (get-payout-address)
+  (var-get payout-address)
+)
+
+(define-public (set-payout-address (address principal))
+  (begin
+    (asserts! (is-eq tx-sender DAO-OWNER) (err ERR-NOT-AUTHORIZED))
+
+    (ok (var-set payout-address address))
+  )
+)
 
 ;; TODO: 
 ;; Emergency shutdown should be on freddie?
@@ -93,10 +106,11 @@
   )
 )
 
-;; TODO: make sip10 trait dynamic
-;; Philip, why is this needed??
+;; This method is called by the auction engine when more bad debt needs to be burned
+;; but the vault collateral is not sufficient
+;; As a result, this method requests DIKO from the DAO ("foundation reserves")
 (define-public (request-diko-tokens (ft <mock-ft-trait>) (collateral-amount uint))
-  (contract-call? ft transfer collateral-amount DAO-OWNER (as-contract .sip10-reserve))
+  (contract-call? ft transfer collateral-amount DAO-OWNER (as-contract (unwrap-panic (get-qualified-name-by-name "sip10-reserve"))))
 )
 
 
