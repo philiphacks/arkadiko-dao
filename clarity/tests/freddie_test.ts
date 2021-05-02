@@ -110,6 +110,39 @@ Clarinet.test({
 });
 
 Clarinet.test({
+  name: "freddie: calculate collateralization ratio with accrued stability fee",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    let deployer = accounts.get("deployer")!;
+    chain.mineBlock([
+      Tx.contractCall("oracle", "update-price", [
+        types.ascii("STX"),
+        types.uint(200),
+      ], deployer.address),
+      Tx.contractCall("freddie", "collateralize-and-mint", [
+        types.uint(900000000), // 900 STX (1800 USD worth of collateral)
+        types.uint(1000000000), // 1000 xUSD
+        types.principal(deployer.address),
+        types.ascii("STX-B"),
+        types.ascii("STX"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+        types.principal(
+          "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
+        ),
+      ], deployer.address),
+    ]);
+
+    let call = await chain.callReadOnlyFn("freddie", "calculate-current-collateral-to-debt-ratio", [types.uint(1)], deployer.address);
+    call.result.expectOk().expectUint(179);
+
+    chain.mineEmptyBlock(365*144);
+
+    // after 1 year of not paying debt on vault, collateralisation ratio should be lower
+    call = await chain.callReadOnlyFn("freddie", "calculate-current-collateral-to-debt-ratio", [types.uint(1)], deployer.address);
+    call.result.expectOk().expectUint(163);
+  }
+});
+
+Clarinet.test({
   name: "freddie: get stability fee per block",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     let deployer = accounts.get("deployer")!;
