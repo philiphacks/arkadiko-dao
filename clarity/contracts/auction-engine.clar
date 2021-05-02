@@ -519,6 +519,8 @@
   )
 )
 
+;; TODO: make payout-address flexible with setters
+;; TODO: put payout-address in DAO and make it the same one as in freddie
 ;; redeem xUSD to burn DIKO gov token from open market
 ;; taken from auctions, paid by liquidation penalty on vaults
 (define-public (redeem-xusd (xusd-amount uint))
