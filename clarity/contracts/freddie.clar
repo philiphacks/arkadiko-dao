@@ -95,7 +95,7 @@
     (asserts! (is-eq tx-sender (get owner vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq "STX" (get collateral-token vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq false (get is-liquidated vault)) (err ERR-NOT-AUTHORIZED))
-    (try! (contract-call? .stx-reserve toggle-stacking (get revoked-stacking vault) (get collateral vault)))
+    (try! (contract-call? .stx-reserve toggle-stacking (not (get revoked-stacking vault)) (get collateral vault)))
 
     (try!
       (contract-call? .vault-data update-vault vault-id (merge vault {
@@ -215,8 +215,8 @@
       )
       (err ERR-MAXIMUM-DEBT-REACHED)
     )
-    (try! (contract-call? reserve collateralize-and-mint ft collateral-amount debt sender))
 
+    (try! (contract-call? reserve collateralize-and-mint ft collateral-token collateral-type collateral-amount debt sender))
     (try! (as-contract (contract-call? .dao mint-token .xusd-token debt sender)))
     (let (
       (vault-id (+ (contract-call? .vault-data get-last-vault-id) u1))
@@ -252,7 +252,6 @@
   (let ((vault (get-vault-by-id vault-id))
        (new-collateral (+ uamount (get collateral vault)))
        (updated-vault (merge vault {
-          stacked-tokens: (+ (get stacked-tokens vault) (resolve-stacking-amount uamount (get collateral-token vault))),
           collateral: new-collateral,
           updated-at-block-height: block-height
         })))
@@ -436,7 +435,14 @@
     (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
     (asserts! (is-eq contract-caller .liquidator) (err ERR-NOT-AUTHORIZED))
 
-    (let ((collateral (get collateral vault)))
+    (try! (contract-call? .vault-data reset-stacking-payouts vault-id))
+    (let (
+      (collateral (get collateral vault))
+      (liquidation-penalty (unwrap-panic (contract-call? .collateral-types get-liquidation-penalty (get collateral-type vault))))
+      (penalty (/ (* liquidation-penalty (get debt vault)) u10000))
+      (extra-debt (/ (* u60 penalty) u100)) ;; 60% of the penalty is extra debt.
+      (discount (/ (* u40 liquidation-penalty) u10000)) ;; 40% of liquidation penalty is discount % for liquidator
+    )
       (if
         (and
           (is-eq "STX" (get collateral-token vault))
@@ -454,9 +460,7 @@
             }))
           )
           (try! (contract-call? .sip10-reserve mint-xstx collateral))
-          (let ((debt (/ (* (unwrap-panic (contract-call? .collateral-types get-liquidation-penalty (get collateral-type vault))) (get debt vault)) u100)))
-            (ok (tuple (ustx-amount collateral) (debt (+ debt (get debt vault)))))
-          )
+          (ok (tuple (ustx-amount collateral) (extra-debt extra-debt) (vault-debt (get debt vault)) (discount discount)))
         )
         (begin
           (try! (contract-call? .vault-data update-vault vault-id (merge vault {
@@ -467,9 +471,7 @@
               leftover-collateral: u0
             }))
           )
-          (let ((debt (/ (* (unwrap-panic (contract-call? .collateral-types get-liquidation-penalty (get collateral-type vault))) (get debt vault)) u100)))
-            (ok (tuple (ustx-amount collateral) (debt (+ debt (get debt vault)))))
-          )
+          (ok (tuple (ustx-amount collateral) (extra-debt extra-debt) (vault-debt (get debt vault)) (discount discount)))
         )
       )
     )
