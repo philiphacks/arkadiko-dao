@@ -72,7 +72,12 @@
       (begin
         (let ((stx-price-in-cents (contract-call? .oracle get-price (get collateral-token vault))))
           (if (> (get debt vault) u0)
-            (ok (/ (* (get collateral vault) (get last-price-in-cents stx-price-in-cents)) (get debt vault)))
+            (ok
+              (/
+                (* (get collateral vault) (get last-price-in-cents stx-price-in-cents))
+                (+ (get debt vault) (unwrap-panic (get-stability-fee-for-vault vault-id)))
+              )
+            )
             (err u0)
           )
         )
@@ -386,7 +391,8 @@
     (vault (get-vault-by-id vault-id))
     (number-of-blocks (- block-height (get stability-fee-last-accrued vault)))
     (fee (unwrap-panic (contract-call? .collateral-types get-stability-fee (get collateral-type vault))))
-    (interest (/ (* (get debt vault) fee) (pow u10 u15)))
+    (decimals (unwrap-panic (contract-call? .collateral-types get-stability-fee-decimals (get collateral-type vault))))
+    (interest (/ (* (get debt vault) fee) (pow u10 decimals)))
   )
     (ok (* number-of-blocks interest))
   )
