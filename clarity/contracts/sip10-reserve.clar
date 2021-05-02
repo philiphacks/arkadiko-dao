@@ -10,8 +10,6 @@
 (define-constant ERR-MINT-FAILED u97)
 (define-constant ERR-WRONG-TOKEN u98)
 
-(define-constant CONTRACT-OWNER tx-sender)
-
 (define-read-only (calculate-xusd-count (token (string-ascii 12)) (ucollateral-amount uint) (collateral-type (string-ascii 12)))
   (let ((price-in-cents (contract-call? .oracle get-price token)))
     (let ((amount
@@ -126,7 +124,7 @@
 
 (define-public (set-tokens-to-stack (new-tokens-to-stack uint))
   (begin
-    (asserts! (is-eq contract-caller CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq contract-caller (contract-call? .dao get-dao-owner)) (err ERR-NOT-AUTHORIZED))
 
     ;; NOOP
     (ok true)
@@ -138,7 +136,7 @@
 ;; so this method should be ran multiple times, once for each token
 (define-public (migrate-funds (new-vault <vault-trait>) (token <mock-ft-trait>))
   (begin
-    (asserts! (is-eq contract-caller CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq contract-caller (contract-call? .dao get-dao-owner)) (err ERR-NOT-AUTHORIZED))
 
     (let (
       (balance (unwrap-panic (contract-call? token get-balance-of (as-contract tx-sender))))

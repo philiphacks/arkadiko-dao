@@ -24,7 +24,6 @@
 
 ;; constants
 (define-constant BLOCKS-PER-DAY u144)
-(define-constant CONTRACT-OWNER tx-sender)
 
 (define-data-var stx-redeemable uint u0) ;; how much STX is available to trade for xSTX
 (define-data-var block-height-last-paid uint u0) ;; when the foundation was last paid
@@ -140,7 +139,7 @@
 (define-public (enable-vault-withdrawals (stacker <stacker-trait>) (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
     (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
-    (asserts! (is-eq tx-sender CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq tx-sender (contract-call? .dao get-dao-owner)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq "STX" (get collateral-token vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq false (get is-liquidated vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq true (get revoked-stacking vault)) (err ERR-NOT-AUTHORIZED))
@@ -162,7 +161,7 @@
 (define-public (release-stacked-stx (stacker <stacker-trait>) (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
     (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
-    (asserts! (is-eq tx-sender CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq tx-sender (contract-call? .dao get-dao-owner)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq "xSTX" (get collateral-token vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq true (get is-liquidated vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (> (get stacked-tokens vault) u0) (err ERR-NOT-AUTHORIZED))
@@ -531,7 +530,7 @@
 ;; freddie should only contain xUSD
 (define-public (migrate-funds (new-vault-manager <vault-manager-trait>) (token <mock-ft-trait>))
   (begin
-    (asserts! (is-eq contract-caller CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq contract-caller (contract-call? .dao get-dao-owner)) (err ERR-NOT-AUTHORIZED))
 
     (let (
       (balance (unwrap-panic (contract-call? token get-balance-of (as-contract tx-sender))))
@@ -543,7 +542,7 @@
 
 (define-public (set-stx-redeemable (new-stx-redeemable uint))
   (begin
-    (asserts! (is-eq contract-caller CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq contract-caller (contract-call? .dao get-dao-owner)) (err ERR-NOT-AUTHORIZED))
 
     (var-set stx-redeemable new-stx-redeemable)
     (ok true)
@@ -552,7 +551,7 @@
 
 (define-public (set-block-height-last-paid (new-block-height-last-paid uint))
   (begin
-    (asserts! (is-eq contract-caller CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq contract-caller (contract-call? .dao get-dao-owner)) (err ERR-NOT-AUTHORIZED))
 
     (var-set block-height-last-paid new-block-height-last-paid)
     (ok true)
@@ -561,7 +560,7 @@
 
 (define-public (set-maximum-debt-surplus (new-maximum-debt-surplus uint))
   (begin
-    (asserts! (is-eq contract-caller CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq contract-caller (contract-call? .dao get-dao-owner)) (err ERR-NOT-AUTHORIZED))
 
     (var-set maximum-debt-surplus new-maximum-debt-surplus)
     (ok true)
@@ -572,7 +571,7 @@
 ;; payout address has a separate setter that can be configured
 (define-public (migrate-state (new-vault-manager <vault-manager-trait>))
   (begin
-    (asserts! (is-eq contract-caller CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq contract-caller (contract-call? .dao get-dao-owner)) (err ERR-NOT-AUTHORIZED))
 
     (try! (contract-call? new-vault-manager set-stx-redeemable (var-get stx-redeemable)))
     (try! (contract-call? new-vault-manager set-block-height-last-paid (var-get block-height-last-paid)))

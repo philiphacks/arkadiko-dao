@@ -32,6 +32,10 @@
 (define-data-var emergency-shutdown-activated bool false)
 (define-data-var payout-address principal DAO-OWNER) ;; to which address the foundation is paid
 
+(define-read-only (get-dao-owner)
+  DAO-OWNER
+)
+
 (define-read-only (get-payout-address)
   (var-get payout-address)
 )
