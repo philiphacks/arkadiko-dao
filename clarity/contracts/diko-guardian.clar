@@ -12,12 +12,11 @@
 (define-constant MIN-STAKING-BLOCK-REWARDS u28000000) ;; 28 DIKO
 (define-constant BLOCKS-PER-MONTH u4320) ;; 144 * 30
 (define-constant FOUNDERS-TOKENS-PER-MONTH u437500000000) ;; 437.500
+(define-constant STAKING-REWARDS-FIRST-YEAR u25000000000000) ;; 25m with 6 decimals
 
 ;; Variables
 (define-data-var contract-start-block uint block-height)
 (define-data-var founders-wallet principal tx-sender)
-
-(define-data-var staking-rewards-first-year uint u25000000000000) ;; 25m with 6 decimals
 (define-data-var founders-tokens-claimed uint u0) 
 
 ;; ---------------------------------------------------------
@@ -43,7 +42,7 @@
     ;; rewards are halved every year because of this devider (1, 2, 4, 8, 16)
     (staking-rewards-divider (pow u2 (- year-number u1)))
     ;; the total rewards to distribute in the current year
-    (year-rewards (/ (var-get staking-rewards-first-year) staking-rewards-divider))
+    (year-rewards (/ STAKING-REWARDS-FIRST-YEAR staking-rewards-divider))
     ;; avg rewards per step (2 weeks)
     (avg-rewards-per-step (/ year-rewards steps-per-year))
 
@@ -98,15 +97,15 @@
     (month-number (/ (- block-height (var-get contract-start-block)) BLOCKS-PER-MONTH))
   )
     ;; Vesting period
-    (if (and (>= month-number u12) (<= month-number u59))
+    (if (and (>= month-number u12) (<= month-number u47))
       (let (
-        (max-tokens (* (- month-number u11) FOUNDERS-TOKENS-PER-MONTH))
+        (max-tokens (* month-number FOUNDERS-TOKENS-PER-MONTH))
         (claimed-tokens (var-get founders-tokens-claimed))
       )
         (ok (- max-tokens claimed-tokens)) 
       )
       ;; Vesting ended
-      (if (> month-number u59)
+      (if (> month-number u47)
         (let (
           (max-tokens (* u48 FOUNDERS-TOKENS-PER-MONTH))
           (claimed-tokens (var-get founders-tokens-claimed))
