@@ -504,3 +504,102 @@ Clarinet.test({
   }
 });
 
+Clarinet.test({
+  name: "freddie: stack collateral",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    let deployer = accounts.get("deployer")!;
+    
+    let block = chain.mineBlock([
+      Tx.contractCall("oracle", "update-price", [
+        types.ascii("STX"),
+        types.uint(200),
+      ], deployer.address),
+      Tx.contractCall("freddie", "collateralize-and-mint", [
+        types.uint(1000000000), // 1000 STX
+        types.uint(300000000), // mint 300 xUSD
+        types.principal(deployer.address),
+        types.ascii("STX-A"),
+        types.ascii("STX"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
+      ], deployer.address)
+    ]);
+    block.receipts[1].result
+      .expectOk()
+      .expectUint(300000000);
+
+    // Burn 300
+    block = chain.mineBlock([
+      // revoke stacking for vault 1
+      Tx.contractCall("freddie", "toggle-stacking", [
+        types.uint(1)
+      ], deployer.address),
+      // now vault 1 has revoked stacking, enable vault withdrawals
+      Tx.contractCall("freddie", "enable-vault-withdrawals", [
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stacker"),
+        types.uint(1)
+      ], deployer.address)
+    ]);
+    block.receipts[0].result
+      .expectOk()
+      .expectBool(true);
+
+    let call = await chain.callReadOnlyFn(
+      "freddie",
+      "get-vault-by-id",
+      [types.uint(1)],
+      deployer.address
+    );
+    let vault = call.result.expectTuple();
+    vault['revoked-stacking'].expectBool(true);
+    vault['stacked-tokens'].expectUint(0);
+
+    call = await chain.callReadOnlyFn(
+      "stx-reserve",
+      "get-tokens-to-stack",
+      [],
+      deployer.address
+    );
+    call.result.expectOk().expectUint(0);
+
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "stack-collateral", [
+        types.uint(1)
+      ], deployer.address)
+    ]);
+
+    call = await chain.callReadOnlyFn(
+      "stx-reserve",
+      "get-tokens-to-stack",
+      [],
+      deployer.address
+    );
+    call.result.expectOk().expectUint(1000000000);
+
+    block = chain.mineBlock([
+      Tx.contractCall("oracle", "update-price", [
+        types.ascii("DIKO"),
+        types.uint(200),
+      ], deployer.address),
+      Tx.contractCall("freddie", "collateralize-and-mint", [
+        types.uint(1000000000), // 1000 STX
+        types.uint(300000000), // mint 300 xUSD
+        types.principal(deployer.address),
+        types.ascii("DIKO-A"),
+        types.ascii("DIKO"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.sip10-reserve"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
+      ], deployer.address)
+    ]);
+    block.receipts[1].result
+      .expectOk()
+      .expectUint(300000000);
+
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "stack-collateral", [
+        types.uint(1)
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(4401);
+  }
+});
