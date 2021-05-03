@@ -303,7 +303,7 @@
             updated-at-block-height: block-height
           })))
       ;; TODO: FIX (make "STX" dynamic)
-      (asserts! (>= ratio (unwrap-panic (contract-call? .collateral-types get-collateral-to-debt-ratio "STX"))) (err ERR-INSUFFICIENT-COLLATERAL))
+      (asserts! (>= ratio (unwrap-panic (contract-call? .collateral-types get-collateral-to-debt-ratio (get collateral-type vault)))) (err ERR-INSUFFICIENT-COLLATERAL))
       (unwrap! (contract-call? reserve withdraw ft (get owner vault) uamount) (err ERR-WITHDRAW-FAILED))
       (try! (contract-call? .vault-data update-vault vault-id updated-vault))
       (print { type: "vault", action: "withdraw", data: updated-vault })

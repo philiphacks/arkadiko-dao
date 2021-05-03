@@ -462,6 +462,14 @@ Clarinet.test({
         types.uint(1),
         types.uint(1000000000), // mint 1000 xUSD
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve")
+      ], deployer.address),
+      Tx.contractCall("freddie", "toggle-stacking", [
+        types.uint(1)
+      ], deployer.address),
+      // now vault 1 has revoked stacking, enable vault withdrawals
+      Tx.contractCall("freddie", "enable-vault-withdrawals", [
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stacker"),
+        types.uint(1)
       ], deployer.address)
     ]);
     block.receipts[0].result
@@ -477,10 +485,9 @@ Clarinet.test({
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
       ], deployer.address)
     ]);
-    // block.receipts[0].result
-    //   .expectOk()
-    //   .expectBool(true);
-    // TODO: unauthorised to withdraw?
+    block.receipts[0].result
+      .expectOk()
+      .expectBool(true);
 
     // Withdraw too much
     block = chain.mineBlock([
@@ -493,8 +500,7 @@ Clarinet.test({
     ]);
     block.receipts[0].result
       .expectErr()
-      .expectUint(4401); // TODO: would expect ERR-INSUFFICIENT-COLLATERAL 49
-
+      .expectUint(49);
   }
 });
 
