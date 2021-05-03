@@ -361,7 +361,7 @@ Clarinet.test({
     ]);
     block.receipts[0].result
       .expectErr()
-      .expectUint(5); // TODO: would have expected ERR-MAXIMUM-DEBT-REACHED 410
+      .expectUint(119); // error: trying to create too much debt
 
     // Burn 300
     block = chain.mineBlock([
@@ -370,11 +370,38 @@ Clarinet.test({
         types.uint(300000000), // burn 300 xUSD
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token")
+      ], deployer.address),
+      // revoke stacking for vault 1
+      Tx.contractCall("freddie", "toggle-stacking", [
+        types.uint(1)
+      ], deployer.address),
+      // now vault 1 has revoked stacking, enable vault withdrawals
+      Tx.contractCall("freddie", "enable-vault-withdrawals", [
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stacker"),
+        types.uint(1)
       ], deployer.address)
     ]);
     block.receipts[0].result
       .expectOk()
       .expectBool(true);
+
+    let call = await chain.callReadOnlyFn(
+      "freddie",
+      "get-vault-by-id",
+      [types.uint(1)],
+      deployer.address
+    );
+    let vault = call.result.expectTuple();
+    vault['revoked-stacking'].expectBool(true);
+    vault['stacked-tokens'].expectUint(0);
+
+    call = await chain.callReadOnlyFn(
+      "stx-reserve",
+      "get-stx-balance",
+      [],
+      deployer.address
+    );
+    call.result.expectUint(1000000000);
 
     // Burn last 200 which should close the vault
     block = chain.mineBlock([
@@ -385,11 +412,9 @@ Clarinet.test({
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token")
       ], deployer.address)
     ]);
-    // TODO: this is failing because the vault can't be closed (unauthorised)
-    // block.receipts[0].result
-    //   .expectOk()
-    //   .expectBool(true);
-
+    block.receipts[0].result
+      .expectOk()
+      .expectBool(true);
   }
 });
 
