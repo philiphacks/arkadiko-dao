@@ -31,6 +31,7 @@
 ;; Variables
 (define-data-var emergency-shutdown-activated bool false)
 (define-data-var payout-address principal DAO-OWNER) ;; to which address the foundation is paid
+(define-data-var guardian principal DAO-OWNER) ;; guardian that can be set
 
 (define-read-only (get-dao-owner)
   DAO-OWNER
@@ -45,6 +46,26 @@
     (asserts! (is-eq tx-sender DAO-OWNER) (err ERR-NOT-AUTHORIZED))
 
     (ok (var-set payout-address address))
+  )
+)
+
+(define-read-only (get-guardian-address)
+  (var-get guardian)
+)
+
+(define-public (set-guardian-address (address principal))
+  (begin
+    (asserts! (is-eq tx-sender (var-get guardian)) (err ERR-NOT-AUTHORIZED))
+
+    (ok (var-set guardian address))
+  )
+)
+
+(define-public (trigger-emergency-shutdown)
+  (begin
+    (asserts! (is-eq tx-sender (var-get guardian)) (err ERR-NOT-AUTHORIZED))
+
+    (ok (var-set emergency-shutdown-activated (not (var-get emergency-shutdown-activated))))
   )
 )
 
