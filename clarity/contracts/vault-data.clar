@@ -4,11 +4,6 @@
 ;; Variables
 ;; ---------------------------------------------------------
 
-;; Constants
-(define-constant CONTRACT-OWNER tx-sender)
-(define-constant ERR-NOT-AUTHORIZED u7401)
-(define-constant ERR-REWARDS-CALC u7001)
-
 ;; Map of vault entries
 ;; The entry consists of a user principal with their collateral and debt balance
 (define-map vaults { id: uint } {
@@ -27,12 +22,7 @@
   auction-ended: bool,
   leftover-collateral: uint
 })
-(define-map vault-entries 
-  { user: principal } 
-  { 
-    ids: (list 1200 uint)
-  }
-)
+(define-map vault-entries { user: principal } { ids: (list 1200 uint) })
 (define-map closing-vault
   { user: principal }
   { vault-id: uint }
@@ -45,19 +35,8 @@
   }
 )
 (define-data-var last-vault-id uint u0)
-
-;; To keep track of rewards
-(define-data-var total-collateral uint u0) 
-(define-data-var cumm-reward-per-collateral uint u0) 
-(define-data-var last-reward-increase-block uint u0) 
-
-;; Keep track of cumm rewards per collateral for user
-(define-map reward-per-collateral 
-   { user: principal } 
-   {
-      cumm-reward-per-collateral: uint
-   }
-)
+(define-constant CONTRACT-OWNER tx-sender)
+(define-constant ERR-NOT-AUTHORIZED u7401)
 
 ;; ---------------------------------------------------------
 ;; Getters
@@ -115,54 +94,25 @@
 )
 
 (define-public (update-vault (vault-id uint) (data (tuple (id uint) (owner principal) (collateral uint) (collateral-type (string-ascii 12)) (collateral-token (string-ascii 12)) (stacked-tokens uint) (revoked-stacking bool) (debt uint) (created-at-block-height uint) (updated-at-block-height uint) (stability-fee-last-accrued uint) (is-liquidated bool) (auction-ended bool) (leftover-collateral uint))))
-  (let (
-    (vault (get-vault-by-id vault-id))
-    (current-collateral (get collateral vault))
-    (new-collateral (get collateral data))
-    (current-total-collateral (var-get total-collateral))
-    (vault-owner (get owner data))
-  )
+  (let ((vault (get-vault-by-id vault-id)))
     (asserts!
       (or
         (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "freddie")))
         (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "stacker")))
       )
       (err ERR-NOT-AUTHORIZED)
-    )  
-
-    ;; Save latest cumm reward
-    (increase-cumm-reward-per-collateral)
-    ;; Save vault changes
+    )
+  
     (map-set vaults (tuple (id vault-id)) data)
-    ;; Update total
-    (var-set total-collateral (- (+ current-total-collateral new-collateral) current-collateral))
-    ;; Save cumm reward again, as total changed
-    (increase-cumm-reward-per-collateral)
-    ;; Save for user
-    (map-set reward-per-collateral { user: vault-owner } { cumm-reward-per-collateral: (var-get cumm-reward-per-collateral) })
-
     (ok true)
   )
 )
 
 (define-public (update-vault-entries (user principal) (vault-id uint))
-  (let (
-    (entries (get ids (get-vault-entries user)))
-    (vault (get-vault-by-id vault-id))
-  )
+  (let ((entries (get ids (get-vault-entries user))))
     (asserts! (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "freddie"))) (err ERR-NOT-AUTHORIZED))
 
-    ;; Save latest cumm reward
-    (increase-cumm-reward-per-collateral)
-    ;; Add vault for user
     (map-set vault-entries { user: user } { ids: (unwrap-panic (as-max-len? (append entries vault-id) u1200)) })
-    ;; Update total
-    (var-set total-collateral (+ (var-get total-collateral) (get collateral vault)))
-    ;; Save cumm reward again, as total changed
-    (increase-cumm-reward-per-collateral)
-    ;; Save for user
-    (map-set reward-per-collateral { user: user } { cumm-reward-per-collateral: (var-get cumm-reward-per-collateral) })
-
     (ok true)
   )
 )
@@ -229,110 +179,4 @@
     )
     (ok true)
   )
-)
-
-;; ---------------------------------------------------------
-;; Vault rewards
-;; ---------------------------------------------------------
-
-;; Helper to get collateral from a vault
-(define-read-only (get-collateral-of-vault-by-id (id uint))
-  (get collateral (get-vault-by-id id))
-)
-
-;; Get total collateral
-(define-read-only (get-total-collateral-of (user principal))
-  (let (
-    (vault-ids (get ids (get-vault-entries user)))
-    (vaults-collateral (map get-collateral-of-vault-by-id vault-ids))
-    (total-collateral-user (fold + vaults-collateral u0))
-  )
-    total-collateral-user
-  )
-)
-
-;; Get collateral info - last rewards block
-(define-read-only (get-cumm-reward-per-collateral-of (user principal))
-  (get cumm-reward-per-collateral 
-    (default-to
-      { cumm-reward-per-collateral: u0 }
-      (map-get? reward-per-collateral { user: user })
-    )
-  )
-)
-
-;; Get pending rewards for user
-(define-read-only (get-pending-rewards (user principal))
-  (let (
-    (collateral-amount (get-total-collateral-of user))
-    (amount-owed-per-token (- (calculate-cumm-reward-per-collateral) (get-cumm-reward-per-collateral-of user)))
-    (rewards-decimals (* collateral-amount amount-owed-per-token))
-    (rewards (/ rewards-decimals u1000000))
-  )
-    (ok rewards)
-  )
-)
-
-;; Claim rewards for user
-(define-public (claim-pending-rewards)
-  (begin
-
-    ;; Increase so we know new value for this user
-    (increase-cumm-reward-per-collateral)
-
-    (let (
-      (pending-rewards (unwrap! (get-pending-rewards tx-sender) (err ERR-REWARDS-CALC)))
-    )
-      ;; Only mint if enough pending rewards and amount is positive
-      (if (>= pending-rewards u1)
-        (begin
-          ;; Mint DIKO rewards for user
-          (try! (contract-call? .dao mint-token .arkadiko-token pending-rewards tx-sender))
-
-          (map-set reward-per-collateral { user: tx-sender } { cumm-reward-per-collateral: (var-get cumm-reward-per-collateral) })
-
-          (ok pending-rewards)
-        )
-        (ok u0)
-      )
-    )
-  )
-)
-
-;; Increase cumm reward per collateral and save
-(define-private (increase-cumm-reward-per-collateral)
-  (let (
-    ;; Calculate new cumm reward per collateral
-    (new-cumm-reward-per-collateral (calculate-cumm-reward-per-collateral))
-  )
-    (var-set cumm-reward-per-collateral new-cumm-reward-per-collateral)
-    (var-set last-reward-increase-block block-height)
-    new-cumm-reward-per-collateral
-  )
-)
-
-;; Calculate current cumm reward per collateral
-(define-read-only (calculate-cumm-reward-per-collateral)
-  (let (
-    (rewards-per-block (contract-call? .diko-guardian get-vault-rewards-per-block))
-    (current-total-collateral (var-get total-collateral))
-    (block-diff (- block-height (var-get last-reward-increase-block)))
-    (current-cumm-reward-per-collateral (var-get cumm-reward-per-collateral)) 
-  )
-    (if (> current-total-collateral u0)
-      (let (
-        (total-rewards-to-distribute (* rewards-per-block block-diff))
-        (reward-added-per-token (/ (* total-rewards-to-distribute u1000000) current-total-collateral))
-        (new-cumm-reward-per-collateral (+ current-cumm-reward-per-collateral reward-added-per-token))
-      )
-        new-cumm-reward-per-collateral
-      )
-      current-cumm-reward-per-collateral
-    )
-  )
-)
-
-;; Initialize the contract
-(begin
-  (var-set last-reward-increase-block block-height)
 )

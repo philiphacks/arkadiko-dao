@@ -8,7 +8,7 @@ import {
 
 
 Clarinet.test({
-  name: "vault-data: vault DIKO rewards",
+  name: "vault-rewards: vault DIKO rewards",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     let deployer = accounts.get("deployer")!;
     let wallet_1 = accounts.get("wallet_1")!;
@@ -42,24 +42,18 @@ Clarinet.test({
       ], deployer.address),
     ]);
 
-    let call = chain.callReadOnlyFn("vault-data", "get-collateral-of-vault-by-id", [types.uint(1)], deployer.address);
-    call.result.expectUint(5000000)
-
-    call = chain.callReadOnlyFn("vault-data", "get-total-collateral-of", [types.principal(deployer.address)], deployer.address);
-    call.result.expectUint(10000000)
-
     // Check rewards
-    call = chain.callReadOnlyFn("vault-data", "get-pending-rewards", [types.principal(deployer.address)], deployer.address);
+    let call = chain.callReadOnlyFn("vault-rewards", "get-pending-rewards", [types.principal(deployer.address)], deployer.address);
     call.result.expectOk().expectUint(55123110)
     
     chain.mineEmptyBlock(1);
 
-    call = chain.callReadOnlyFn("vault-data", "get-pending-rewards", [types.principal(deployer.address)], deployer.address);
+    call = chain.callReadOnlyFn("vault-rewards", "get-pending-rewards", [types.principal(deployer.address)], deployer.address);
     call.result.expectOk().expectUint(110246230)
 
     chain.mineEmptyBlock(12*30*144);
 
-    call = chain.callReadOnlyFn("vault-data", "get-pending-rewards", [types.principal(deployer.address)], deployer.address);
+    call = chain.callReadOnlyFn("vault-rewards", "get-pending-rewards", [types.principal(deployer.address)], deployer.address);
     call.result.expectOk().expectUint(1483801920350)
     
   },
@@ -91,13 +85,13 @@ Clarinet.test({
 
     chain.mineEmptyBlock(30);
 
-    let call = chain.callReadOnlyFn("vault-data", "get-pending-rewards", [types.principal(deployer.address)], deployer.address);
+    let call = chain.callReadOnlyFn("vault-rewards", "get-pending-rewards", [types.principal(deployer.address)], deployer.address);
     call.result.expectOk().expectUint(1708816595)
 
     call = chain.callReadOnlyFn("arkadiko-token", "get-balance-of", [types.principal(wallet_1.address)], wallet_1.address);
     call.result.expectOk().expectUint(150000000000);   
 
-    call = chain.callReadOnlyFn("vault-data", "claim-pending-rewards", [], deployer.address);
+    call = chain.callReadOnlyFn("vault-rewards", "claim-pending-rewards", [], deployer.address);
     call.result.expectOk().expectUint(1708816595)
 
     call = chain.callReadOnlyFn("arkadiko-token", "get-balance-of", [types.principal(wallet_1.address)], wallet_1.address);
