@@ -84,7 +84,7 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
 
   // Get rewards at start
   let call = chain.callReadOnlyFn("diko-guardian", "get-pending-founders-tokens", [], wallet_1.address);
-  // call.result.expectOk().expectUint(0)
+  call.result.expectOk().expectUint(0)
 
   // 12 months, 30 days, 144 block per day 
   chain.mineEmptyBlock((12*30*144)-2);
@@ -96,19 +96,19 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
   // 1 block later, cliff of 1 year is over
   chain.mineEmptyBlock(1);
 
-  // Get rewards
+  // Get rewards (12 * 437.500) = 5.25m
   call = chain.callReadOnlyFn("diko-guardian", "get-pending-founders-tokens", [], wallet_1.address);
-  call.result.expectOk().expectUint(437500000000)
+  call.result.expectOk().expectUint(5250000000000)
 
   // 1 year later
   chain.mineEmptyBlock(12*30*144);
 
-  // Get rewards
+  // Get rewards (5.25m * 2) = 10.5m
   call = chain.callReadOnlyFn("diko-guardian", "get-pending-founders-tokens", [], wallet_1.address);
-  call.result.expectOk().expectUint(5687500000000)
+  call.result.expectOk().expectUint(10500000000000)
 
-  // 3 year later - max
-  chain.mineEmptyBlock(3*12*30*144);4
+  // 2 year later - max
+  chain.mineEmptyBlock(2*12*30*144);
 
   // Get rewards
   call = chain.callReadOnlyFn("diko-guardian", "get-pending-founders-tokens", [], wallet_1.address);
@@ -138,34 +138,34 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
 
   // Get rewards at start
   call = chain.callReadOnlyFn("diko-guardian", "get-pending-founders-tokens", [], wallet_1.address);
-  call.result.expectOk().expectUint(437500000000)
+  call.result.expectOk().expectUint(5250000000000)
 
   // Claim tokens
   let block = chain.mineBlock([
     Tx.contractCall("diko-guardian", "founders-claim-tokens", [
-        types.uint(437500000000)
+        types.uint(5250000000000)
     ], deployer.address)
   ]);
   block.receipts[0].result.expectOk().expectBool(true);
 
-  // New balance
+  // New balance (0.89+5.25)
   call = chain.callReadOnlyFn("arkadiko-token", "get-balance-of", [types.principal(deployer.address)], deployer.address);
-  call.result.expectOk().expectUint(1327500000000);
+  call.result.expectOk().expectUint(6140000000000);
 
   // Number of tokens claimed already
   call = chain.callReadOnlyFn("diko-guardian", "get-claimed-founders-tokens", [], deployer.address);
-  call.result.expectUint(437500000000);
+  call.result.expectUint(5250000000000);
 
-    // Get rewards at start
-    call = chain.callReadOnlyFn("diko-guardian", "get-pending-founders-tokens", [], deployer.address);
-    call.result.expectOk().expectUint(0)
+  // Get rewards at start
+  call = chain.callReadOnlyFn("diko-guardian", "get-pending-founders-tokens", [], deployer.address);
+  call.result.expectOk().expectUint(0)
 
   // 3 year later - max
   chain.mineEmptyBlock(4*12*30*144);
 
   // Get rewards (max minus claimed)
   call = chain.callReadOnlyFn("diko-guardian", "get-pending-founders-tokens", [], deployer.address);
-  call.result.expectOk().expectUint(20562500000000)
+  call.result.expectOk().expectUint(15750000000000)
 }
 });
   
@@ -269,4 +269,3 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
   call.result.expectUint(0)
 }
 });
-  
