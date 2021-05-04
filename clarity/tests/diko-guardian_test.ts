@@ -238,33 +238,33 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
 
   // Get rewards at start
   let call = chain.callReadOnlyFn("diko-guardian", "get-vault-rewards-per-block", [], wallet_1.address);
-  call.result.expectUint(55962555)
+  call.result.expectUint(55123116)
 
   // Advance 1 month
   chain.mineEmptyBlock(30*144);
 
-  // Get rewards at start
+  // Get rewards
   call = chain.callReadOnlyFn("diko-guardian", "get-vault-rewards-per-block", [], wallet_1.address);
-  call.result.expectUint(53810149)
+  call.result.expectUint(53002996)
 
   // Advance 1 month
   chain.mineEmptyBlock(30*144);
 
-  // Get rewards at start
+  // Get rewards
   call = chain.callReadOnlyFn("diko-guardian", "get-vault-rewards-per-block", [], wallet_1.address);
-  call.result.expectUint(51657743)
+  call.result.expectUint(50882876)
 
   // Advance 9 month
   chain.mineEmptyBlock(10*30*144);
 
-  // Get rewards at start
+  // Get rewards
   call = chain.callReadOnlyFn("diko-guardian", "get-vault-rewards-per-block", [], wallet_1.address);
-  call.result.expectUint(29057481)
+  call.result.expectUint(28621618)
 
   // Advance 1 month
   chain.mineEmptyBlock(30*144);
 
-  // Get rewards at start
+  // Get rewards
   call = chain.callReadOnlyFn("diko-guardian", "get-vault-rewards-per-block", [], wallet_1.address);
   call.result.expectUint(0)
 }

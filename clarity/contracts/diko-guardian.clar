@@ -100,10 +100,13 @@
     (actual-step-rewards (* avg-rewards-per-step (- max-percentage (* step-number step-percentage-diff))))
     ;; block rewarrds based on step rewards
     (actual-block-rewards (/ (/ actual-step-rewards blocks-per-step) u10000000000))
+
+    ;; Extra multiplier of 96% - makes sure we remain below our targets
+    (block-rewards (/ (* actual-block-rewards u9850000000) u10000000000))
   )
     ;; Rewards only for first year
-    (if (<= step-number u26)
-      actual-block-rewards
+    (if (<= step-number u25)
+      block-rewards
       u0
     )
   )

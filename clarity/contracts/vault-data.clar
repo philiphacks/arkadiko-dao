@@ -274,23 +274,22 @@
 )
 
 ;; Claim rewards for user
-(define-public (claim-pending-rewards (user principal))
+(define-public (claim-pending-rewards)
   (begin
-    ;; TODO
-    ;; (asserts! (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "freddie"))) (err ERR-NOT-AUTHORIZED))
+
+    ;; Increase so we know new value for this user
     (increase-cumm-reward-per-collateral)
 
     (let (
-      (pending-rewards (unwrap! (get-pending-rewards user) (err ERR-REWARDS-CALC)))
+      (pending-rewards (unwrap! (get-pending-rewards tx-sender) (err ERR-REWARDS-CALC)))
     )
       ;; Only mint if enough pending rewards and amount is positive
       (if (>= pending-rewards u1)
         (begin
           ;; Mint DIKO rewards for user
-          ;; TODO: mint via DAO
-          ;; (try! (contract-call? .stake-registry mint-rewards-for-staker pending-rewards staker))
+          (try! (contract-call? .dao mint-token .arkadiko-token pending-rewards tx-sender))
 
-          (map-set reward-per-collateral { user: user } { cumm-reward-per-collateral: (var-get cumm-reward-per-collateral) })
+          (map-set reward-per-collateral { user: tx-sender } { cumm-reward-per-collateral: (var-get cumm-reward-per-collateral) })
 
           (ok pending-rewards)
         )
@@ -315,8 +314,7 @@
 ;; Calculate current cumm reward per collateral
 (define-read-only (calculate-cumm-reward-per-collateral)
   (let (
-    ;; (rewards-per-block (contract-call? .diko-guardian get-rewards-per-block-for-pool .stake-pool-diko))
-    (rewards-per-block u100) ;; TODO: get from diko-guardian (merge branch first)
+    (rewards-per-block (contract-call? .diko-guardian get-vault-rewards-per-block))
     (current-total-collateral (var-get total-collateral))
     (block-diff (- block-height (var-get last-reward-increase-block)))
     (current-cumm-reward-per-collateral (var-get cumm-reward-per-collateral)) 

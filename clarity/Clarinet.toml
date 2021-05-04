@@ -27,7 +27,7 @@ depends_on = ["collateral-types-trait"]
 path = "contracts/collateral-types.clar"
 
 [contracts.vault-data]
-depends_on = []
+depends_on = ["diko-guardian"]
 path = "contracts/vault-data.clar"
 
 [contracts.dao]
