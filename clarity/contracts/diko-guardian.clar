@@ -12,8 +12,8 @@
 (define-constant MIN-STAKING-BLOCK-REWARDS u28000000) ;; 28 DIKO
 (define-constant BLOCKS-PER-MONTH u4320) ;; 144 * 30
 (define-constant FOUNDERS-TOKENS-PER-MONTH u437500000000) ;; 437.500
-(define-constant VAULT-REWARDS u2200000000000) ;; 2.2 mio
 (define-constant STAKING-REWARDS-FIRST-YEAR u25000000000000) ;; 25m with 6 decimals
+(define-constant REWARDS-PER-BLOCK-START u105000000) ;; 
 
 ;; Variables
 (define-data-var contract-start-block uint block-height)
@@ -84,25 +84,14 @@
     (steps-per-year u26)
     ;; 144 blocks per day, 14 days
     (blocks-per-step u2016) 
-
+    
     ;; each step is equal to 2 weeks. This calculates the current step we are in, since the start
     (step-number (/ (- block-height (var-get contract-start-block)) blocks-per-step))
-    ;; avg rewards per step (2 weeks)
-    (avg-rewards-per-step (/ VAULT-REWARDS steps-per-year))
 
-    ;; max-percentage = 1.33333, min-percentage = 0.666666
-    ;; used to linearly decrease rewards per step in a given year
-    (max-percentage (+ u10000000000 (/ u10000000000 u3)))
-    (min-percentage (- u10000000000 (/ u10000000000 u3)))
-    (step-percentage-diff (/ (- max-percentage min-percentage) steps-per-year))
+    ;; Every step, the divider is increased by 10%
+    (staking-rewards-divider (/ (* (pow u11 step-number) u100) (pow u10 step-number)))
 
-    ;; based on the avg rewards per step, and the percentages
-    (actual-step-rewards (* avg-rewards-per-step (- max-percentage (* step-number step-percentage-diff))))
-    ;; block rewarrds based on step rewards
-    (actual-block-rewards (/ (/ actual-step-rewards blocks-per-step) u10000000000))
-
-    ;; Extra multiplier of 96% - makes sure we remain below our targets
-    (block-rewards (/ (* actual-block-rewards u9850000000) u10000000000))
+    (block-rewards (* (/ REWARDS-PER-BLOCK-START staking-rewards-divider) u100))
   )
     ;; Rewards only for first year
     (if (<= step-number u25)

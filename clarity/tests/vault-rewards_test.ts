@@ -44,17 +44,17 @@ Clarinet.test({
 
     // Check rewards
     let call = chain.callReadOnlyFn("vault-rewards", "get-pending-rewards", [types.principal(deployer.address)], deployer.address);
-    call.result.expectOk().expectUint(55123110)
+    call.result.expectOk().expectUint(105000000)
     
     chain.mineEmptyBlock(1);
 
     call = chain.callReadOnlyFn("vault-rewards", "get-pending-rewards", [types.principal(deployer.address)], deployer.address);
-    call.result.expectOk().expectUint(110246230)
+    call.result.expectOk().expectUint(210000000)
 
     chain.mineEmptyBlock(12*30*144);
 
     call = chain.callReadOnlyFn("vault-rewards", "get-pending-rewards", [types.principal(deployer.address)], deployer.address);
-    call.result.expectOk().expectUint(1483801920350)
+    call.result.expectOk().expectUint(502618558400)
     
   },
 });
@@ -86,13 +86,13 @@ Clarinet.test({
     chain.mineEmptyBlock(30);
 
     let call = chain.callReadOnlyFn("vault-rewards", "get-pending-rewards", [types.principal(deployer.address)], deployer.address);
-    call.result.expectOk().expectUint(1708816595)
+    call.result.expectOk().expectUint(3255000000)
 
     call = chain.callReadOnlyFn("arkadiko-token", "get-balance-of", [types.principal(wallet_1.address)], wallet_1.address);
     call.result.expectOk().expectUint(150000000000);   
 
     call = chain.callReadOnlyFn("vault-rewards", "claim-pending-rewards", [], deployer.address);
-    call.result.expectOk().expectUint(1708816595)
+    call.result.expectOk().expectUint(3255000000)
 
     call = chain.callReadOnlyFn("arkadiko-token", "get-balance-of", [types.principal(wallet_1.address)], wallet_1.address);
     call.result.expectOk().expectUint(150000000000);  

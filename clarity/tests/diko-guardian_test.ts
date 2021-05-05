@@ -220,7 +220,7 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
 
   // Use to print rewards per step
   // console.log("---------------");
-  // for (let step = 0; step < 8*26; step++) {
+  // for (let step = 0; step < 30; step++) {
   //   let call = chain.callReadOnlyFn("diko-guardian", "get-vault-rewards-per-block", [], wallet_1.address);
   //   console.log(call.result);
   //   chain.mineEmptyBlock(2016);
@@ -238,28 +238,28 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
 
   // Get rewards at start
   let call = chain.callReadOnlyFn("diko-guardian", "get-vault-rewards-per-block", [], wallet_1.address);
-  call.result.expectUint(55123116)
+  call.result.expectUint(105000000)
 
   // Advance 1 month
   chain.mineEmptyBlock(30*144);
 
   // Get rewards
   call = chain.callReadOnlyFn("diko-guardian", "get-vault-rewards-per-block", [], wallet_1.address);
-  call.result.expectUint(53002996)
+  call.result.expectUint(86776800)
 
   // Advance 1 month
   chain.mineEmptyBlock(30*144);
 
   // Get rewards
   call = chain.callReadOnlyFn("diko-guardian", "get-vault-rewards-per-block", [], wallet_1.address);
-  call.result.expectUint(50882876)
+  call.result.expectUint(71917800)
 
   // Advance 9 month
   chain.mineEmptyBlock(10*30*144);
 
   // Get rewards
   call = chain.callReadOnlyFn("diko-guardian", "get-vault-rewards-per-block", [], wallet_1.address);
-  call.result.expectUint(28621618)
+  call.result.expectUint(9695200)
 
   // Advance 1 month
   chain.mineEmptyBlock(30*144);
