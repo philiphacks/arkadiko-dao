@@ -122,7 +122,7 @@
 )
 
 ;; Get amount of tokens founders can claim
-;; The founders are vested on 4 years, with a 1 year cliff.
+;; The founders are vested on 4 years, with a 6 months cliff.
 ;; Vesting happens monthly. 21m / 48 months = 437.500 per month
 (define-read-only (get-pending-founders-tokens)
   (let (
@@ -130,7 +130,7 @@
     (month-number (/ (- block-height (var-get contract-start-block)) BLOCKS-PER-MONTH))
   )
     ;; Vesting period
-    (if (and (>= month-number u12) (<= month-number u47))
+    (if (and (>= month-number u6) (<= month-number u47))
       (let (
         (max-tokens (* month-number FOUNDERS-TOKENS-PER-MONTH))
         (claimed-tokens (var-get founders-tokens-claimed))
