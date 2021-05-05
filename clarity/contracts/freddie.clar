@@ -242,6 +242,14 @@
   )
 )
 
+(define-public (toggle-freddie-shutdown)
+  (begin
+    (asserts! (is-eq tx-sender (contract-call? .dao get-dao-owner)) (err ERR-NOT-AUTHORIZED))
+
+    (ok (var-set freddie-shutdown-activated (not (var-get freddie-shutdown-activated))))
+  )
+)
+
 (define-public (collateralize-and-mint
     (collateral-amount uint)
     (debt uint)
