@@ -220,10 +220,10 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
 
   // Use to print rewards per step
   // console.log("---------------");
-  // for (let step = 0; step < 30; step++) {
+  // for (let step = 0; step < 8; step++) {
   //   let call = chain.callReadOnlyFn("diko-guardian", "get-vault-rewards-per-block", [], wallet_1.address);
   //   console.log(call.result);
-  //   chain.mineEmptyBlock(2016);
+  //   chain.mineEmptyBlock(1008);
   // }
   // console.log("---------------");
 }
@@ -238,31 +238,31 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
 
   // Get rewards at start
   let call = chain.callReadOnlyFn("diko-guardian", "get-vault-rewards-per-block", [], wallet_1.address);
-  call.result.expectUint(105000000)
+  call.result.expectUint(320000000)
 
-  // Advance 1 month
-  chain.mineEmptyBlock(30*144);
-
-  // Get rewards
-  call = chain.callReadOnlyFn("diko-guardian", "get-vault-rewards-per-block", [], wallet_1.address);
-  call.result.expectUint(86776800)
-
-  // Advance 1 month
-  chain.mineEmptyBlock(30*144);
+  // Advance 1 week
+  chain.mineEmptyBlock(7*144);
 
   // Get rewards
   call = chain.callReadOnlyFn("diko-guardian", "get-vault-rewards-per-block", [], wallet_1.address);
-  call.result.expectUint(71917800)
+  call.result.expectUint(290909000)
 
-  // Advance 9 month
-  chain.mineEmptyBlock(10*30*144);
+  // Advance 1 week
+  chain.mineEmptyBlock(7*144);
 
   // Get rewards
   call = chain.callReadOnlyFn("diko-guardian", "get-vault-rewards-per-block", [], wallet_1.address);
-  call.result.expectUint(9695200)
+  call.result.expectUint(264462800)
 
-  // Advance 1 month
-  chain.mineEmptyBlock(30*144);
+  // Advance 3 weeks
+  chain.mineEmptyBlock(3*7*144);
+
+  // Get rewards
+  call = chain.callReadOnlyFn("diko-guardian", "get-vault-rewards-per-block", [], wallet_1.address);
+  call.result.expectUint(198757700)
+
+  // Advance 1 week
+  chain.mineEmptyBlock(7*144);
 
   // Get rewards
   call = chain.callReadOnlyFn("diko-guardian", "get-vault-rewards-per-block", [], wallet_1.address);
