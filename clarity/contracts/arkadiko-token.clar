@@ -5,11 +5,18 @@
 (define-fungible-token diko)
 
 (define-data-var token-uri (string-utf8 256) u"")
+(define-data-var contract-owner principal tx-sender)
 
 ;; errors
 (define-constant ERR-NOT-AUTHORIZED u1401)
 
-(define-constant CONTRACT-OWNER tx-sender)
+(define-public (set-contract-owner (owner principal))
+  (begin
+    (asserts! (is-eq tx-sender (var-get contract-owner)) (err ERR-NOT-AUTHORIZED))
+
+    (ok (var-set contract-owner owner))
+  )
+)
 
 ;; ---------------------------------------------------------
 ;; SIP-10 Functions
@@ -36,7 +43,7 @@
 )
 
 (define-public (set-token-uri (value (string-utf8 256)))
-  (if (is-eq tx-sender CONTRACT-OWNER)
+  (if (is-eq tx-sender (var-get contract-owner))
     (ok (var-set token-uri value))
     (err ERR-NOT-AUTHORIZED)
   )

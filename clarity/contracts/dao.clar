@@ -10,9 +10,6 @@
 ;; Errors
 (define-constant ERR-NOT-AUTHORIZED (err u100401))
 
-;; Constants
-(define-constant DAO-OWNER tx-sender)
-
 ;; Contract addresses
 (define-map contracts
   { name: (string-ascii 256) }
@@ -30,20 +27,29 @@
 
 ;; Variables
 (define-data-var emergency-shutdown-activated bool false)
-(define-data-var payout-address principal DAO-OWNER) ;; to which address the foundation is paid
-(define-data-var guardian principal DAO-OWNER) ;; guardian that can be set
+(define-data-var dao-owner principal tx-sender)
+(define-data-var payout-address principal (var-get dao-owner)) ;; to which address the foundation is paid
+(define-data-var guardian principal (var-get dao-owner)) ;; guardian that can be set
 
 (define-read-only (get-dao-owner)
-  DAO-OWNER
+  (var-get dao-owner)
 )
 
 (define-read-only (get-payout-address)
   (var-get payout-address)
 )
 
+(define-public (set-dao-owner (address principal))
+  (begin
+    (asserts! (is-eq tx-sender (var-get dao-owner)) (err ERR-NOT-AUTHORIZED))
+
+    (ok (var-set dao-owner address))
+  )
+)
+
 (define-public (set-payout-address (address principal))
   (begin
-    (asserts! (is-eq tx-sender DAO-OWNER) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq tx-sender (var-get dao-owner)) (err ERR-NOT-AUTHORIZED))
 
     (ok (var-set payout-address address))
   )
@@ -135,7 +141,7 @@
 ;; but the vault collateral is not sufficient
 ;; As a result, this method requests DIKO from the DAO ("foundation reserves")
 (define-public (request-diko-tokens (ft <mock-ft-trait>) (collateral-amount uint))
-  (contract-call? ft transfer collateral-amount DAO-OWNER (as-contract (unwrap-panic (get-qualified-name-by-name "sip10-reserve"))))
+  (contract-call? ft transfer collateral-amount (var-get dao-owner) (as-contract (unwrap-panic (get-qualified-name-by-name "sip10-reserve"))))
 )
 
 
