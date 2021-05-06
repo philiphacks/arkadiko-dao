@@ -8,14 +8,74 @@
 
 ;; Constants
 (define-constant BLOCKS-PER-MONTH u4320) ;; 144 * 30
-(define-constant TOTAL-FOUNDERS u21000000000000) ;; 21m
+
 (define-constant TOTAL-FOUNDATION u15000000000000) ;; 15m
+(define-constant FOUNDATION-TOKENS-PER-MONTH u1000000000000) ;; 1m
+
+(define-constant TOTAL-FOUNDERS u21000000000000) ;; 21m
 (define-constant FOUNDERS-TOKENS-PER-MONTH u437500000000) ;; 437.500
 
 ;; Variables
 (define-data-var contract-start-block uint block-height)
+
+(define-data-var foundation-wallet principal tx-sender)
+(define-data-var foundation-tokens-claimed uint u0) 
+
 (define-data-var founders-wallet principal tx-sender)
 (define-data-var founders-tokens-claimed uint u0) 
+
+;; ---------------------------------------------------------
+;; Foundation
+;; ---------------------------------------------------------
+
+;; Set foundation wallet to new address
+(define-public (set-foundation-wallet (address principal))
+  (let (
+    (wallet (var-get foundation-wallet))
+  )
+    (asserts! (is-eq wallet tx-sender) ERR-NOT-AUTHORIZED)
+    (var-set foundation-wallet address)
+    (ok true)
+  )
+)
+
+;; Get number of foundation tokens claimed already
+(define-read-only (get-claimed-foundation-tokens)
+  (var-get foundation-tokens-claimed)
+)
+
+;; Get amount of tokens foundation can claim
+;; 1m every month, for 15 months
+(define-read-only (get-pending-foundation-tokens)
+  (let (
+    ;; Current month number after start
+    (month-number (/ (- block-height (var-get contract-start-block)) BLOCKS-PER-MONTH))
+
+    (max-tokens-month (* (+ month-number u1) FOUNDATION-TOKENS-PER-MONTH))
+    (claimed-tokens (var-get foundation-tokens-claimed))
+  )
+    (if (< month-number u15)
+      ;; First 15 months
+      (ok (- max-tokens-month claimed-tokens)) 
+      ;; Ended
+      (ok (- TOTAL-FOUNDATION claimed-tokens)) 
+    )
+  )
+)
+
+;; Claim tokens for foundation
+(define-public (foundation-claim-tokens (amount uint))
+  (let (
+    (pending-tokens (unwrap! (get-pending-foundation-tokens) ERR-NOT-AUTHORIZED))
+    (claimed-tokens (var-get foundation-tokens-claimed))
+    (wallet (var-get foundation-wallet))
+  )
+    (asserts! (is-eq wallet tx-sender) ERR-NOT-AUTHORIZED)
+    (asserts! (>= pending-tokens amount) ERR-NOT-AUTHORIZED)
+    (var-set foundation-tokens-claimed (+ claimed-tokens amount))
+    (contract-call? .arkadiko-token transfer amount .diko-init wallet)
+  )
+)
 
 ;; ---------------------------------------------------------
 ;; Founders
@@ -44,23 +104,15 @@
   (let (
     ;; Current month number after start
     (month-number (/ (- block-height (var-get contract-start-block)) BLOCKS-PER-MONTH))
+    (claimed-tokens (var-get founders-tokens-claimed))
+    (max-tokens-month (* month-number FOUNDERS-TOKENS-PER-MONTH))
   )
     ;; Vesting period
     (if (and (>= month-number u6) (<= month-number u47))
-      (let (
-        (max-tokens (* month-number FOUNDERS-TOKENS-PER-MONTH))
-        (claimed-tokens (var-get founders-tokens-claimed))
-      )
-        (ok (- max-tokens claimed-tokens)) 
-      )
-      ;; Vesting ended
+      (ok (- max-tokens-month claimed-tokens))
       (if (> month-number u47)
-        (let (
-          (max-tokens (* u48 FOUNDERS-TOKENS-PER-MONTH))
-          (claimed-tokens (var-get founders-tokens-claimed))
-        )
-          (ok (- max-tokens claimed-tokens)) 
-        )
+        ;; Vesting ended
+        (ok (- TOTAL-FOUNDERS claimed-tokens)) 
         ;; Vesting did not start yet
         (ok u0)
       )
@@ -68,7 +120,7 @@
   )
 )
 
-;; Claim tokens for team
+;; Claim tokens for founders
 (define-public (founders-claim-tokens (amount uint))
   (let (
     (pending-tokens (unwrap! (get-pending-founders-tokens) ERR-NOT-AUTHORIZED))
@@ -81,6 +133,10 @@
     (contract-call? .arkadiko-token transfer amount .diko-init wallet)
   )
 )
+
+;; ---------------------------------------------------------
+;; Initialize
+;; ---------------------------------------------------------
 
 ;; Initialize the contract
 (begin
