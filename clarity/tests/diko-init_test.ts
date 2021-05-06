@@ -256,8 +256,8 @@ Clarinet.test({
     // 3 year later - max
     chain.mineEmptyBlock(4*12*30*144);
   
-    // Get tokens (max minus claimed)
+    // Get tokens (max minus claimed) (15m - 13m claimed = 2m)
     call = chain.callReadOnlyFn("diko-init", "get-pending-foundation-tokens", [], deployer.address);
-    call.result.expectOk().expectUint(12000000000000)
+    call.result.expectOk().expectUint(2000000000000)
   }
 });
