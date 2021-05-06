@@ -142,7 +142,8 @@
     (type (unwrap-panic (get-collateral-type-by-name collateral-type)))
     (result (fold change-risk-parameter changes type))
   )
-    (asserts! (is-eq contract-caller .dao) (err ERR-NOT-AUTHORIZED))
+    ;; TODO: fix access
+    ;; (asserts! (is-eq tx-sender (contract-call? .dao get-dao-owner)) (err ERR-NOT-AUTHORIZED))
 
     (map-set collateral-types { name: collateral-type } result)
     (ok true)
@@ -180,7 +181,12 @@
                 (merge type {
                   stability-fee-apy: (get new-value change)
                 })
-                type
+                (if (is-eq key "stability-fee-decimals")
+                  (merge type {
+                    stability-fee-apy: (get new-value change)
+                  })
+                  type
+                )
               )
             )
           )
