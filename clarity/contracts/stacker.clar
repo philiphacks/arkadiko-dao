@@ -21,12 +21,13 @@
 (define-constant ERR-FAILED-STACK-STX u192)
 (define-constant ERR-BURN-HEIGHT-NOT-REACHED u193)
 (define-constant ERR-ALREADY-STACKING u194)
-(define-constant CONTRACT-OWNER tx-sender)
+(define-constant ERR-EMERGENCY-SHUTDOWN-ACTIVATED u195)
 
 (define-data-var stacking-unlock-burn-height uint u0) ;; when is this cycle over
 (define-data-var stacking-stx-stacked uint u0) ;; how many stx did we stack in this cycle
 (define-data-var stacking-stx-received uint u0) ;; how many btc did we convert into STX tokens to add to vault collateral
 (define-data-var stacking-stx-in-vault uint u0)
+(define-data-var stacker-shutdown-activated bool false)
 
 (define-data-var stacker-yield uint u9000) ;; 90%
 (define-data-var governance-token-yield uint u500) ;; 5%
@@ -48,11 +49,30 @@
   (ok (var-get stacking-unlock-burn-height))
 )
 
+(define-read-only (get-stacking-stx-stacked)
+  (ok (var-get stacking-stx-stacked))
+)
+
 (define-public (set-stacking-stx-received (stx-received uint))
   (begin
-    (asserts! (is-eq tx-sender CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
+    (asserts!
+      (and
+        (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false)
+        (is-eq (var-get stacker-shutdown-activated) false)
+      )
+      (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED)
+    )
+    (asserts! (is-eq tx-sender (contract-call? .dao get-dao-owner)) (err ERR-NOT-AUTHORIZED))
 
     (ok (var-set stacking-stx-received stx-received))
+  )
+)
+
+(define-public (toggle-stacker-shutdown)
+  (begin
+    (asserts! (is-eq tx-sender (contract-call? .dao get-dao-owner)) (err ERR-NOT-AUTHORIZED))
+
+    (ok (var-set stacker-shutdown-activated (not (var-get stacker-shutdown-activated))))
   )
 )
 
@@ -66,8 +86,15 @@
     (can-stack (as-contract (contract-call? 'ST000000000000000000002AMW42H.pox can-stack-stx pox-addr tokens-to-stack start-burn-ht lock-period)))
     (stx-balance (unwrap-panic (get-stx-balance)))
   )
-    (asserts! (is-eq tx-sender CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq tx-sender (contract-call? .dao get-dao-owner)) (err ERR-NOT-AUTHORIZED))
     (asserts! (>= burn-block-height (var-get stacking-unlock-burn-height)) (err ERR-ALREADY-STACKING))
+    (asserts!
+      (and
+        (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false)
+        (is-eq (var-get stacker-shutdown-activated) false)
+      )
+      (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED)
+    )
 
     ;; check if we can stack - if not, then probably cause we have not reached the minimum with (var-get tokens-to-stack)
     (if (unwrap! can-stack (err ERR-CANNOT-STACK))
@@ -101,6 +128,14 @@
       )
       (err ERR-NOT-AUTHORIZED)
     )
+    (asserts!
+      (and
+        (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false)
+        (is-eq (var-get stacker-shutdown-activated) false)
+      )
+      (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED)
+    )
+
     (as-contract
       (stx-transfer? ustx-amount (as-contract tx-sender) (unwrap-panic (contract-call? .dao get-qualified-name-by-name "stx-reserve")))
     )
@@ -120,7 +155,7 @@
   (let (
     (vault (contract-call? .vault-data get-vault-by-id vault-id))
   )
-    (asserts! (is-eq tx-sender CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq tx-sender (contract-call? .dao get-dao-owner)) (err ERR-NOT-AUTHORIZED))
     (asserts!
       (or
         (is-eq "xSTX" (get collateral-token vault))
@@ -129,6 +164,13 @@
       (err ERR-NOT-AUTHORIZED)
     )
     (asserts! (>= burn-block-height (var-get stacking-unlock-burn-height)) (err ERR-BURN-HEIGHT-NOT-REACHED))
+    (asserts!
+      (and
+        (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false)
+        (is-eq (var-get stacker-shutdown-activated) false)
+      )
+      (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED)
+    )
 
     (if (and (get is-liquidated vault) (get auction-ended vault))
       (try! (payout-liquidated-vault vault-id))

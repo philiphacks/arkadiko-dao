@@ -24,12 +24,11 @@
 
 ;; constants
 (define-constant BLOCKS-PER-DAY u144)
-(define-constant CONTRACT-OWNER tx-sender)
 
 (define-data-var stx-redeemable uint u0) ;; how much STX is available to trade for xSTX
 (define-data-var block-height-last-paid uint u0) ;; when the foundation was last paid
-(define-data-var payout-address principal CONTRACT-OWNER) ;; to which address the foundation is paid
 (define-data-var maximum-debt-surplus uint u10000000000000) ;; 10 million default - above that we sell the xUSD on the DIKO/xUSD pair to burn DIKO
+(define-data-var freddie-shutdown-activated bool false)
 
 ;; getters
 (define-read-only (get-stx-redeemable)
@@ -37,9 +36,16 @@
 )
 
 (define-private (add-stx-redeemable (token-amount uint))
-  (if true
+  (begin
+    (asserts!
+      (and
+        (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false)
+        (is-eq (var-get freddie-shutdown-activated) false)
+      )
+      (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED)
+    )
+
     (ok (var-set stx-redeemable (+ token-amount (var-get stx-redeemable))))
-    (err u0)
   )
 )
 
@@ -96,7 +102,13 @@
 ;; used to indicate willingness to stack/unstack the collateral in the PoX contract
 (define-public (toggle-stacking (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
-    (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
+    (asserts!
+      (and
+        (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false)
+        (is-eq (var-get freddie-shutdown-activated) false)
+      )
+      (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED)
+    )
     (asserts! (is-eq tx-sender (get owner vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq "STX" (get collateral-token vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq false (get is-liquidated vault)) (err ERR-NOT-AUTHORIZED))
@@ -116,7 +128,13 @@
 ;; called when collateral was unstacked & want to stack again
 (define-public (stack-collateral (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
-    (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
+    (asserts!
+      (and
+        (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false)
+        (is-eq (var-get freddie-shutdown-activated) false)
+      )
+      (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED)
+    )
     (asserts! (is-eq tx-sender (get owner vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq "STX" (get collateral-token vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq false (get is-liquidated vault)) (err ERR-NOT-AUTHORIZED))
@@ -139,16 +157,34 @@
 ;; Only mark vaults that have revoked stacking and not been liquidated
 ;; must be called before a new initiate-stacking method call (stacking cycle)
 (define-public (enable-vault-withdrawals (stacker <stacker-trait>) (vault-id uint))
-  (let ((vault (get-vault-by-id vault-id)))
-    (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
-    (asserts! (is-eq tx-sender CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
+  (let (
+    (vault (get-vault-by-id vault-id))
+    (stx-stacked (unwrap-panic (contract-call? stacker get-stacking-stx-stacked)))
+  )
+    (asserts!
+      (and
+        (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false)
+        (is-eq (var-get freddie-shutdown-activated) false)
+      )
+      (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED)
+    )
+    (asserts! (is-eq tx-sender (contract-call? .dao get-dao-owner)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq "STX" (get collateral-token vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq false (get is-liquidated vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq true (get revoked-stacking vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq (contract-of stacker) (unwrap-panic (contract-call? .dao get-qualified-name-by-name "stacker"))) (err ERR-NOT-AUTHORIZED))
-    (asserts! (>= burn-block-height (unwrap-panic (contract-call? stacker get-stacking-unlock-burn-height))) (err ERR-BURN-HEIGHT-NOT-REACHED))
+    (asserts!
+      (or
+        (is-eq u0 stx-stacked)
+        (>= burn-block-height (unwrap-panic (contract-call? stacker get-stacking-unlock-burn-height)))
+      )
+      (err ERR-BURN-HEIGHT-NOT-REACHED)
+    )
 
-    (try! (contract-call? stacker request-stx-for-withdrawal (get collateral vault)))
+    (if (> u0 stx-stacked)
+      (try! (contract-call? stacker request-stx-for-withdrawal (get collateral vault)))
+      false
+    )
     (try! (contract-call? .vault-data update-vault vault-id (merge vault {
         stacked-tokens: u0,
         updated-at-block-height: block-height
@@ -162,8 +198,14 @@
 ;; unlocks STX that had their xSTX derivative liquidated in an auction
 (define-public (release-stacked-stx (stacker <stacker-trait>) (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
-    (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
-    (asserts! (is-eq tx-sender CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
+    (asserts!
+      (and
+        (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false)
+        (is-eq (var-get freddie-shutdown-activated) false)
+      )
+      (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED)
+    )
+    (asserts! (is-eq tx-sender (contract-call? .dao get-dao-owner)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq "xSTX" (get collateral-token vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq true (get is-liquidated vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (> (get stacked-tokens vault) u0) (err ERR-NOT-AUTHORIZED))
@@ -200,6 +242,14 @@
   )
 )
 
+(define-public (toggle-freddie-shutdown)
+  (begin
+    (asserts! (is-eq tx-sender (contract-call? .dao get-dao-owner)) (err ERR-NOT-AUTHORIZED))
+
+    (ok (var-set freddie-shutdown-activated (not (var-get freddie-shutdown-activated))))
+  )
+)
+
 (define-public (collateralize-and-mint
     (collateral-amount uint)
     (debt uint)
@@ -210,7 +260,13 @@
     (ft <mock-ft-trait>)
   )
   (let ((ratio (unwrap-panic (contract-call? reserve calculate-current-collateral-to-debt-ratio collateral-token debt collateral-amount))))
-    (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
+    (asserts!
+      (and
+        (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false)
+        (is-eq (var-get freddie-shutdown-activated) false)
+      )
+      (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED)
+    )
     (asserts! (is-eq tx-sender sender) (err ERR-NOT-AUTHORIZED))
     (asserts! (>= ratio (unwrap-panic (contract-call? .collateral-types get-liquidation-ratio collateral-type))) (err ERR-INSUFFICIENT-COLLATERAL))
     (asserts!
@@ -254,13 +310,21 @@
 )
 
 (define-public (deposit (vault-id uint) (uamount uint) (reserve <vault-trait>) (ft <mock-ft-trait>))
-  (let ((vault (get-vault-by-id vault-id))
-       (new-collateral (+ uamount (get collateral vault)))
-       (updated-vault (merge vault {
-          collateral: new-collateral,
-          updated-at-block-height: block-height
-        })))
-    (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
+  (let (
+    (vault (get-vault-by-id vault-id))
+    (new-collateral (+ uamount (get collateral vault)))
+    (updated-vault (merge vault {
+      collateral: new-collateral,
+      updated-at-block-height: block-height
+    }))
+  )
+    (asserts!
+      (and
+        (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false)
+        (is-eq (var-get freddie-shutdown-activated) false)
+      )
+      (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED)
+    )
     (asserts! (is-eq (get is-liquidated vault) false) (err ERR-NOT-AUTHORIZED))
 
     (unwrap! (contract-call? reserve deposit ft uamount) (err ERR-DEPOSIT-FAILED))
@@ -273,7 +337,13 @@
 
 (define-public (withdraw (vault-id uint) (uamount uint) (reserve <vault-trait>) (ft <mock-ft-trait>))
   (let ((vault (get-vault-by-id vault-id)))
-    (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
+    (asserts!
+      (and
+        (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false)
+        (is-eq (var-get freddie-shutdown-activated) false)
+      )
+      (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED)
+    )
     (asserts! (is-eq (get is-liquidated vault) false) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq tx-sender (get owner vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (> uamount u0) (err ERR-INSUFFICIENT-COLLATERAL))
@@ -293,7 +363,7 @@
             updated-at-block-height: block-height
           })))
       ;; TODO: FIX (make "STX" dynamic)
-      (asserts! (>= ratio (unwrap-panic (contract-call? .collateral-types get-collateral-to-debt-ratio "STX"))) (err ERR-INSUFFICIENT-COLLATERAL))
+      (asserts! (>= ratio (unwrap-panic (contract-call? .collateral-types get-collateral-to-debt-ratio (get collateral-type vault)))) (err ERR-INSUFFICIENT-COLLATERAL))
       (unwrap! (contract-call? reserve withdraw ft (get owner vault) uamount) (err ERR-WITHDRAW-FAILED))
       (try! (contract-call? .vault-data update-vault vault-id updated-vault))
       (try! (contract-call? .vault-rewards remove-collateral uamount (get owner vault)))
@@ -310,7 +380,13 @@
           debt: new-total-debt,
           updated-at-block-height: block-height
         })))
-    (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
+    (asserts!
+      (and
+        (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false)
+        (is-eq (var-get freddie-shutdown-activated) false)
+      )
+      (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED)
+    )
     (asserts! (is-eq (get is-liquidated vault) false) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq tx-sender (get owner vault)) (err ERR-NOT-AUTHORIZED))
     (asserts!
@@ -322,16 +398,15 @@
     )
 
     (try! (pay-stability-fee vault-id))
-    (unwrap! (contract-call? 
-                reserve 
-                mint 
-                (get collateral-token vault) 
-                (get owner vault) 
-                (get collateral vault) 
-                (get debt vault) 
-                extra-debt 
-                (get collateral-type vault)) 
-      (err u5))
+    (try! (contract-call? reserve mint
+        (get collateral-token vault)
+        (get owner vault)
+        (get collateral vault)
+        (get debt vault)
+        extra-debt
+        (get collateral-type vault)
+      )
+    )
     (try! (contract-call? .vault-data update-vault vault-id updated-vault))
     (try! (contract-call? .collateral-types add-debt-to-collateral-type (get collateral-type vault) extra-debt))
     (print { type: "vault", action: "mint", data: updated-vault })
@@ -341,7 +416,13 @@
 
 (define-public (burn (vault-id uint) (debt uint) (reserve <vault-trait>) (ft <mock-ft-trait>))
   (let ((vault (get-vault-by-id vault-id)))
-    (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
+    (asserts!
+      (and
+        (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false)
+        (is-eq (var-get freddie-shutdown-activated) false)
+      )
+      (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED)
+    )
     (asserts! (is-eq (get is-liquidated vault) false) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq tx-sender (get owner vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (<= debt (get debt vault)) (err ERR-NOT-AUTHORIZED))
@@ -378,7 +459,6 @@
 (define-private (burn-partial-debt (vault-id uint) (debt uint) (reserve <vault-trait>) (ft <mock-ft-trait>))
   (let ((vault (get-vault-by-id vault-id)))
     (try! (contract-call? .dao burn-token .xusd-token debt (get owner vault)))
-    (try! (contract-call? reserve burn ft (get owner vault) (get collateral vault)))
     (try! (contract-call? .vault-data update-vault vault-id (merge vault {
         debt: (- (get debt vault) debt),
         updated-at-block-height: block-height
@@ -422,7 +502,13 @@
 
 (define-public (liquidate (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
-    (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
+    (asserts!
+      (and
+        (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false)
+        (is-eq (var-get freddie-shutdown-activated) false)
+      )
+      (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED)
+    )
     (asserts! (is-eq contract-caller .liquidator) (err ERR-NOT-AUTHORIZED))
 
     (try! (contract-call? .vault-data reset-stacking-payouts vault-id))
@@ -471,7 +557,13 @@
 
 (define-public (finalize-liquidation (vault-id uint) (leftover-collateral uint))
   (let ((vault (get-vault-by-id vault-id)))
-    (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
+    (asserts!
+      (and
+        (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false)
+        (is-eq (var-get freddie-shutdown-activated) false)
+      )
+      (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED)
+    )
     (asserts! (is-eq contract-caller (unwrap-panic (contract-call? .dao get-qualified-name-by-name "auction-engine"))) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq (get is-liquidated vault) true) (err ERR-NOT-AUTHORIZED))
 
@@ -494,7 +586,13 @@
 
 (define-public (withdraw-leftover-collateral (vault-id uint) (reserve <vault-trait>) (ft <mock-ft-trait>))
   (let ((vault (get-vault-by-id vault-id)))
-    (asserts! (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false) (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED))
+    (asserts!
+      (and
+        (is-eq (unwrap-panic (contract-call? .dao get-emergency-shutdown-activated)) false)
+        (is-eq (var-get freddie-shutdown-activated) false)
+      )
+      (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED)
+    )
     (asserts! (is-eq tx-sender (get owner vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq true (get is-liquidated vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq true (get auction-ended vault)) (err ERR-NOT-AUTHORIZED))
@@ -522,14 +620,6 @@
   (contract-call? .xusd-token get-balance-of (as-contract tx-sender))
 )
 
-(define-public (set-payout-address (address principal))
-  (begin
-    (asserts! (is-eq contract-caller CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
-
-    (ok (var-set payout-address address))
-  )
-)
-
 ;; redeem xUSD working capital for the foundation
 ;; taken from stability fees paid by vault owners
 (define-public (redeem-xusd (xusd-amount uint))
@@ -537,7 +627,7 @@
     (asserts! (> (- block-height (var-get block-height-last-paid)) (* BLOCKS-PER-DAY u31)) (err ERR-NOT-AUTHORIZED))
 
     (var-set block-height-last-paid block-height)
-    (contract-call? .xusd-token transfer xusd-amount (as-contract tx-sender) (var-get payout-address))
+    (contract-call? .xusd-token transfer xusd-amount (as-contract tx-sender) (contract-call? .dao get-payout-address))
   )
 )
 
@@ -545,7 +635,7 @@
 ;; freddie should only contain xUSD
 (define-public (migrate-funds (new-vault-manager <vault-manager-trait>) (token <mock-ft-trait>))
   (begin
-    (asserts! (is-eq contract-caller CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq contract-caller (contract-call? .dao get-dao-owner)) (err ERR-NOT-AUTHORIZED))
 
     (let (
       (balance (unwrap-panic (contract-call? token get-balance-of (as-contract tx-sender))))
@@ -557,7 +647,7 @@
 
 (define-public (set-stx-redeemable (new-stx-redeemable uint))
   (begin
-    (asserts! (is-eq contract-caller CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq contract-caller (contract-call? .dao get-dao-owner)) (err ERR-NOT-AUTHORIZED))
 
     (var-set stx-redeemable new-stx-redeemable)
     (ok true)
@@ -566,7 +656,7 @@
 
 (define-public (set-block-height-last-paid (new-block-height-last-paid uint))
   (begin
-    (asserts! (is-eq contract-caller CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq contract-caller (contract-call? .dao get-dao-owner)) (err ERR-NOT-AUTHORIZED))
 
     (var-set block-height-last-paid new-block-height-last-paid)
     (ok true)
@@ -575,7 +665,7 @@
 
 (define-public (set-maximum-debt-surplus (new-maximum-debt-surplus uint))
   (begin
-    (asserts! (is-eq contract-caller CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq contract-caller (contract-call? .dao get-dao-owner)) (err ERR-NOT-AUTHORIZED))
 
     (var-set maximum-debt-surplus new-maximum-debt-surplus)
     (ok true)
@@ -586,7 +676,7 @@
 ;; payout address has a separate setter that can be configured
 (define-public (migrate-state (new-vault-manager <vault-manager-trait>))
   (begin
-    (asserts! (is-eq contract-caller CONTRACT-OWNER) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq contract-caller (contract-call? .dao get-dao-owner)) (err ERR-NOT-AUTHORIZED))
 
     (try! (contract-call? new-vault-manager set-stx-redeemable (var-get stx-redeemable)))
     (try! (contract-call? new-vault-manager set-block-height-last-paid (var-get block-height-last-paid)))
