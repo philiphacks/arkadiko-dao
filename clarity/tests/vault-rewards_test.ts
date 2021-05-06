@@ -6,7 +6,6 @@ import {
   types,
 } from "https://deno.land/x/clarinet@v0.6.0/index.ts";
 
-
 Clarinet.test({
   name: "vault-rewards: vault DIKO rewards",
   async fn(chain: Chain, accounts: Map<string, Account>) {
@@ -107,6 +106,65 @@ Clarinet.test({
 
     call = chain.callReadOnlyFn("arkadiko-token", "get-balance-of", [types.principal(deployer.address)], deployer.address);
     call.result.expectOk().expectUint(899920000000);  
+
+  },
+});
+
+Clarinet.test({
+  name: "vault-rewards: vault DIKO rewards",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    let deployer = accounts.get("deployer")!;
+    let wallet_1 = accounts.get("wallet_1")!;
+    
+    let block = chain.mineBlock([
+      Tx.contractCall("oracle", "update-price", [
+        types.ascii("STX"),
+        types.uint(77),
+      ], deployer.address),
+      Tx.contractCall("freddie", "collateralize-and-mint", [
+        types.uint(5000000),
+        types.uint(1925000),
+        types.principal(deployer.address),
+        types.ascii("STX-A"),
+        types.ascii("STX"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+        types.principal(
+          "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
+        ),
+      ], deployer.address),
+    ]);
+
+    // Check rewards
+    let call = chain.callReadOnlyFn("vault-rewards", "get-pending-rewards", [types.principal(deployer.address)], deployer.address);
+    call.result.expectOk().expectUint(320000000)
+
+    chain.mineEmptyBlock(5);
+
+    // 6 * 320 = 1920
+    call = chain.callReadOnlyFn("vault-rewards", "get-pending-rewards", [types.principal(deployer.address)], deployer.address);
+    call.result.expectOk().expectUint(1920000000)
+
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "collateralize-and-mint", [
+        types.uint(5000000),
+        types.uint(1925000),
+        types.principal(wallet_1.address),
+        types.ascii("STX-A"),
+        types.ascii("STX"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+        types.principal(
+          "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
+        ),
+      ], wallet_1.address),
+    ]);
+
+    // Only half of block rewars (320 / 2) = 160
+    call = chain.callReadOnlyFn("vault-rewards", "get-pending-rewards", [types.principal(wallet_1.address)], wallet_1.address);
+    call.result.expectOk().expectUint(160000000)
+
+    // Already had 1920. 1920 + 160 = 2080
+    call = chain.callReadOnlyFn("vault-rewards", "get-pending-rewards", [types.principal(deployer.address)], deployer.address);
+    call.result.expectOk().expectUint(2080000000)
 
   },
 });
