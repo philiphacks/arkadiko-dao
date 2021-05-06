@@ -2,9 +2,8 @@
 (use-trait auction-engine-trait .arkadiko-auction-engine-trait-v1.auction-engine-trait)
 
 ;; errors
-(define-constant ERR-LIQUIDATION-FAILED u51)
-(define-constant ERR-EMERGENCY-SHUTDOWN-ACTIVATED u52)
-(define-constant ERR-NO-LIQUIDATION-REQUIRED u53)
+(define-constant ERR-EMERGENCY-SHUTDOWN-ACTIVATED u51)
+(define-constant ERR-NO-LIQUIDATION-REQUIRED u52)
 (define-constant ERR-NOT-AUTHORIZED u5401)
 (define-constant STATUS-OK u5200)
 
@@ -23,7 +22,7 @@
     (print "Vault is in danger. Time to liquidate.")
     (let 
       ((amounts (unwrap-panic (as-contract (contract-call? vault-manager liquidate vault-id)))))
-        (unwrap! 
+        (try!
           (contract-call? auction-engine start-auction
             vault-id
             (get ustx-amount amounts)
@@ -31,7 +30,7 @@
             (get vault-debt amounts)
             (get discount amounts)
           ) 
-          (err ERR-LIQUIDATION-FAILED))
+        )
         (ok STATUS-OK)
     )
   )

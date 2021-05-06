@@ -525,7 +525,7 @@
       )
       (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED)
     )
-    (asserts! (is-eq contract-caller .liquidator) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq contract-caller .arkadiko-liquidator-v1-1) (err ERR-NOT-AUTHORIZED))
 
     (try! (contract-call? .arkadiko-vault-data-v1-1 reset-stacking-payouts vault-id))
     (let (

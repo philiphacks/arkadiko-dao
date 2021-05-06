@@ -106,7 +106,7 @@
 ;; we will have to sell some governance or STX tokens from the reserve
 (define-public (start-auction (vault-id uint) (uamount uint) (extra-debt uint) (vault-debt uint) (discount uint))
   (let ((vault (contract-call? .arkadiko-vault-data-v1-1 get-vault-by-id vault-id)))
-    (asserts! (is-eq contract-caller .liquidator) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq contract-caller .arkadiko-liquidator-v1-1) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq (get is-liquidated vault) true) (err ERR-AUCTION-NOT-ALLOWED))
     (asserts!
       (and
