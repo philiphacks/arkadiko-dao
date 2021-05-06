@@ -1,8 +1,8 @@
-(impl-trait .vault-manager-trait-v1.vault-manager-trait)
-(use-trait vault-trait .vault-trait-v1.vault-trait)
-(use-trait mock-ft-trait .mock-ft-trait-v1.mock-ft-trait)
-(use-trait stacker-trait .stacker-trait-v1.stacker-trait)
-(use-trait vault-manager-trait .vault-manager-trait-v1.vault-manager-trait)
+(impl-trait .arkadiko-vault-manager-trait-v1.vault-manager-trait)
+(use-trait vault-trait .arkadiko-vault-trait-v1.vault-trait)
+(use-trait mock-ft-trait .arkadiko-mock-ft-trait-v1.mock-ft-trait)
+(use-trait stacker-trait .arkadiko-stacker-trait-v1.stacker-trait)
+(use-trait vault-manager-trait .arkadiko-vault-manager-trait-v1.vault-manager-trait)
 
 ;; Freddie - The Vault Manager
 ;; Freddie is an abstraction layer that interacts with collateral type reserves

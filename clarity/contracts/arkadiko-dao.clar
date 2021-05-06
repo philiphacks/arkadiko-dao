@@ -156,7 +156,7 @@
     }
   )
   (map-set contracts-data
-    { qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-freddie }
+    { qualified-name: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-freddie-v1-1 }
     {
       active: true
     }

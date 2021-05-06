@@ -5,8 +5,8 @@
 ;; DAO can activate a new pool or deactivate an existing one.
 ;; When a pool is deactivated, users can not stake but they can unstake.
 
-(use-trait mock-ft-trait .mock-ft-trait.mock-ft-trait)
-(use-trait stake-pool-trait .stake-pool-trait.stake-pool-trait)
+(use-trait mock-ft-trait .arkadiko-mock-ft-trait-v1.mock-ft-trait)
+(use-trait stake-pool-trait .arkadiko-stake-pool-trait-v1.stake-pool-trait)
 
 ;; Errors
 (define-constant ERR-NOT-AUTHORIZED (err u19401))
@@ -37,7 +37,7 @@
 ;; Get pool rewards per block
 (define-read-only (get-rewards-per-block-for-pool (pool principal))
   (let (
-    (total-staking-rewards (contract-call? .diko-guardian get-staking-rewards-per-block))
+    (total-staking-rewards (contract-call? .arkadiko-diko-guardian-v1-1 get-staking-rewards-per-block))
     (pool-percentage (get rewards-percentage (get-pool-data pool)))
   )
     (/ (* total-staking-rewards pool-percentage) u1000000)
@@ -104,7 +104,7 @@
       (asserts! (is-eq (get active pool-data) true) ERR-POOL-INACTIVE)
 
       ;; Mint DIKO rewards for staker
-      (try! (contract-call? .dao mint-token .arkadiko-token amount staker))
+      (try! (contract-call? .arkadiko-dao mint-token .arkadiko-token amount staker))
       
       (ok amount)
     )
