@@ -5,7 +5,6 @@
 ;; ---------------------------------------------------------
 
 ;; Constants
-(define-constant CONTRACT-OWNER tx-sender)
 (define-constant ERR-NOT-AUTHORIZED u20401)
 (define-constant ERR-REWARDS-CALC u20001)
 
