@@ -27,7 +27,6 @@
 ;; Get currrent staking rewards per block for all pools
 ;; The yearly rewards are reduced by half every year
 ;; During the year, the rewards are reduced every 2 weeks
-
 (define-read-only (get-staking-rewards-per-block)
   (let (
     ;; 26 steps per year (2 week interval)
