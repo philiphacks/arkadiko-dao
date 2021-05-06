@@ -3,7 +3,7 @@
 ;; Staking rewards, team tokens etc.
 ;; 
 
-(use-trait mock-ft-trait .mock-ft-trait.mock-ft-trait)
+(use-trait mock-ft-trait .arkadiko-mock-ft-trait-v1.mock-ft-trait)
 
 ;; Errors
 (define-constant ERR-NOT-AUTHORIZED (err u22401))
@@ -160,6 +160,6 @@
     (asserts! (is-eq wallet tx-sender) ERR-NOT-AUTHORIZED)
     (asserts! (>= pending-tokens amount) ERR-NOT-AUTHORIZED)
     (var-set founders-tokens-claimed (+ claimed-tokens amount))
-    (contract-call? .dao mint-token .arkadiko-token amount wallet)
+    (contract-call? .arkadiko-dao mint-token .arkadiko-token amount wallet)
   )
 )
