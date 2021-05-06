@@ -3,6 +3,7 @@
 ;; Smart Contract that keeps all collateral types accepted by the DAO
 
 (define-constant ERR-NOT-AUTHORIZED u17401)
+(define-constant OWNER tx-sender)
 
 (define-map collateral-types
   { name: (string-ascii 12) }
@@ -142,8 +143,7 @@
     (type (unwrap-panic (get-collateral-type-by-name collateral-type)))
     (result (fold change-risk-parameter changes type))
   )
-    ;; TODO: fix access
-    ;; (asserts! (is-eq tx-sender (contract-call? .dao get-dao-owner)) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq tx-sender OWNER) (err ERR-NOT-AUTHORIZED))
 
     (map-set collateral-types { name: collateral-type } result)
     (ok true)
