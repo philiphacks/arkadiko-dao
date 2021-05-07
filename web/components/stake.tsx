@@ -65,7 +65,7 @@ export const Stake = () => {
         contractName: "arkadiko-stake-registry-v1-1",
         functionName: "get-rewards-per-block-for-pool",
         functionArgs: [
-          contractPrincipalCV(contractAddress, 'stake-pool-diko')
+          contractPrincipalCV(contractAddress, 'arkadiko-stake-pool-diko-v1-1')
         ],
         senderAddress: stxAddress || '',
         network: network,
@@ -114,10 +114,10 @@ export const Stake = () => {
     await doContractCall({
       network,
       contractAddress,
-      contractName: 'stake-registry',
+      contractName: 'arkadiko-stake-registry-v1-1',
       functionName: 'stake',
       functionArgs: [
-        contractPrincipalCV(contractAddress, 'stake-pool-diko'),
+        contractPrincipalCV(contractAddress, 'arkadiko-stake-pool-diko-v1-1'),
         contractPrincipalCV(contractAddress, 'arkadiko-token'),
         uintCV(parseInt(stakeAmount, 10) * 1000000)
       ],
@@ -134,10 +134,10 @@ export const Stake = () => {
     await doContractCall({
       network,
       contractAddress,
-      contractName: 'stake-registry',
+      contractName: 'arkadiko-stake-registry-v1-1',
       functionName: 'claim-pending-rewards',
       functionArgs: [
-        contractPrincipalCV(contractAddress, 'stake-pool-diko')
+        contractPrincipalCV(contractAddress, 'arkadiko-stake-pool-diko-v1-1')
       ],
       postConditionMode: 0x01,
       finished: data => {
@@ -151,10 +151,10 @@ export const Stake = () => {
     await doContractCall({
       network,
       contractAddress,
-      contractName: 'stake-registry',
+      contractName: 'arkadiko-stake-registry-v1-1',
       functionName: 'unstake',
       functionArgs: [
-        contractPrincipalCV(contractAddress, 'stake-pool-diko'),
+        contractPrincipalCV(contractAddress, 'arkadiko-stake-pool-diko-v1-1'),
         contractPrincipalCV(contractAddress, 'arkadiko-token'),
         uintCV(parseInt(stakeAmount, 10) * 1000000)
       ],

@@ -116,7 +116,7 @@ export const Auctions: React.FC = () => {
     await doContractCall({
       network,
       contractAddress,
-      contractName: 'freddie',
+      contractName: 'arkadiko-freddie-v1-1',
       functionName: 'redeem-stx',
       functionArgs: [
         uintCV(state.balance['xstx'])
