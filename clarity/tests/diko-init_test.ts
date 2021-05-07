@@ -194,25 +194,13 @@ Clarinet.test({
 
     // Get tokens at start
     let call = chain.callReadOnlyFn("diko-init", "get-pending-foundation-tokens", [], wallet_1.address);
-    call.result.expectOk().expectUint(1000000000000)
+    call.result.expectOk().expectUint(29000000000000)
 
     // 1 month, 30 days, 144 block per day 
     chain.mineEmptyBlock(30*144);
 
     call = chain.callReadOnlyFn("diko-init", "get-pending-foundation-tokens", [], wallet_1.address);
-    call.result.expectOk().expectUint(2000000000000)
-
-    // 1 month, 30 days, 144 block per day 
-    chain.mineEmptyBlock(30*144);
-
-    call = chain.callReadOnlyFn("diko-init", "get-pending-foundation-tokens", [], wallet_1.address);
-    call.result.expectOk().expectUint(3000000000000)
-    
-    // 15 month, 30 days, 144 block per day 
-    chain.mineEmptyBlock(15*30*144);
-
-    call = chain.callReadOnlyFn("diko-init", "get-pending-foundation-tokens", [], wallet_1.address);
-    call.result.expectOk().expectUint(15000000000000)
+    call.result.expectOk().expectUint(29000000000000)
   }
 });
     
@@ -231,7 +219,7 @@ Clarinet.test({
   
     // Get tokens
     call = chain.callReadOnlyFn("diko-init", "get-pending-foundation-tokens", [], wallet_1.address);
-    call.result.expectOk().expectUint(13000000000000)
+    call.result.expectOk().expectUint(29000000000000)
   
     // Claim tokens
     let block = chain.mineBlock([
@@ -251,13 +239,7 @@ Clarinet.test({
   
     // Get tokens at start
     call = chain.callReadOnlyFn("diko-init", "get-pending-foundation-tokens", [], deployer.address);
-    call.result.expectOk().expectUint(0)
+    call.result.expectOk().expectUint(16000000000000)
   
-    // 3 year later - max
-    chain.mineEmptyBlock(4*12*30*144);
-  
-    // Get tokens (max minus claimed) (15m - 13m claimed = 2m)
-    call = chain.callReadOnlyFn("diko-init", "get-pending-foundation-tokens", [], deployer.address);
-    call.result.expectOk().expectUint(2000000000000)
   }
 });

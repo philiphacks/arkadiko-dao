@@ -9,8 +9,7 @@
 ;; Constants
 (define-constant BLOCKS-PER-MONTH u4320) ;; 144 * 30
 
-(define-constant TOTAL-FOUNDATION u15000000000000) ;; 15m
-(define-constant FOUNDATION-TOKENS-PER-MONTH u1000000000000) ;; 1m
+(define-constant TOTAL-FOUNDATION u29000000000000) ;; 29m
 
 (define-constant TOTAL-FOUNDERS u21000000000000) ;; 21m
 (define-constant FOUNDERS-TOKENS-PER-MONTH u437500000000) ;; 437.500
@@ -45,29 +44,19 @@
 )
 
 ;; Get amount of tokens foundation can claim
-;; 1m every month, for 15 months
 (define-read-only (get-pending-foundation-tokens)
   (let (
-    ;; Current month number after start
-    (month-number (/ (- block-height (var-get contract-start-block)) BLOCKS-PER-MONTH))
-
-    (max-tokens-month (* (+ month-number u1) FOUNDATION-TOKENS-PER-MONTH))
     (claimed-tokens (var-get foundation-tokens-claimed))
   )
-    (if (< month-number u15)
-      ;; First 15 months
-      (ok (- max-tokens-month claimed-tokens)) 
-      ;; Ended
-      (ok (- TOTAL-FOUNDATION claimed-tokens)) 
-    )
+    (ok (- TOTAL-FOUNDATION claimed-tokens)) 
   )
 )
 
 ;; Claim tokens for foundation
 (define-public (foundation-claim-tokens (amount uint))
   (let (
-    (pending-tokens (unwrap! (get-pending-foundation-tokens) ERR-NOT-AUTHORIZED))
     (claimed-tokens (var-get foundation-tokens-claimed))
+    (pending-tokens (unwrap! (get-pending-foundation-tokens) ERR-NOT-AUTHORIZED))
     (wallet (var-get foundation-wallet))
   )
     (asserts! (is-eq wallet tx-sender) ERR-NOT-AUTHORIZED)
