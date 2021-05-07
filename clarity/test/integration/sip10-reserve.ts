@@ -27,38 +27,38 @@ describe("freddie test suite", () => {
 
   describe("deploying an instance of the contract", () => {
     before(async () => {
-      await deployContract('mock-ft-trait');
-      await deployContract('vault-trait');
-      await deployContract('vault-manager-trait');
-      await deployContract('dao-token-trait');
-      await deployContract('oracle-trait');
-      await deployContract('auction-engine-trait');
-      await deployContract('collateral-types-trait');
-      await deployContract('stacker-trait');
-      await deployContract('stake-pool-trait');
+      await deployContract('arkadiko-mock-ft-trait-v1');
+      await deployContract('arkadiko-vault-trait-v1');
+      await deployContract('arkadiko-vault-manager-trait-v1');
+      await deployContract('arkadiko-dao-token-trait-v1');
+      await deployContract('arkadiko-oracle-trait-v1');
+      await deployContract('arkadiko-auction-engine-trait-v1');
+      await deployContract('arkadiko-collateral-types-trait-v1');
+      await deployContract('arkadiko-stacker-trait-v1');
+      await deployContract('arkadiko-stake-pool-trait-v1');
 
-      await deployContract('collateral-types');
-      await deployContract('oracle');
+      await deployContract('arkadiko-collateral-types-v1-1');
+      await deployContract('arkadiko-oracle-v1-1');
       await deployContract('arkadiko-token');
-      await deployContract('dao');
-      await deployContract('governance');
-      await deployContract('diko-guardian');
+      await deployContract('arkadiko-dao');
+      await deployContract('arkadiko-governance-v1-1');
+      await deployContract('arkadiko-diko-guardian-v1-1');
 
       await deployContract('xusd-token');
       await deployContract('xstx-token');
 
-      await deployContract('vault-data');
-      await deployContract('vault-rewards');
-      await deployContract('stx-reserve');
-      await deployContract('sip10-reserve');
+      await deployContract('arkadiko-vault-data-v1-1');
+      await deployContract('arkadiko-vault-rewards-v1-1');
+      await deployContract('arkadiko-stx-reserve-v1-1');
+      await deployContract('arkadiko-sip10-reserve-v1-1');
 
-      await deployContract('stacker');
-      await deployContract('freddie');
-      await deployContract('stake-registry');
-      await deployContract('stake-pool-diko');
+      await deployContract('arkadiko-stacker-v1-1');
+      await deployContract('arkadiko-freddie-v1-1');
+      await deployContract('arkadiko-stake-registry-v1-1');
+      await deployContract('arkadiko-stake-pool-diko-v1-1');
 
-      await deployContract('auction-engine');
-      await deployContract('liquidator');
+      await deployContract('arkadiko-auction-engine-v1-1');
+      await deployContract('arkadiko-liquidator-v1-1');
     });
 
     it("should mint 5 dollar in stablecoin from 20000000 uDIKO at $2/DIKO through collateralize-and-mint", async () => {
