@@ -120,7 +120,7 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
   // Stake
   let block = chain.mineBlock([
     Tx.contractCall("arkadiko-stake-registry-v1-1", "stake", [
-        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stake-pool-diko-v1-1'),
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token'),
         types.uint(100000000)
     ], wallet_1.address)
@@ -174,7 +174,7 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
   // Stake - Wallet 2
   block = chain.mineBlock([
     Tx.contractCall("arkadiko-stake-registry-v1-1", "stake", [
-        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stake-pool-diko-v1-1'),
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token'),
         types.uint(200000000)
     ], wallet_2.address)
@@ -214,7 +214,7 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
   // Unstake funds
   block = chain.mineBlock([
     Tx.contractCall("arkadiko-stake-registry-v1-1", "unstake", [
-        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stake-pool-diko-v1-1'),
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token'),
         types.uint(100000000)
     ], wallet_1.address)
@@ -244,12 +244,12 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
   // Stake
   let block = chain.mineBlock([
     Tx.contractCall("arkadiko-stake-registry-v1-1", "stake", [
-      types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko'),
+      types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stake-pool-diko-v1-1'),
       types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token'),
       types.uint(100000000)
     ], wallet_1.address),
     Tx.contractCall("arkadiko-stake-registry-v1-1", "stake", [
-      types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko'),
+      types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stake-pool-diko-v1-1'),
       types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token'),
       types.uint(100000000)
     ], deployer.address)
@@ -267,7 +267,7 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
   // Claim
   block = chain.mineBlock([
     Tx.contractCall("arkadiko-stake-registry-v1-1", "claim-pending-rewards", [
-      types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko')
+      types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stake-pool-diko-v1-1')
     ], wallet_1.address)
   ]);
   block.receipts[0].result.expectOk().expectUint(1252798100);
@@ -293,7 +293,7 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
   // Try to stake wrong token
   let block = chain.mineBlock([
     Tx.contractCall("arkadiko-stake-registry-v1-1", "stake", [
-        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stake-pool-diko-v1-1'),
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.xusd-token'),
         types.uint(100)
     ], wallet_1.address)
@@ -352,7 +352,7 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
   // Stake funds
   let block = chain.mineBlock([
     Tx.contractCall("arkadiko-stake-registry-v1-1", "stake", [
-        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stake-pool-diko-v1-1'),
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token'),
         types.uint(100000000)
     ], wallet_1.address)
@@ -396,7 +396,7 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
   // Stake
   let block = chain.mineBlock([
     Tx.contractCall("arkadiko-stake-registry-v1-1", "stake", [
-        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stake-pool-diko-v1-1'),
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token'),
         types.uint(1500000000000)
     ], wallet_1.address)
@@ -417,7 +417,7 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
   // Claim
   let block = chain.mineBlock([
     Tx.contractCall("arkadiko-stake-registry-v1-1", "claim-pending-rewards", [
-      types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko')
+      types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stake-pool-diko-v1-1')
     ], wallet_1.address)
   ]);
   // No rewards
@@ -438,7 +438,7 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
   // Stake
   let block = chain.mineBlock([
     Tx.contractCall("arkadiko-stake-registry-v1-1", "stake", [
-        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stake-pool-diko-v1-1'),
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token'),
         types.uint(15000000000)
     ], wallet_1.address)
@@ -448,7 +448,7 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
   // Unstake funds
   block = chain.mineBlock([
     Tx.contractCall("arkadiko-stake-registry-v1-1", "unstake", [
-        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stake-pool-diko-v1-1'),
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token'),
         types.uint(25000000000)
     ], wallet_1.address)
@@ -467,7 +467,7 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
   // Stake
   let block = chain.mineBlock([
     Tx.contractCall("arkadiko-stake-registry-v1-1", "stake", [
-        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stake-pool-diko-v1-1'),
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token'),
         types.uint(0)
     ], wallet_1.address)
@@ -478,7 +478,7 @@ async fn(chain: Chain, accounts: Map<string, Account>) {
   // Unstake funds
   block = chain.mineBlock([
     Tx.contractCall("arkadiko-stake-registry-v1-1", "unstake", [
-        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stake-pool-diko-v1-1'),
         types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token'),
         types.uint(25000000000)
     ], wallet_1.address)
