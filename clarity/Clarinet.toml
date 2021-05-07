@@ -141,3 +141,7 @@ path = "contracts/xusd-token.clar"
 [contracts.xstx-token]
 depends_on = ["arkadiko-mock-ft-trait-v1"]
 path = "contracts/xstx-token.clar"
+
+[contracts.diko-init]
+depends_on = ["arkadiko-token"]
+path = "contracts/diko-init.clar"
