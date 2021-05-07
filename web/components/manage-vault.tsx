@@ -48,7 +48,7 @@ export const ManageVault = ({ match }) => {
     const fetchVault = async () => {
       const serializedVault = await callReadOnlyFunction({
         contractAddress,
-        contractName: "freddie",
+        contractName: "arkadiko-freddie-v1-1",
         functionName: "get-vault-by-id",
         functionArgs: [uintCV(match.params.id)],
         senderAddress: senderAddress || '',
@@ -81,7 +81,7 @@ export const ManageVault = ({ match }) => {
 
         const type = await callReadOnlyFunction({
           contractAddress,
-          contractName: "collateral-types",
+          contractName: "arkadiko-collateral-types-v1-1",
           functionName: "get-collateral-type-by-name",
           functionArgs: [stringAsciiCV(data['collateral-type'].value)],
           senderAddress: senderAddress || '',
@@ -111,7 +111,7 @@ export const ManageVault = ({ match }) => {
     const fetchFees = async () => {
       const feeCall = await callReadOnlyFunction({
         contractAddress,
-        contractName: "freddie",
+        contractName: "arkadiko-freddie-v1-1",
         functionName: "get-stability-fee-for-vault",
         functionArgs: [uintCV(vault?.id)],
         senderAddress: contractAddress || '',

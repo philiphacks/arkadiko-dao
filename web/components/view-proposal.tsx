@@ -26,7 +26,7 @@ export const ViewProposal = ({ match }) => {
     const getData = async () => {
       const proposal = await callReadOnlyFunction({
         contractAddress,
-        contractName: "dao",
+        contractName: "arkadiko-dao",
         functionName: "get-proposal-by-id",
         functionArgs: [uintCV(match.params.id)],
         senderAddress: stxAddress || '',

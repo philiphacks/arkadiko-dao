@@ -30,7 +30,7 @@ export const Stake = () => {
     const getData = async () => {
       const pendingRewards = await callReadOnlyFunction({
         contractAddress,
-        contractName: "stake-pool-diko",
+        contractName: "arkadiko-stake-pool-diko-v1-1",
         functionName: "get-pending-rewards",
         functionArgs: [standardPrincipalCV(stxAddress || '')],
         senderAddress: stxAddress || '',
@@ -40,7 +40,7 @@ export const Stake = () => {
 
       const totalStakedCall = await callReadOnlyFunction({
         contractAddress,
-        contractName: "stake-pool-diko",
+        contractName: "arkadiko-stake-pool-diko-v1-1",
         functionName: "get-total-staked",
         functionArgs: [],
         senderAddress: stxAddress || '',
@@ -51,7 +51,7 @@ export const Stake = () => {
 
       const stakerInfoCall = await callReadOnlyFunction({
         contractAddress,
-        contractName: "stake-pool-diko",
+        contractName: "arkadiko-stake-pool-diko-v1-1",
         functionName: "get-stake-of",
         functionArgs: [standardPrincipalCV(stxAddress || '')],
         senderAddress: stxAddress || '',
@@ -62,7 +62,7 @@ export const Stake = () => {
 
       const rewardsPerBlockCall = await callReadOnlyFunction({
         contractAddress,
-        contractName: "stake-registry",
+        contractName: "arkadiko-stake-registry-v1-1",
         functionName: "get-rewards-per-block-for-pool",
         functionArgs: [
           contractPrincipalCV(contractAddress, 'stake-pool-diko')

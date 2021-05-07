@@ -87,7 +87,7 @@ describe("freddie test suite", () => {
       console.log(result);
       const vaultEntries = await callReadOnlyFunction({
         contractAddress: deployContractAddress,
-        contractName: "freddie",
+        contractName: "arkadiko-freddie-v1-1",
         functionName: "get-vault-entries",
         functionArgs: [standardPrincipalCV(alice)],
         senderAddress: contractAddress,
@@ -96,7 +96,7 @@ describe("freddie test suite", () => {
       const arr = cvToJSON(vaultEntries).value.ids.value;
       const vault = await callReadOnlyFunction({
         contractAddress: deployContractAddress,
-        contractName: "freddie",
+        contractName: "arkadiko-freddie-v1-1",
         functionName: "get-vault-by-id",
         functionArgs: [uintCV(arr[arr.length - 1].value)],
         senderAddress: contractAddress,
@@ -128,7 +128,7 @@ describe("freddie test suite", () => {
       const value = 20000000; // equivalent to 20 DIKO
       const vaultEntries = await callReadOnlyFunction({
         contractAddress: deployContractAddress,
-        contractName: "freddie",
+        contractName: "arkadiko-freddie-v1-1",
         functionName: "get-vault-entries",
         functionArgs: [standardPrincipalCV(alice)],
         senderAddress: contractAddress,
@@ -151,7 +151,7 @@ describe("freddie test suite", () => {
 
       const vault = await callReadOnlyFunction({
         contractAddress: deployContractAddress,
-        contractName: "freddie",
+        contractName: "arkadiko-freddie-v1-1",
         functionName: "get-vault-by-id",
         functionArgs: [uintCV(arr[arr.length - 1].value)],
         senderAddress: contractAddress,
@@ -172,7 +172,7 @@ describe("freddie test suite", () => {
       const value = 5000000; // equivalent to 5 DIKO
       const vaultEntries = await callReadOnlyFunction({
         contractAddress: deployContractAddress,
-        contractName: "freddie",
+        contractName: "arkadiko-freddie-v1-1",
         functionName: "get-vault-entries",
         functionArgs: [standardPrincipalCV(alice)],
         senderAddress: contractAddress,
@@ -195,7 +195,7 @@ describe("freddie test suite", () => {
 
       const vault = await callReadOnlyFunction({
         contractAddress: deployContractAddress,
-        contractName: "freddie",
+        contractName: "arkadiko-freddie-v1-1",
         functionName: "get-vault-by-id",
         functionArgs: [uintCV(arr[arr.length - 1].value)],
         senderAddress: contractAddress,
@@ -216,7 +216,7 @@ describe("freddie test suite", () => {
       const value = 1000000; // equivalent to 1 xUSD
       const vaultEntries = await callReadOnlyFunction({
         contractAddress: deployContractAddress,
-        contractName: "freddie",
+        contractName: "arkadiko-freddie-v1-1",
         functionName: "get-vault-entries",
         functionArgs: [standardPrincipalCV(alice)],
         senderAddress: contractAddress,
@@ -238,7 +238,7 @@ describe("freddie test suite", () => {
 
       const vault = await callReadOnlyFunction({
         contractAddress: deployContractAddress,
-        contractName: "freddie",
+        contractName: "arkadiko-freddie-v1-1",
         functionName: "get-vault-by-id",
         functionArgs: [uintCV(arr[arr.length - 1].value)],
         senderAddress: contractAddress,
@@ -259,7 +259,7 @@ describe("freddie test suite", () => {
       const value = 1000000; // equivalent to 1 xUSD
       const vaultEntries = await callReadOnlyFunction({
         contractAddress: deployContractAddress,
-        contractName: "freddie",
+        contractName: "arkadiko-freddie-v1-1",
         functionName: "get-vault-entries",
         functionArgs: [standardPrincipalCV(alice)],
         senderAddress: contractAddress,
@@ -275,14 +275,14 @@ describe("freddie test suite", () => {
         [
           uintCV(arr[arr.length - 1].value),
           uintCV(6000000),
-          contractPrincipalCV(deployContractAddress, 'sip10-reserve'),
+          contractPrincipalCV(deployContractAddress, 'arkadiko-sip10-reserve-v1-1'),
           contractPrincipalCV(deployContractAddress, 'arkadiko-token')
         ]
       );
 
       const vault = await callReadOnlyFunction({
         contractAddress: deployContractAddress,
-        contractName: "freddie",
+        contractName: "arkadiko-freddie-v1-1",
         functionName: "get-vault-by-id",
         functionArgs: [uintCV(arr[arr.length - 1].value)],
         senderAddress: contractAddress,
