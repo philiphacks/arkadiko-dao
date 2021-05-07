@@ -212,11 +212,10 @@ Clarinet.test({
     call.result.expectOk().expectUint(95); // approx 0 (95/10^6)
 
     // now check balance of freddie contract
-    // TODO: this fails after renaming?
-    // call = await chain.callReadOnlyFn("xusd-token", "get-balance-of", [
-    //   types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko–freddie-v1-1'),
-    // ], deployer.address);
-    // call.result.expectOk().expectUint(fee);
+    call = await chain.callReadOnlyFn("xusd-token", "get-balance-of", [
+      types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-freddie-v1-1'),
+    ], deployer.address);
+    call.result.expectOk().expectUint(fee);
 
     call = await chain.callReadOnlyFn("xusd-token", "get-balance-of", [
       types.principal(deployer.address),
@@ -229,11 +228,10 @@ Clarinet.test({
     ]);
     block.receipts[0].result.expectOk().expectBool(true);
 
-    // TODO: this fails after renaming?
-    // call = await chain.callReadOnlyFn("xusd-token", "get-balance-of", [
-    //   types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-freddie-v1-1'),
-    // ], deployer.address);
-    // call.result.expectOk().expectUint(0);
+    call = await chain.callReadOnlyFn("xusd-token", "get-balance-of", [
+      types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-freddie-v1-1'),
+    ], deployer.address);
+    call.result.expectOk().expectUint(0);
 
     call = await chain.callReadOnlyFn("xusd-token", "get-balance-of", [
       types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7'),
