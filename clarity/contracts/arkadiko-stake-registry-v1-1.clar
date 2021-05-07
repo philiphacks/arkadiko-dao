@@ -119,7 +119,7 @@
 (begin
   ;; Add initial contracts
   (map-set pools-data-map
-    { pool: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stake-pool-diko }
+    { pool: 'STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stake-pool-diko-v1-1 }
     {
       name: "Diko",
       active: true,
@@ -128,6 +128,5 @@
       rewards-percentage: u1000000 ;; 100% 
     }
   )
-
 )
 
