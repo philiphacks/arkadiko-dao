@@ -130,7 +130,6 @@ export const ManageVault = ({ match }) => {
         network: network
       });
       const reward = cvToJSON(rewardCall);
-      console.log(reward);
       setPendingVaultRewards(reward.value.value / 1000000);
     };
 
