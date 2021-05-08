@@ -946,6 +946,50 @@ export const ManageVault = ({ match }) => {
                 </div>
               </li>
             </ul>
+
+            <ul className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 xl:grid-cols-4 mt-8">
+              <li className="relative col-span-2 flex shadow-sm rounded-md">
+                <h2 className="text-lg leading-6 font-medium text-gray-900 mt-8 mb-4">
+                  DIKO Vault Rewards
+                </h2>
+              </li>
+            </ul>
+
+            <ul className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 xl:grid-cols-4">
+              <li className="relative col-span-2 flex shadow-sm rounded-md">
+                <div className="bg-white shadow sm:rounded-lg w-full">
+                  <div className="px-4 py-5 sm:p-6">
+                      
+                    <div className="mt-5 sm:flex sm:items-start sm:justify-between mb-5">
+                      <div className="max-w-xl text-sm text-gray-500">
+                        <p>
+                          Unclaimed DIKO rewards
+                        </p>
+                      </div>
+
+                      <div className="max-w-xl text-sm text-gray-500">
+                        <p>
+                          {availableCoinsToMint(price, collateralLocked(), outstandingDebt(), collateralType?.collateralToDebtRatio)} xUSD
+                        </p>
+                      </div>
+
+                      {isVaultOwner ? (
+                        <div className="max-w-xl text-sm text-gray-500">
+                          <p>
+                            <Text onClick={() => setShowMintModal(true)}
+                                  _hover={{ cursor: 'pointer'}}
+                                  className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                              Mint
+                            </Text>
+                          </p>
+                        </div>
+                      ) : null }
+                    </div>
+
+                  </div>
+                </div>
+              </li>
+            </ul>
             </>
           )}
 
