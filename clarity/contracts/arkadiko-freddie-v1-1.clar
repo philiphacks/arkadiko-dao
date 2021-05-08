@@ -80,9 +80,9 @@
             (ok
               (/
                 (* (get collateral vault) (get last-price-in-cents stx-price-in-cents))
+                (get debt vault)
                 ;; TODO: cost is too high to use this in the front-end - fix this
-                ;; (+ (get debt vault) u0);; (unwrap-panic (get-stability-fee-for-vault vault-id)))
-                (+ (get debt vault) u0 (unwrap-panic (get-stability-fee-for-vault vault-id)))
+                ;; (+ (get debt vault) (unwrap-panic (get-stability-fee-for-vault vault-id)))
               )
             )
             (err u0)
