@@ -139,6 +139,19 @@ Clarinet.test({
     // after 1 year of not paying debt on vault, collateralisation ratio should be lower
     call = await chain.callReadOnlyFn("freddie", "calculate-current-collateral-to-debt-ratio", [types.uint(1)], deployer.address);
     call.result.expectOk().expectUint(163);
+
+    // Change price
+    chain.mineBlock([
+      Tx.contractCall("oracle", "update-price", [
+        types.ascii("STX"),
+        types.uint(400),
+      ], deployer.address)
+    ]);
+
+    // Price doubled
+    call = await chain.callReadOnlyFn("freddie", "calculate-current-collateral-to-debt-ratio", [types.uint(1)], deployer.address);
+    call.result.expectOk().expectUint(327);
+
   }
 });
 
@@ -379,7 +392,170 @@ Clarinet.test({
       ], deployer.address),
     ]);
     block.receipts[0].result.expectErr().expectUint(98); // wrong token error
+
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "collateralize-and-mint", [
+        types.uint(500000000),
+        types.uint(925000),
+        types.principal(deployer.address),
+        types.ascii("STX-A"),
+        types.ascii("STX"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.sip10-reserve"),
+        types.principal(
+          "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.xusd-token",
+        ),
+      ], deployer.address),
+    ]);
+    block.receipts[0].result.expectErr().expectUint(98); // wrong token error
   }
+});
+
+Clarinet.test({
+  name: "freddie: collateralize-and-mint errors",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    let deployer = accounts.get("deployer")!;
+    let wallet_1 = accounts.get("wallet_1")!;
+    let block = chain.mineBlock([
+      Tx.contractCall("oracle", "update-price", [
+        types.ascii("STX"),
+        types.uint(77),
+      ], deployer.address)
+    ]);
+
+    // Mint too much
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "collateralize-and-mint", [
+        types.uint(0),
+        types.uint(1),
+        types.principal(deployer.address),
+        types.ascii("STX-A"),
+        types.ascii("STX"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+        types.principal(
+          "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
+        ),
+      ], deployer.address)
+    ]);
+    // ERR-INSUFFICIENT-COLLATERAL
+    block.receipts[0].result.expectErr().expectUint(49);
+
+    // Call for other wallet
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "collateralize-and-mint", [
+        types.uint(0),
+        types.uint(1),
+        types.principal(wallet_1.address),
+        types.ascii("STX-A"),
+        types.ascii("STX"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+        types.principal(
+          "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
+        ),
+      ], deployer.address)
+    ]);
+    // ERR-NOT-AUTHORIZED
+    block.receipts[0].result.expectErr().expectUint(4401);
+
+  },
+});
+
+Clarinet.test({
+  name: "freddie: test zero values",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    let deployer = accounts.get("deployer")!;
+    let wallet_1 = accounts.get("wallet_1")!;
+    let block = chain.mineBlock([
+      Tx.contractCall("oracle", "update-price", [
+        types.ascii("STX"),
+        types.uint(77),
+      ], deployer.address)
+    ]);
+
+    // TODO: collateralize 0 & mint 0
+    // (currently crashing)
+
+    // 
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "collateralize-and-mint", [
+        types.uint(500000000),
+        types.uint(925000),
+        types.principal(deployer.address),
+        types.ascii("STX-A"),
+        types.ascii("STX"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+        types.principal(
+          "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
+        ),
+      ], deployer.address)
+    ]);
+
+    // Mint 0
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "mint", [
+        types.uint(1),
+        types.uint(0),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve")
+      ], deployer.address)
+    ]);
+    // ERR-MINT-FAILED in stx-reserve
+    block.receipts[0].result
+      .expectErr()
+      .expectUint(117);
+
+    // Burn 0
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "burn", [
+        types.uint(1),
+        types.uint(0),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token")
+      ], deployer.address)
+    ]);
+    // 
+    block.receipts[0].result
+      .expectErr()
+      .expectUint(1);
+
+    // Deposit extra
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "deposit", [
+        types.uint(1),
+        types.uint(0), 
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
+      ], deployer.address)
+    ]);
+    // ERR-DEPOSIT-FAILED
+    block.receipts[0].result
+      .expectErr()
+      .expectUint(45);
+ 
+    // Toggle stacking, allowing withdraw
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "toggle-stacking", [
+        types.uint(1)
+      ], deployer.address),
+      // now vault 1 has revoked stacking, enable vault withdrawals
+      Tx.contractCall("freddie", "enable-vault-withdrawals", [
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stacker"),
+        types.uint(1)
+      ], deployer.address)
+    ]);
+
+    // Withdraw 0
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "withdraw", [
+        types.uint(1),
+        types.uint(0), // 100 STX
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
+      ], deployer.address)
+    ]);
+    // ERR-INSUFFICIENT-COLLATERAL
+    block.receipts[0].result
+      .expectErr()
+      .expectUint(49);
+  },
 });
 
 Clarinet.test({
@@ -483,6 +659,60 @@ Clarinet.test({
     block.receipts[0].result
       .expectOk()
       .expectBool(true);
+  }
+});
+
+Clarinet.test({
+  name: "freddie: while stacking, not all actions are allowed",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    let deployer = accounts.get("deployer")!;
+    
+    let block = chain.mineBlock([
+      // Initialize price of STX to $2 in the oracle
+      Tx.contractCall("oracle", "update-price", [
+        types.ascii("STX"),
+        types.uint(200),
+      ], deployer.address),
+      Tx.contractCall("freddie", "collateralize-and-mint", [
+        types.uint(1000000000), // 1000 STX
+        types.uint(300000000), // mint 300 xUSD
+        types.principal(deployer.address),
+        types.ascii("STX-A"),
+        types.ascii("STX"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
+      ], deployer.address)
+    ]);
+    block.receipts[1].result
+      .expectOk()
+      .expectUint(300000000);
+
+    // Try burn
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "burn", [
+        types.uint(1),
+        types.uint(300000000),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token")
+      ], deployer.address)
+    ]);
+    block.receipts[0].result
+      .expectErr()
+      .expectUint(4401); // TODO: specific error
+
+    // Try withdraw
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "withdraw", [
+        types.uint(1),
+        types.uint(200000000), 
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token")
+      ], deployer.address)
+    ]);
+    block.receipts[0].result
+      .expectErr()
+      .expectUint(4401); // TODO: specific error
+
   }
 });
 
@@ -673,7 +903,7 @@ Clarinet.test({
 });
 
 Clarinet.test({
-  name: "freddie: cannot create vault when emergency shutdown is on",
+  name: "freddie: emergency shutdown is on",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     let deployer = accounts.get("deployer")!;
     let block = chain.mineBlock([
@@ -681,7 +911,6 @@ Clarinet.test({
         types.ascii("STX"),
         types.uint(200),
       ], deployer.address),
-      Tx.contractCall("freddie", "toggle-freddie-shutdown", [], deployer.address),
       Tx.contractCall("freddie", "collateralize-and-mint", [
         types.uint(1000000000), // 1000 STX
         types.uint(300000000), // mint 300 xUSD
@@ -692,6 +921,237 @@ Clarinet.test({
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
       ], deployer.address)
     ]);
-    block.receipts[2].result.expectErr().expectUint(411);
+
+    // Turn on emergency shutdown
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "toggle-freddie-shutdown", [], deployer.address),
+    ]);
+
+    // Try to collateralize and mint
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "collateralize-and-mint", [
+        types.uint(1000000000), // 1000 STX
+        types.uint(300000000), // mint 300 xUSD
+        types.principal(deployer.address),
+        types.ascii("STX-A"),
+        types.ascii("STX"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(411);
+
+    // Mint
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "mint", [
+        types.uint(1),
+        types.uint(1),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve")
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(411);
+
+    // Burn
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "burn", [
+        types.uint(1),
+        types.uint(1),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token")
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(411);
+
+    // Deposit
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "deposit", [
+        types.uint(1),
+        types.uint(1), 
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(411);
+ 
+    // Toggle stacking, allowing withdraw
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "toggle-stacking", [
+        types.uint(1)
+      ], deployer.address),
+    ]);
+    block.receipts[0].result.expectErr().expectUint(411);
+
+    // Withdraw
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "withdraw", [
+        types.uint(1),
+        types.uint(1), // 100 STX
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(411);
+
+    // Stack collateral
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "stack-collateral", [
+        types.uint(1)
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(411);
+
+    // Liquidate
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "liquidate", [
+        types.uint(1)
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(411);
+
+    // Finalize liquidation
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "finalize-liquidation", [
+        types.uint(1),
+        types.uint(1)
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(411);
+
+    // Withdraw leftover collateral
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "withdraw-leftover-collateral", [
+        types.uint(1),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(411);
+  }
+});
+
+Clarinet.test({
+  name: "freddie: DAO emergency shutdown is on",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    let deployer = accounts.get("deployer")!;
+    let block = chain.mineBlock([
+      Tx.contractCall("oracle", "update-price", [
+        types.ascii("STX"),
+        types.uint(200),
+      ], deployer.address),
+      Tx.contractCall("freddie", "collateralize-and-mint", [
+        types.uint(1000000000), // 1000 STX
+        types.uint(300000000), // mint 300 xUSD
+        types.principal(deployer.address),
+        types.ascii("STX-A"),
+        types.ascii("STX"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
+      ], deployer.address)
+    ]);
+
+    // Turn on emergency shutdown
+    block = chain.mineBlock([
+      Tx.contractCall("dao", "toggle-emergency-shutdown", [], deployer.address),
+    ]);
+
+    // Try to collateralize and mint
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "collateralize-and-mint", [
+        types.uint(1000000000), // 1000 STX
+        types.uint(300000000), // mint 300 xUSD
+        types.principal(deployer.address),
+        types.ascii("STX-A"),
+        types.ascii("STX"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(411);
+
+    // Mint
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "mint", [
+        types.uint(1),
+        types.uint(1),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve")
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(411);
+
+    // Burn
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "burn", [
+        types.uint(1),
+        types.uint(1),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token")
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(411);
+
+    // Deposit
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "deposit", [
+        types.uint(1),
+        types.uint(1), 
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(411);
+ 
+    // Toggle stacking, allowing withdraw
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "toggle-stacking", [
+        types.uint(1)
+      ], deployer.address),
+    ]);
+    block.receipts[0].result.expectErr().expectUint(411);
+
+    // Withdraw
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "withdraw", [
+        types.uint(1),
+        types.uint(1), // 100 STX
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(411);
+
+    // Stack collateral
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "stack-collateral", [
+        types.uint(1)
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(411);
+
+    // Liquidate
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "liquidate", [
+        types.uint(1)
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(411);
+
+    // Finalize liquidation
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "finalize-liquidation", [
+        types.uint(1),
+        types.uint(1)
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(411);
+
+    // Withdraw leftover collateral
+    block = chain.mineBlock([
+      Tx.contractCall("freddie", "withdraw-leftover-collateral", [
+        types.uint(1),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.stx-reserve"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(411);
   }
 });
