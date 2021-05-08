@@ -43,6 +43,7 @@ export const ManageVault = ({ match }) => {
   const [collateralType, setCollateralType] = useState<CollateralTypeProps>();
   const [isVaultOwner, setIsVaultOwner] = useState(false);
   const [stabilityFee, setStabilityFee] = useState(0);
+  const [pendingVaultRewards, setPendingVaultRewards] = useState(0);
 
   useEffect(() => {
     const fetchVault = async () => {
@@ -119,6 +120,18 @@ export const ManageVault = ({ match }) => {
       });
       const fee = cvToJSON(feeCall);
       setStabilityFee(fee.value.value);
+
+      const rewardCall = await callReadOnlyFunction({
+        contractAddress,
+        contractName: "arkadiko-vault-rewards-v1-1",
+        functionName: "get-pending-rewards",
+        functionArgs: [standardPrincipalCV(senderAddress || '')],
+        senderAddress: contractAddress || '',
+        network: network
+      });
+      const reward = cvToJSON(rewardCall);
+      console.log(reward);
+      setPendingVaultRewards(reward.value.value / 1000000);
     };
 
     if (vault?.id) {
@@ -194,6 +207,20 @@ export const ManageVault = ({ match }) => {
     debtRatio = getCollateralToDebtRatio(match.params.id)?.collateralToDebt;
     websocketTxUpdater();
   }
+
+  const claimPendingRewards = async () => {
+    await doContractCall({
+      network,
+      contractAddress,
+      contractName: "arkadiko-vault-rewards-v1-1",
+      functionName: "claim-pending-rewards",
+      functionArgs: [],
+      postConditionMode: 0x01,
+      finished: data => {
+        setState(prevState => ({ ...prevState, currentTxId: data.txId, currentTxStatus: 'pending' }));
+      },
+    });
+  };
 
   const addDeposit = async () => {
     if (!extraCollateralDeposit) {
@@ -969,17 +996,17 @@ export const ManageVault = ({ match }) => {
 
                       <div className="max-w-xl text-sm text-gray-500">
                         <p>
-                          {availableCoinsToMint(price, collateralLocked(), outstandingDebt(), collateralType?.collateralToDebtRatio)} xUSD
+                          {pendingVaultRewards} DIKO
                         </p>
                       </div>
 
                       {isVaultOwner ? (
                         <div className="max-w-xl text-sm text-gray-500">
                           <p>
-                            <Text onClick={() => setShowMintModal(true)}
+                            <Text onClick={() => claimPendingRewards()}
                                   _hover={{ cursor: 'pointer'}}
                                   className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                              Mint
+                              Claim
                             </Text>
                           </p>
                         </div>
