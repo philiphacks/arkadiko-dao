@@ -698,7 +698,7 @@ Clarinet.test({
     ]);
     block.receipts[0].result
       .expectErr()
-      .expectUint(4401); // TODO: specific error
+      .expectUint(414); 
 
     // Try withdraw
     block = chain.mineBlock([
@@ -711,7 +711,7 @@ Clarinet.test({
     ]);
     block.receipts[0].result
       .expectErr()
-      .expectUint(4401); // TODO: specific error
+      .expectUint(414);
 
   }
 });
@@ -898,7 +898,7 @@ Clarinet.test({
         types.uint(1)
       ], deployer.address)
     ]);
-    block.receipts[0].result.expectErr().expectUint(4401);
+    block.receipts[0].result.expectErr().expectUint(414);
   }
 });
 
