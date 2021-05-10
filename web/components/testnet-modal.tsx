@@ -6,8 +6,6 @@ export const TestnetModal = () => {
   const env = process.env.REACT_APP_NETWORK_ENV;
 
   useEffect(() => {
-    // TODO: testing remove line 10
-    localStorage.removeItem('arkadiko-hide-testnet-modal');
     const hideModal = localStorage.getItem('arkadiko-hide-testnet-modal');
     setShowTestnetModal(!!!hideModal);
   }, []);
@@ -22,7 +20,7 @@ export const TestnetModal = () => {
       {env === 'mocknet' ? (        
         <Modal isOpen={showTestnetModal}>
           <div className="flex pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="inline-block align-bottom bg-white rounded-lg px-2 pt-5 pb-4 text-left overflow-hidden my-8 align-middle max-w-sm w-full sm:p-6" role="dialog" aria-modal="true" aria-labelledby="modal-headline">
+            <div className="inline-block align-bottom bg-white rounded-lg px-2 pt-5 pb-4 text-left w-24 overflow-hidden my-8 align-middle max-w-sm w-full sm:p-6" role="dialog" aria-modal="true" aria-labelledby="modal-headline">
               <div>
                 <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -34,19 +32,22 @@ export const TestnetModal = () => {
                     Welcome to Arkadiko Testnet!
                   </h3>
                   <div className="mt-2">
-                    <p className="text-sm text-gray-500">
-                      Our testnet launch is a functional equivalent to mainnet, which will be launched later this year.
+                    <p className="text-left text-sm text-gray-500">
+                      The testnet launch is a functional equivalent to mainnet, which will be launched later this year.
                       The purpose of tesnet is to work out small bugs and issues that will enhance the user experience on mainnet.
-                      Testnet does not use any real money, so you are open to try whatever without losing actual money!
+                      Testnet does not use any real money, so you are open to try whatever without using actual money!
                     </p>
-                    <p className="text-sm text-gray-500 mt-2">
+                    <p className="text-left text-sm text-gray-500 mt-2">
                       What we have in store:
-                      <ul>
+                      <ul className="list-disc">
                         <li>Create vaults and mint xUSD</li>
                         <li>Two collateral types: STX-A and STX-B</li>
                         <li>Earn vault rewards in the form of DIKO governance tokens</li>
                         <li>Stake your DIKO governance tokens to earn yield</li>
                       </ul>
+                    </p>
+                    <p className="text-left text-sm text-gray-500 mt-2">
+                      Happy testing!
                     </p>
                   </div>
                 </div>
