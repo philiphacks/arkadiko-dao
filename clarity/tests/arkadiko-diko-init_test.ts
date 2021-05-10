@@ -65,13 +65,13 @@ Clarinet.test({
 
     // we already have 890K DIKO to start with
     let call = chain.callReadOnlyFn("arkadiko-token", "get-balance-of", [types.principal(deployer.address)], deployer.address);
-    let startBalance = call.result.expectOk().expectUint(890000000000);
+    call.result.expectOk().expectUint(890000000000);
 
     // 6 months, 30 days, 144 block per day
     chain.mineEmptyBlock(6*30*144);
 
     call = chain.callReadOnlyFn("arkadiko-diko-init", "get-pending-founders-tokens", [], deployer.address);
-    console.log(call.result); // u2625000 000000
+    call.result.expectOk().expectUint(2625000000000);
 
     block = chain.mineBlock([
       Tx.contractCall("arkadiko-diko-init", "founders-claim-tokens", [
