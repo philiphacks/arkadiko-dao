@@ -271,7 +271,13 @@ Clarinet.test({
   
     // Get tokens at start
     call = chain.callReadOnlyFn("arkadiko-diko-init", "get-pending-foundation-tokens", [], deployer.address);
-    call.result.expectOk().expectUint(16000000000000)
-  
+    call.result.expectOk().expectUint(16000000000000);
+
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-diko-init", "foundation-claim-tokens", [
+          types.uint(50000000000000)
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(221);
   }
 });
