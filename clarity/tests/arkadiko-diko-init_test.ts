@@ -61,7 +61,7 @@ Clarinet.test({
         types.uint(437500000000)
       ], deployer.address)
     ]);
-    block.receipts[0].result.expectErr().expectUint(22401);
+    block.receipts[0].result.expectErr().expectUint(221);
 
     // we already have 890K DIKO to start with
     let call = chain.callReadOnlyFn("arkadiko-token", "get-balance-of", [types.principal(deployer.address)], deployer.address);
@@ -70,23 +70,15 @@ Clarinet.test({
     // 6 months, 30 days, 144 block per day
     chain.mineEmptyBlock(6*30*144);
 
+    call = chain.callReadOnlyFn("arkadiko-diko-init", "get-pending-founders-tokens", [], deployer.address);
+    console.log(call.result); // u2625000 000000
+
     block = chain.mineBlock([
       Tx.contractCall("arkadiko-diko-init", "founders-claim-tokens", [
-        types.uint(437500000000)
+        types.uint(21000000000000)
       ], deployer.address),
-      Tx.contractCall("arkadiko-diko-init", "founders-claim-tokens", [
-        types.uint(437500000000)
-      ], deployer.address),
-      Tx.contractCall("arkadiko-diko-init", "founders-claim-tokens", [
-        types.uint(437500000000)
-      ], deployer.address)
     ]);
-    console.log(block.receipts);
-    // block.receipts[0].result.expectOk().expectBool(true);
-    // block.receipts[1].result.expectErr();
-
-    call = chain.callReadOnlyFn("arkadiko-token", "get-balance-of", [types.principal(deployer.address)], deployer.address);
-    call.result.expectOk().expectUint(startBalance + 437500000000); // it is the first month, so we can claim 437.5K tokens
+    block.receipts[0].result.expectErr().expectUint(221);
   }
 });
 
