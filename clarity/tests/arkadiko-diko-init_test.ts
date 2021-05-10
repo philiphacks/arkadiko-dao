@@ -51,7 +51,7 @@ Clarinet.test({
 });
 
 Clarinet.test({
-  name: "diko-init: founders tokens claim too early, and after 6 months cliff",
+  name: "diko-init: founders tokens claim too early, and too high",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     let deployer = accounts.get("deployer")!;
 
