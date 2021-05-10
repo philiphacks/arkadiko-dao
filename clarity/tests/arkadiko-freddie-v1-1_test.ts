@@ -439,6 +439,36 @@ Clarinet.test({
     // ERR-INSUFFICIENT-COLLATERAL
     block.receipts[0].result.expectErr().expectUint(49);
 
+  },
+});
+
+Clarinet.test({
+  name: "freddie: unauthorized errors",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    let deployer = accounts.get("deployer")!;
+    let wallet_1 = accounts.get("wallet_1")!;
+    let block = chain.mineBlock([
+      Tx.contractCall("arkadiko-oracle-v1-1", "update-price", [
+        types.ascii("STX"),
+        types.uint(77),
+      ], deployer.address)
+    ]);
+
+    // Collateralize wallet_1
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
+        types.uint(10),
+        types.uint(1),
+        types.principal(wallet_1.address),
+        types.ascii("STX-A"),
+        types.ascii("STX"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
+        types.principal(
+          "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
+        ),
+      ], wallet_1.address)
+    ]);
+
     // Call for other wallet
     block = chain.mineBlock([
       Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
@@ -451,6 +481,72 @@ Clarinet.test({
         types.principal(
           "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
         ),
+      ], deployer.address)
+    ]);
+    // ERR-NOT-AUTHORIZED
+    block.receipts[0].result.expectErr().expectUint(4401);
+
+    // Toggle stacking 
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-freddie-v1-1", "toggle-stacking", [
+        types.uint(1)
+      ], deployer.address),
+    ]);
+    // ERR-NOT-AUTHORIZED
+    block.receipts[0].result.expectErr().expectUint(4401);
+
+    // Toggle stacking, allowing withdraw
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-freddie-v1-1", "stack-collateral", [
+        types.uint(1)
+      ], deployer.address),
+    ]);
+    // ERR-NOT-AUTHORIZED
+    block.receipts[0].result.expectErr().expectUint(4401);
+
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-freddie-v1-1", "enable-vault-withdrawals", [
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stacker-v1-1"),
+        types.uint(1)
+      ], wallet_1.address)
+    ]);
+    // ERR-NOT-AUTHORIZED
+    block.receipts[0].result.expectErr().expectUint(4401);
+
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-freddie-v1-1", "release-stacked-stx", [
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stacker-v1-1"),
+        types.uint(1)
+      ], wallet_1.address)
+    ]);
+    // ERR-NOT-AUTHORIZED
+    block.receipts[0].result.expectErr().expectUint(4401);
+
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-freddie-v1-1", "toggle-freddie-shutdown", [], wallet_1.address)
+    ]);
+    // ERR-NOT-AUTHORIZED
+    block.receipts[0].result.expectErr().expectUint(4401);
+
+    // Toggle stacking, allowing withdraw
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-freddie-v1-1", "toggle-stacking", [
+        types.uint(1)
+      ], deployer.address),
+      // now vault 1 has revoked stacking, enable vault withdrawals
+      Tx.contractCall("arkadiko-freddie-v1-1", "enable-vault-withdrawals", [
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stacker-v1-1"),
+        types.uint(1)
+      ], deployer.address)
+    ]);
+
+    // Withdraw 0
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-freddie-v1-1", "withdraw", [
+        types.uint(1),
+        types.uint(0), // 100 STX
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
       ], deployer.address)
     ]);
     // ERR-NOT-AUTHORIZED
