@@ -567,10 +567,22 @@ Clarinet.test({
       ], deployer.address)
     ]);
 
-    // TODO: collateralize 0 & mint 0
-    // (currently crashing)
+    // collateralize 0 & mint 0
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
+        types.uint(0),
+        types.uint(0),
+        types.principal(deployer.address),
+        types.ascii("STX-A"),
+        types.ascii("STX"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
+        types.principal(
+          "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
+        ),
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(417); // wrong debt (0)
 
-    // 
     block = chain.mineBlock([
       Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
         types.uint(500000000),
