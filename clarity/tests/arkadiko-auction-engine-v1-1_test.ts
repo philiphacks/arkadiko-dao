@@ -790,7 +790,7 @@ Clarinet.test({
         types.uint(10)
       ], deployer.address)
     ]);
-    // block.receipts[0].result.expectErr().expectUint(23); // poor bid
+    block.receipts[0].result.expectErr().expectUint(28); // auction not open
 
     block = chain.mineBlock([
       Tx.contractCall("arkadiko-auction-engine-v1-1", "bid", [
@@ -801,7 +801,7 @@ Clarinet.test({
         types.uint(20)
       ], deployer.address)
     ]);
-    // block.receipts[0].result.expectErr().expectUint(23); // poor bid
+    block.receipts[0].result.expectErr().expectUint(28); // auction not open
 
   }
 });
