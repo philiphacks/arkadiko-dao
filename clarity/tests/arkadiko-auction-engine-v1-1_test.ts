@@ -93,7 +93,6 @@ Clarinet.test({
       wallet_1.address
     );
     let lastBid = lastBidCall.result.expectTuple();
-    lastBid['is-accepted'].expectBool(true);
     lastBid['xusd'].expectUint(1000000000);
 
     block = chain.mineBlock([
@@ -696,6 +695,43 @@ Clarinet.test({name: "auction engine: cannot start auction when emergency shutdo
     ]);
     block.receipts[0].result.expectOk().expectBool(true);
     block.receipts[1].result.expectErr().expectUint(213);
+  }
+});
+
+Clarinet.test({
+  name:
+    "auction engine: auction without bids",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    let deployer = accounts.get("deployer")!;
+    let wallet_1 = accounts.get("wallet_1")!;
+
+    createVaultAndLiquidate(chain, accounts);
+
+    let call = await chain.callReadOnlyFn("xusd-token", "get-balance-of", [
+      types.principal(deployer.address),
+    ], deployer.address);
+    call.result.expectOk().expectUint(2300000000);
+
+    // Test zero bid
+    let block = chain.mineBlock([
+      Tx.contractCall("arkadiko-auction-engine-v1-1", "bid", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-freddie-v1-1'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-oracle-v1-1'),
+        types.uint(1),
+        types.uint(0),
+        types.uint(0)
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(23); // poor bid
+
+    call = await chain.callReadOnlyFn("xusd-token", "get-balance-of", [
+      types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-auction-engine-v1-1'),
+    ], deployer.address);
+    call.result.expectOk().expectUint(0);
+
+    chain.mineEmptyBlock(150);
+
+
   }
 });
 

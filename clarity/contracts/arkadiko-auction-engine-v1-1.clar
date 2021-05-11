@@ -48,16 +48,8 @@
     collateral-amount: uint,
     collateral-token: (string-ascii 12),
     owner: principal,
-    is-accepted: bool
+    redeemed: bool
   }
-)
-(define-map winning-lots
-  { user: principal }
-  { ids: (list 100 (tuple (auction-id uint) (lot-index uint))) }
-)
-(define-map redeeming-lot
-  { user: principal }
-  { auction-id: uint, lot-index: uint }
 )
 
 (define-data-var last-auction-id uint u0)
@@ -254,16 +246,9 @@
       collateral-amount: u0,
       collateral-token: "",
       owner: (contract-call? .arkadiko-dao get-dao-owner),
-      is-accepted: false
+      redeemed: false
     }
     (map-get? bids { auction-id: auction-id, lot-index: lot-index })
-  )
-)
-
-(define-read-only (get-winning-lots (owner principal))
-  (default-to
-    { ids: (list (tuple (auction-id u0) (lot-index u0))) }
-    (map-get? winning-lots { user: owner })
   )
 )
 
@@ -289,96 +274,63 @@
   (let (
     (auction (get-auction-by-id auction-id))
     (last-bid (get-last-bid auction-id lot-index))
-  )
-    (asserts! (is-eq (get is-accepted last-bid) false) (err ERR-LOT-SOLD))
-    (asserts! (> xusd (get xusd last-bid)) (err ERR-POOR-BID)) ;; need a better bid than previously already accepted
-
-    (try! (accept-bid vault-manager oracle auction-id lot-index xusd))
-    (print { type: "bid", action: "registered", data: { auction-id: auction-id, lot-index: lot-index, xusd: xusd } })
-    (ok true)
-  )
-)
-
-(define-private (is-lot-sold (accepted-bid bool))
-  (if accepted-bid
-    (ok u1)
-    (ok u0)
-  )
-)
-
-(define-private (accept-bid (vault-manager <vault-manager-trait>) (oracle <oracle-trait>) (auction-id uint) (lot-index uint) (xusd uint))
-  (let (
-    (auction (get-auction-by-id auction-id))
-    (last-bid (get-last-bid auction-id lot-index))
     (collateral-amount (unwrap-panic (fetch-minimum-collateral-amount oracle auction-id)))
-    (accepted-bid
-      (or
-        (is-eq xusd (get lot-size auction))
-        (>= xusd (- (get debt-to-raise auction) (get total-debt-raised auction)))
+    (lot-got-sold (if (>= xusd (var-get lot-size))
+        (ok u1)
+        (ok u0)
       )
     )
   )
-    ;; if this bid is at least (total debt to raise / lot-size) amount, accept it as final - we don't need to be greedy
-    (begin
-      (if (> (get xusd last-bid) u0)
-        (try! (return-xusd (get owner last-bid) (get xusd last-bid))) ;; return xUSD of last bid to (now lost) bidder
-        true
-      )
-      (try! (contract-call? .xusd-token transfer xusd tx-sender (as-contract tx-sender)))
-      (map-set auctions
-        { id: auction-id }
-        (merge auction {
-          lots-sold: (+ (unwrap-panic (is-lot-sold accepted-bid)) (get lots-sold auction)),
-          total-collateral-sold: (- (+ collateral-amount (get total-collateral-sold auction)) (get collateral-amount last-bid)),
-          total-debt-raised: (- (+ xusd (get total-debt-raised auction)) (get xusd last-bid))
-        })
-      )
-      (map-set bids
-        { auction-id: auction-id, lot-index: lot-index }
-        {
-          xusd: xusd,
-          collateral-amount: collateral-amount,
-          collateral-token: (get collateral-token auction),
-          owner: tx-sender,
-          is-accepted: accepted-bid
-        }
-      )
-      (if accepted-bid
-        (let ((lots (get-winning-lots tx-sender)))
-          (try! (contract-call? .arkadiko-vault-data-v1-1 add-stacker-payout (get vault-id auction) collateral-amount tx-sender))
-          (map-set winning-lots
-            { user: tx-sender }
-            {
-              ids: (unwrap-panic (as-max-len? (append (get ids lots) (tuple (auction-id auction-id) (lot-index lot-index))) u100))
-            }
-          )
-        )
-        true
-      )
-      (if
-        (or
-          (>= block-height (get ends-at auction))
-          (>= (- (+ xusd (get total-debt-raised auction)) (get xusd last-bid)) (get debt-to-raise auction))
-        )
-        ;; auction is over - close all bids
-        ;; send collateral to winning bidders
-        (close-auction vault-manager auction-id)
-        (ok true)
-      )
-    )
-  )
-)
+    ;; Lot is sold once bid is > lot-size
+    (asserts! (< (get xusd last-bid) (var-get lot-size)) (err ERR-LOT-SOLD))
+    ;; Need a better bid than previously already accepted
+    (asserts! (> xusd (get xusd last-bid)) (err ERR-POOR-BID)) 
 
-(define-private (remove-winning-lot (lot (tuple (auction-id uint) (lot-index uint))))
-  (let ((current-lot (unwrap-panic (map-get? redeeming-lot { user: tx-sender }))))
-    (if 
-      (and
-        (is-eq (get auction-id lot) (get auction-id current-lot))
-        (is-eq (get lot-index lot) (get lot-index current-lot))
-      )
-      false
+    ;; Return xUSD of last bid to (now lost) bidder
+    (if (> (get xusd last-bid) u0)
+      (try! (return-xusd (get owner last-bid) (get xusd last-bid)))
       true
     )
+    ;; Transfer xUSD from liquidator to this contract
+    (try! (contract-call? .xusd-token transfer xusd tx-sender (as-contract tx-sender)))
+
+    ;; Update auctions
+    (map-set auctions
+      { id: auction-id }
+      (merge auction {
+        lots-sold: (+ (unwrap-panic lot-got-sold) (get lots-sold auction)),
+        total-collateral-sold: (- (+ collateral-amount (get total-collateral-sold auction)) (get collateral-amount last-bid)),
+        total-debt-raised: (- (+ xusd (get total-debt-raised auction)) (get xusd last-bid))
+      })
+    )
+    ;; Update bids
+    (map-set bids
+      { auction-id: auction-id, lot-index: lot-index }
+      {
+        xusd: xusd,
+        collateral-amount: collateral-amount,
+        collateral-token: (get collateral-token auction),
+        owner: tx-sender,
+        redeemed: false
+      }
+    )
+
+    ;; Set stacker payout
+    (try! (contract-call? .arkadiko-vault-data-v1-1 add-stacker-payout (get vault-id auction) collateral-amount tx-sender))
+    (print { type: "bid", action: "registered", data: { auction-id: auction-id, lot-index: lot-index, xusd: xusd } })
+
+    ;; End auction if needed
+    (if
+      (or
+        (>= block-height (get ends-at auction))
+        (>= (- (+ xusd (get total-debt-raised auction)) (get xusd last-bid)) (get debt-to-raise auction))
+      )
+      ;; auction is over - close all bids
+      ;; send collateral to winning bidders
+      (close-auction vault-manager auction-id)
+      (ok true)
+    )
+
   )
 )
 
@@ -389,7 +341,9 @@
   )
     (asserts! (is-eq (unwrap-panic (contract-call? ft get-symbol)) (get collateral-token auction)) (err ERR-TOKEN-TYPE-MISMATCH))
     (asserts! (is-eq (contract-of vault-manager) (unwrap-panic (contract-call? .arkadiko-dao get-qualified-name-by-name "freddie"))) (err ERR-NOT-AUTHORIZED))
-    (asserts! (and (is-eq tx-sender (get owner last-bid)) (get is-accepted last-bid)) (err ERR-COULD-NOT-REDEEM))
+    (asserts! (and (is-eq tx-sender (get owner last-bid)) (is-eq (get is-open auction) false)) (err ERR-COULD-NOT-REDEEM))
+    (asserts! (is-eq false (get redeemed last-bid)) (err ERR-COULD-NOT-REDEEM))
+
     (asserts!
       (and
         (is-eq (unwrap-panic (contract-call? .arkadiko-dao get-emergency-shutdown-activated)) false)
@@ -397,21 +351,26 @@
       )
       (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED)
     )
-    
-    (let ((lots (get-winning-lots tx-sender)))
-      (map-set redeeming-lot { user: tx-sender } { auction-id: auction-id, lot-index: lot-index})
-      (map-set winning-lots { user: tx-sender } { ids: (filter remove-winning-lot (get ids lots)) })
-      (if (is-eq (get auction-type auction) "debt")
-        ;; request "collateral-amount" gov tokens from the DAO
-        (begin
-          (try! (contract-call? .arkadiko-dao request-diko-tokens ft (get collateral-amount auction)))
-          (try! (contract-call? vault-manager redeem-auction-collateral ft reserve (get collateral-amount last-bid) tx-sender))
-        )
+
+    ;; Update bid
+    (map-set bids
+      { auction-id: auction-id, lot-index: lot-index }
+      (merge last-bid {
+        redeemed: true
+      })
+    )
+
+    (if (is-eq (get auction-type auction) "debt")
+      ;; request "collateral-amount" gov tokens from the DAO
+      (begin
+        (try! (contract-call? .arkadiko-dao request-diko-tokens ft (get collateral-amount auction)))
         (try! (contract-call? vault-manager redeem-auction-collateral ft reserve (get collateral-amount last-bid) tx-sender))
       )
-      (print { type: "lot", action: "redeemed", data: { auction-id: auction-id, lot-index: lot-index } })
-      (ok true)
+      (try! (contract-call? vault-manager redeem-auction-collateral ft reserve (get collateral-amount last-bid) tx-sender))
     )
+    (print { type: "lot", action: "redeemed", data: { auction-id: auction-id, lot-index: lot-index } })
+    (ok true)
+
   )
 )
 
@@ -512,45 +471,6 @@
         ends-at: (+ (get ends-at auction) blocks-per-day)
       })
     )
-    (ok true)
-  )
-)
-
-(define-public (unlock-winning-lot (auction-id uint) (lot-index uint))
-  (let (
-    (auction (get-auction-by-id auction-id))
-    (last-bid (get-last-bid auction-id lot-index))
-    (lots (get-winning-lots (get owner last-bid)))
-  )
-    (asserts! (is-eq (get is-open auction) false) (err ERR-NOT-AUTHORIZED))
-    (asserts! (> (get xusd last-bid) u0) (err ERR-NOT-AUTHORIZED))
-    (asserts! (is-eq (get is-accepted last-bid) false) (err ERR-NOT-AUTHORIZED))
-    (asserts!
-      (and
-        (is-eq (unwrap-panic (contract-call? .arkadiko-dao get-emergency-shutdown-activated)) false)
-        (is-eq (var-get auction-engine-shutdown-activated) false)
-      )
-      (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED)
-    )
-
-    (map-set auctions
-      { id: auction-id }
-      (merge auction { lots-sold: (+ u1 (get lots-sold auction)) })
-    )
-    (map-set bids
-      { auction-id: auction-id, lot-index: lot-index }
-      (merge last-bid {
-        collateral-token: (get collateral-token auction),
-        is-accepted: true
-      })
-    )
-    (map-set winning-lots
-      { user: (get owner last-bid) }
-      {
-        ids: (unwrap-panic (as-max-len? (append (get ids lots) (tuple (auction-id auction-id) (lot-index lot-index))) u100))
-      }
-    )
-    (print { type: "lot", action: "unlocked", data: { auction-id: auction-id, lot-index: lot-index } })
     (ok true)
   )
 )
