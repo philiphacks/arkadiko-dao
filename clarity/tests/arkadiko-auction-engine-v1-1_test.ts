@@ -118,7 +118,15 @@ Clarinet.test({
       wallet_1.address,
     );
     auction = call.result.expectTuple();
-    auction['is-open'].expectBool(false);
+    auction['lots-sold'].expectUint(1);
+
+    call = await chain.callReadOnlyFn(
+      "arkadiko-auction-engine-v1-1",
+      "get-auction-open",
+      [types.uint(1)],
+      wallet_1.address,
+    );
+    call.result.expectOk().expectBool(false);
 
     call = await chain.callReadOnlyFn(
       "arkadiko-freddie-v1-1",
@@ -321,7 +329,16 @@ Clarinet.test({
       wallet_1.address
     );
     auction = call.result.expectTuple();
-    auction['is-open'].expectBool(false);
+    auction['lots-sold'].expectUint(1);
+
+    call = await chain.callReadOnlyFn(
+      "arkadiko-auction-engine-v1-1",
+      "get-auction-open",
+      [types.uint(1)],
+      wallet_1.address,
+    );
+    call.result.expectOk().expectBool(false);
+
     const debtRaised = auction['total-debt-raised'].expectUint(1000000000); // 1000 xUSD raised
     const debtToRaise = auction['debt-to-raise'].expectUint(1378000007); // 1378 xUSD
 
@@ -357,7 +374,15 @@ Clarinet.test({
       wallet_1.address
     );
     dikoAuction = call.result.expectTuple();
-    dikoAuction['is-open'].expectBool(false);
+    dikoAuction['lots-sold'].expectUint(0);
+
+    call = await chain.callReadOnlyFn(
+      "arkadiko-auction-engine-v1-1",
+      "get-auction-open",
+      [types.uint(1)],
+      wallet_1.address,
+    );
+    call.result.expectOk().expectBool(false);
 
     call = await chain.callReadOnlyFn(
       "arkadiko-freddie-v1-1",
@@ -452,8 +477,16 @@ Clarinet.test({
       wallet_1.address
     );
     let extendedAuction = call.result.expectTuple();
-    extendedAuction['is-open'].expectBool(true);
+    extendedAuction['lots-sold'].expectUint(1);
     extendedAuction['ends-at'].expectUint(endBlockHeight + 144);
+
+    call = await chain.callReadOnlyFn(
+      "arkadiko-auction-engine-v1-1",
+      "get-auction-open",
+      [types.uint(1)],
+      wallet_1.address,
+    );
+    call.result.expectOk().expectBool(true);
   }
 });
 
@@ -731,6 +764,27 @@ Clarinet.test({
 
     chain.mineEmptyBlock(150);
 
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-auction-engine-v1-1", "bid", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-freddie-v1-1'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-oracle-v1-1'),
+        types.uint(1),
+        types.uint(0),
+        types.uint(10)
+      ], deployer.address)
+    ]);
+    // block.receipts[0].result.expectErr().expectUint(23); // poor bid
+
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-auction-engine-v1-1", "bid", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-freddie-v1-1'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-oracle-v1-1'),
+        types.uint(1),
+        types.uint(0),
+        types.uint(20)
+      ], deployer.address)
+    ]);
+    // block.receipts[0].result.expectErr().expectUint(23); // poor bid
 
   }
 });

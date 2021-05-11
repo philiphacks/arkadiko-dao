@@ -34,7 +34,6 @@
     vault-id: uint,
     lot-size: uint,
     lots-sold: uint,
-    is-open: bool,
     total-collateral-sold: uint,
     total-debt-raised: uint,
     total-debt-burned: uint,
@@ -69,7 +68,6 @@
       vault-id: u0,
       lot-size: u0,
       lots-sold: u0,
-      is-open: false,
       total-collateral-sold: u0,
       total-debt-raised: u0,
       total-debt-burned: u0,
@@ -81,6 +79,35 @@
 
 (define-read-only (get-auctions)
   (ok (map get-auction-by-id (var-get auction-ids)))
+)
+
+(define-read-only (get-last-bid (auction-id uint) (lot-index uint))
+  (default-to
+    {
+      xusd: u0,
+      collateral-amount: u0,
+      collateral-token: "",
+      owner: (contract-call? .arkadiko-dao get-dao-owner),
+      redeemed: false
+    }
+    (map-get? bids { auction-id: auction-id, lot-index: lot-index })
+  )
+)
+
+;; Check if auction open (not enough dept raised + end block height not reached)
+(define-read-only (get-auction-open (auction-id uint))
+  (let (
+    (auction (get-auction-by-id auction-id))
+  )
+    (if
+      (or
+        (>= block-height (get ends-at auction))
+        (>= (get total-debt-raised auction) (get debt-to-raise auction))
+      )
+      (ok false)
+      (ok true)
+    )
+  )
 )
 
 (define-public (toggle-auction-engine-shutdown)
@@ -123,8 +150,7 @@
         ends-at: (+ block-height blocks-per-day),
         total-collateral-sold: u0,
         total-debt-raised: u0,
-        total-debt-burned: u0,
-        is-open: true
+        total-debt-burned: u0
       })
     )
       (map-set auctions { id: auction-id } auction )
@@ -160,8 +186,7 @@
         ends-at: (+ block-height blocks-per-day),
         total-collateral-sold: u0,
         total-debt-raised: u0,
-        total-debt-burned: u0,
-        is-open: true
+        total-debt-burned: u0
       })
     )
       (map-set auctions { id: auction-id } auction)
@@ -239,23 +264,10 @@
   )
 )
 
-(define-read-only (get-last-bid (auction-id uint) (lot-index uint))
-  (default-to
-    {
-      xusd: u0,
-      collateral-amount: u0,
-      collateral-token: "",
-      owner: (contract-call? .arkadiko-dao get-dao-owner),
-      redeemed: false
-    }
-    (map-get? bids { auction-id: auction-id, lot-index: lot-index })
-  )
-)
-
 (define-public (bid (vault-manager <vault-manager-trait>) (oracle <oracle-trait>) (auction-id uint) (lot-index uint) (xusd uint))
   (let ((auction (get-auction-by-id auction-id)))
     (asserts! (is-eq lot-index (get lots-sold auction)) (err ERR-BID-DECLINED))
-    (asserts! (is-eq (get is-open auction) true) (err ERR-BID-DECLINED))
+    (asserts! (is-eq (unwrap-panic (get-auction-open auction-id)) true) (err ERR-BID-DECLINED))
     (asserts! (is-eq (contract-of vault-manager) (unwrap-panic (contract-call? .arkadiko-dao get-qualified-name-by-name "freddie"))) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq (contract-of oracle) (unwrap-panic (contract-call? .arkadiko-dao get-qualified-name-by-name "oracle"))) (err ERR-NOT-AUTHORIZED))
     (asserts!
@@ -341,7 +353,7 @@
   )
     (asserts! (is-eq (unwrap-panic (contract-call? ft get-symbol)) (get collateral-token auction)) (err ERR-TOKEN-TYPE-MISMATCH))
     (asserts! (is-eq (contract-of vault-manager) (unwrap-panic (contract-call? .arkadiko-dao get-qualified-name-by-name "freddie"))) (err ERR-NOT-AUTHORIZED))
-    (asserts! (and (is-eq tx-sender (get owner last-bid)) (is-eq (get is-open auction) false)) (err ERR-COULD-NOT-REDEEM))
+    (asserts! (and (is-eq tx-sender (get owner last-bid)) (is-eq (unwrap-panic (get-auction-open auction-id)) false)) (err ERR-COULD-NOT-REDEEM))
     (asserts! (is-eq false (get redeemed last-bid)) (err ERR-COULD-NOT-REDEEM))
 
     (asserts!
@@ -403,7 +415,7 @@
       )
       (err ERR-BLOCK-HEIGHT-NOT-REACHED)
     )
-    (asserts! (is-eq (get is-open auction) true) (err ERR-AUCTION-NOT-OPEN))
+    (asserts! (is-eq (unwrap-panic (get-auction-open auction-id)) false) (err ERR-AUCTION-NOT-OPEN))
     (asserts! (is-eq (contract-of vault-manager) (unwrap-panic (contract-call? .arkadiko-dao get-qualified-name-by-name "freddie"))) (err ERR-NOT-AUTHORIZED))
     (asserts!
       (and
@@ -413,7 +425,10 @@
       (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED)
     )
 
-    (let ((vault (contract-call? .arkadiko-vault-data-v1-1 get-vault-by-id (get vault-id auction))))
+    ;; 
+    (let (
+      (vault (contract-call? .arkadiko-vault-data-v1-1 get-vault-by-id (get vault-id auction)))
+    )
       (if (> (get debt vault) (get total-debt-burned auction))
         (begin
           (try! (contract-call? .arkadiko-dao burn-token .xusd-token
@@ -422,10 +437,10 @@
           )
           (map-set auctions
             { id: auction-id }
-            (merge auction { is-open: false, total-debt-burned: (min-of (get total-debt-raised auction) (- (get debt vault) (get total-debt-burned auction))) })
+            (merge auction { total-debt-burned: (min-of (get total-debt-raised auction) (- (get debt vault) (get total-debt-burned auction))) })
           )
         )
-        (map-set auctions { id: auction-id } (merge auction { is-open: false }))
+        true
       )
     )
     (try!
@@ -467,7 +482,6 @@
       { id: auction-id }
       (merge auction {
         total-debt-burned: (get total-debt-raised auction),
-        is-open: true,
         ends-at: (+ (get ends-at auction) blocks-per-day)
       })
     )

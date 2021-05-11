@@ -76,9 +76,23 @@ Clarinet.test({
       .map((e: String) => e.expectTuple());
 
     auctions[0]["vault-id"].expectUint(0);
-    auctions[0]["is-open"].expectBool(false);
     auctions[1]["vault-id"].expectUint(1);
-    auctions[1]["is-open"].expectBool(true);
+
+    call = await chain.callReadOnlyFn(
+      "arkadiko-auction-engine-v1-1",
+      "get-auction-open",
+      [types.uint(0)],
+      wallet_1.address,
+    );
+    call.result.expectOk().expectBool(false);
+
+    call = await chain.callReadOnlyFn(
+      "arkadiko-auction-engine-v1-1",
+      "get-auction-open",
+      [types.uint(1)],
+      wallet_1.address,
+    );
+    call.result.expectOk().expectBool(true);
   },
 });
 
