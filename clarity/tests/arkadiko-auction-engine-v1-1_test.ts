@@ -162,7 +162,7 @@ Clarinet.test({
         types.uint(0)
       ], wallet_1.address)
     ]);
-    block.receipts[0].result.expectErr().expectUint(210);
+    block.receipts[0].result.expectErr().expectUint(2403);
 
     // now try withdrawing the xSTX tokens that are mine
     block = chain.mineBlock([
@@ -179,6 +179,23 @@ Clarinet.test({
       ], deployer.address)
     ]);
     block.receipts[0].result.expectOk().expectBool(true);
+
+    // now try withdrawing the xSTX tokens again
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-auction-engine-v1-1", "redeem-lot-collateral", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-freddie-v1-1'),
+        types.principal(
+          "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.xstx-token",
+        ),
+        types.principal(
+          "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-sip10-reserve-v1-1",
+        ),
+        types.uint(1),
+        types.uint(0)
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(211);
+
     call = await chain.callReadOnlyFn("xstx-token", "get-balance-of", [
       types.principal(deployer.address),
     ], deployer.address);

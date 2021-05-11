@@ -6,17 +6,15 @@
 (use-trait auction-engine-trait .arkadiko-auction-engine-trait-v1.auction-engine-trait)
 
 ;; errors
-(define-constant ERR-BID-DECLINED u21)
+(define-constant ERR-LOT-NOT-OPEN u21)
 (define-constant ERR-LOT-SOLD u22)
 (define-constant ERR-POOR-BID u23)
-(define-constant ERR-XUSD-TRANSFER-FAILED u24)
 (define-constant ERR-AUCTION-NOT-ALLOWED u25)
-(define-constant ERR-INSUFFICIENT-COLLATERAL u26)
 (define-constant ERR-NOT-AUTHORIZED u2403)
 (define-constant ERR-AUCTION-NOT-OPEN u28)
 (define-constant ERR-BLOCK-HEIGHT-NOT-REACHED u29)
-(define-constant ERR-COULD-NOT-REDEEM u210)
-(define-constant ERR-DIKO-REQUEST-FAILED u211)
+(define-constant ERR-AUCTION-NOT-CLOSED u210)
+(define-constant ERR-LOT-ALREADY-REDEEMED u211)
 (define-constant ERR-TOKEN-TYPE-MISMATCH u212)
 (define-constant ERR-EMERGENCY-SHUTDOWN-ACTIVATED u213)
 
@@ -266,8 +264,8 @@
 
 (define-public (bid (vault-manager <vault-manager-trait>) (oracle <oracle-trait>) (auction-id uint) (lot-index uint) (xusd uint))
   (let ((auction (get-auction-by-id auction-id)))
-    (asserts! (is-eq lot-index (get lots-sold auction)) (err ERR-BID-DECLINED))
-    (asserts! (is-eq (unwrap-panic (get-auction-open auction-id)) true) (err ERR-BID-DECLINED))
+    (asserts! (is-eq lot-index (get lots-sold auction)) (err ERR-LOT-NOT-OPEN))
+    (asserts! (is-eq (unwrap-panic (get-auction-open auction-id)) true) (err ERR-AUCTION-NOT-OPEN))
     (asserts! (is-eq (contract-of vault-manager) (unwrap-panic (contract-call? .arkadiko-dao get-qualified-name-by-name "freddie"))) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq (contract-of oracle) (unwrap-panic (contract-call? .arkadiko-dao get-qualified-name-by-name "oracle"))) (err ERR-NOT-AUTHORIZED))
     (asserts!
@@ -353,8 +351,9 @@
   )
     (asserts! (is-eq (unwrap-panic (contract-call? ft get-symbol)) (get collateral-token auction)) (err ERR-TOKEN-TYPE-MISMATCH))
     (asserts! (is-eq (contract-of vault-manager) (unwrap-panic (contract-call? .arkadiko-dao get-qualified-name-by-name "freddie"))) (err ERR-NOT-AUTHORIZED))
-    (asserts! (and (is-eq tx-sender (get owner last-bid)) (is-eq (unwrap-panic (get-auction-open auction-id)) false)) (err ERR-COULD-NOT-REDEEM))
-    (asserts! (is-eq false (get redeemed last-bid)) (err ERR-COULD-NOT-REDEEM))
+    (asserts! (is-eq tx-sender (get owner last-bid)) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq (unwrap-panic (get-auction-open auction-id)) false) (err ERR-AUCTION-NOT-CLOSED))
+    (asserts! (is-eq (get redeemed last-bid) false) (err ERR-LOT-ALREADY-REDEEMED))
 
     (asserts!
       (and
@@ -415,7 +414,7 @@
       )
       (err ERR-BLOCK-HEIGHT-NOT-REACHED)
     )
-    (asserts! (is-eq (unwrap-panic (get-auction-open auction-id)) false) (err ERR-AUCTION-NOT-OPEN))
+    (asserts! (is-eq (unwrap-panic (get-auction-open auction-id)) false) (err ERR-AUCTION-NOT-CLOSED))
     (asserts! (is-eq (contract-of vault-manager) (unwrap-panic (contract-call? .arkadiko-dao get-qualified-name-by-name "freddie"))) (err ERR-NOT-AUTHORIZED))
     (asserts!
       (and
@@ -425,10 +424,10 @@
       (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED)
     )
 
-    ;; 
     (let (
       (vault (contract-call? .arkadiko-vault-data-v1-1 get-vault-by-id (get vault-id auction)))
     )
+      ;; 
       (if (> (get debt vault) (get total-debt-burned auction))
         (begin
           (try! (contract-call? .arkadiko-dao burn-token .xusd-token
