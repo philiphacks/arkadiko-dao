@@ -698,7 +698,7 @@ Clarinet.test({
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
       ], wallet_1.address)
     ]);
-    block.receipts[0].result.expectErr().expectUint(4401);
+    block.receipts[0].result.expectErr().expectUint(413);
 
     // Mint extra
     block = chain.mineBlock([
@@ -708,7 +708,7 @@ Clarinet.test({
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1")
       ], wallet_1.address),
     ]);
-    block.receipts[0].result.expectErr().expectUint(4401);
+    block.receipts[0].result.expectErr().expectUint(413);
 
     // Withdraw
     block = chain.mineBlock([
@@ -719,7 +719,7 @@ Clarinet.test({
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
       ], wallet_1.address)
     ]);
-    block.receipts[0].result.expectErr().expectUint(4401);
+    block.receipts[0].result.expectErr().expectUint(413);
 
   }
 });
