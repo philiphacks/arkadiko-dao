@@ -743,7 +743,6 @@ function createVault(chain: Chain, user: Account, collateral: number, xusd: numb
     Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
       types.uint(collateral * 1000000), 
       types.uint(xusd * 1000000), 
-      types.principal(user.address),
       types.ascii("STX-A"),
       types.ascii("STX"),
       types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),

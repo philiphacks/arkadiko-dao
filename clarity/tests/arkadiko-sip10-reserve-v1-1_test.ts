@@ -34,7 +34,6 @@ Clarinet.test({
       Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
         types.uint(20000000),
         types.uint(5000000),
-        types.principal(deployer.address),
         types.ascii("DIKO-A"),
         types.ascii("DIKO"),
         types.principal(
@@ -118,7 +117,6 @@ Clarinet.test({
       Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
         types.uint(20000000),
         types.uint(5000000),
-        types.principal(deployer.address),
         types.ascii("DIKO-A"),
         types.ascii("DIKO"),
         types.principal(
@@ -197,7 +195,6 @@ Clarinet.test({
       Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
         types.uint(20000000),
         types.uint(5000000),
-        types.principal(deployer.address),
         types.ascii("DIKO-A"),
         types.ascii("DIKO"),
         types.principal(
@@ -287,7 +284,6 @@ Clarinet.test({
       Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
         types.uint(20000000),
         types.uint(5000000),
-        types.principal(deployer.address),
         types.ascii("DIKO-A"),
         types.ascii("DIKO"),
         types.principal(
@@ -363,7 +359,6 @@ Clarinet.test({
       Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
         types.uint(20000000),
         types.uint(5000000),
-        types.principal(deployer.address),
         types.ascii("DIKO-A"),
         types.ascii("DIKO"),
         types.principal(

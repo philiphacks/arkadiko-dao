@@ -25,7 +25,6 @@ Clarinet.test({
       Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
         types.uint(5000000),
         types.uint(1925000),
-        types.principal(deployer.address),
         types.ascii("STX-A"),
         types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
@@ -108,7 +107,6 @@ Clarinet.test({
       Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
         types.uint(5000000),
         types.uint(1925000),
-        types.principal(deployer.address),
         types.ascii("STX-A"),
         types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
@@ -135,7 +133,6 @@ Clarinet.test({
       Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
         types.uint(900000000), // 900 STX (1800 USD worth of collateral)
         types.uint(1000000000), // 1000 xUSD
-        types.principal(deployer.address),
         types.ascii("STX-B"),
         types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
@@ -168,7 +165,6 @@ Clarinet.test({
       Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
         types.uint(1000000000),
         types.uint(1000000000), // mint 1000 xUSD
-        types.principal(deployer.address),
         types.ascii("STX-A"),
         types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
@@ -197,7 +193,6 @@ Clarinet.test({
       Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
         types.uint(1000000000),
         types.uint(1000000000), // mint 1000 xUSD
-        types.principal(deployer.address),
         types.ascii("STX-A"),
         types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
@@ -266,7 +261,6 @@ Clarinet.test({
       Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
         types.uint(1000000000),
         types.uint(1000000000), // mint 1000 xUSD
-        types.principal(deployer.address),
         types.ascii("STX-A"),
         types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
@@ -334,7 +328,6 @@ Clarinet.test({
       Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
         types.uint(5000000),
         types.uint(1925000),
-        types.principal(deployer.address),
         types.ascii("STX-A"),
         types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-sip10-reserve-v1-1"),
@@ -353,7 +346,6 @@ Clarinet.test({
       Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
         types.uint(500000000),
         types.uint(925000),
-        types.principal(deployer.address),
         types.ascii("DIKO-A"),
         types.ascii("DIKO"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
@@ -368,7 +360,6 @@ Clarinet.test({
       Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
         types.uint(500000000),
         types.uint(925000),
-        types.principal(deployer.address),
         types.ascii("STX-A"),
         types.ascii("DIKO"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
@@ -383,7 +374,6 @@ Clarinet.test({
       Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
         types.uint(500000000),
         types.uint(925000),
-        types.principal(deployer.address),
         types.ascii("STX-A"),
         types.ascii("DIKO"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-sip10-reserve-v1-1"),
@@ -402,7 +392,6 @@ Clarinet.test({
       Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
         types.uint(500000000),
         types.uint(925000),
-        types.principal(deployer.address),
         types.ascii("DIKO-A"),
         types.ascii("DIKO"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-sip10-reserve-v1-1"),
@@ -417,7 +406,6 @@ Clarinet.test({
       Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
         types.uint(500000000),
         types.uint(925000),
-        types.principal(deployer.address),
         types.ascii("DIKO-A"),
         types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
@@ -445,7 +433,6 @@ Clarinet.test({
       Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
         types.uint(1000000000), // 1000 STX
         types.uint(300000000), // mint 300 xUSD
-        types.principal(deployer.address),
         types.ascii("STX-A"),
         types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
@@ -549,7 +536,6 @@ Clarinet.test({
       Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
         types.uint(1000000000), // 1000 STX
         types.uint(300000000), // mint 300 xUSD
-        types.principal(deployer.address),
         types.ascii("STX-A"),
         types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
@@ -634,7 +620,6 @@ Clarinet.test({
       Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
         types.uint(1000000000), // 1000 STX
         types.uint(300000000), // mint 300 xUSD
-        types.principal(deployer.address),
         types.ascii("STX-A"),
         types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
@@ -701,7 +686,6 @@ Clarinet.test({
       Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
         types.uint(1000000000), // 1000 STX
         types.uint(300000000), // mint 300 xUSD
-        types.principal(deployer.address),
         types.ascii("DIKO-A"),
         types.ascii("DIKO"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-sip10-reserve-v1-1"),
@@ -734,7 +718,6 @@ Clarinet.test({
       Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
         types.uint(1000000000), // 1000 STX
         types.uint(300000000), // mint 300 xUSD
-        types.principal(deployer.address),
         types.ascii("STX-A"),
         types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),

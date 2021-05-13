@@ -255,13 +255,15 @@
 (define-public (collateralize-and-mint
     (collateral-amount uint)
     (debt uint)
-    (sender principal)
     (collateral-type (string-ascii 12))
     (collateral-token (string-ascii 12))
     (reserve <vault-trait>)
     (ft <mock-ft-trait>)
   )
-  (let ((ratio (unwrap-panic (contract-call? reserve calculate-current-collateral-to-debt-ratio collateral-token debt collateral-amount))))
+  (let (
+    (sender tx-sender)
+    (ratio (unwrap-panic (contract-call? reserve calculate-current-collateral-to-debt-ratio collateral-token debt collateral-amount)))
+  )
     (asserts!
       (and
         (is-eq (unwrap-panic (contract-call? .arkadiko-dao get-emergency-shutdown-activated)) false)
@@ -269,7 +271,6 @@
       )
       (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED)
     )
-    (asserts! (is-eq tx-sender sender) (err ERR-NOT-AUTHORIZED))
     (asserts! (>= ratio (unwrap-panic (contract-call? .arkadiko-collateral-types-v1-1 get-liquidation-ratio collateral-type))) (err ERR-INSUFFICIENT-COLLATERAL))
     (asserts!
       (<
