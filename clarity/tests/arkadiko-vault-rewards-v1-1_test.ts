@@ -21,7 +21,6 @@ Clarinet.test({
         types.uint(5000000),
         types.uint(1925000),
         types.ascii("STX-A"),
-        types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
         types.principal(
           "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
@@ -49,7 +48,6 @@ Clarinet.test({
         types.uint(500000),
         types.uint(192500),
         types.ascii("STX-A"),
-        types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
         types.principal(
           "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
@@ -82,7 +80,6 @@ Clarinet.test({
         types.uint(5000000),
         types.uint(1925000),
         types.ascii("STX-A"),
-        types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
         types.principal(
           "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
@@ -122,7 +119,6 @@ Clarinet.test({
         types.uint(5000000),
         types.uint(1925000),
         types.ascii("STX-A"),
-        types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
         types.principal(
           "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
@@ -145,7 +141,6 @@ Clarinet.test({
         types.uint(5000000),
         types.uint(1925000),
         types.ascii("STX-A"),
-        types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
         types.principal(
           "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",

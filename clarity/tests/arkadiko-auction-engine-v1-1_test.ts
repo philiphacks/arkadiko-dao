@@ -744,7 +744,6 @@ function createVault(chain: Chain, user: Account, collateral: number, xusd: numb
       types.uint(collateral * 1000000), 
       types.uint(xusd * 1000000), 
       types.ascii("STX-A"),
-      types.ascii("STX"),
       types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
       types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
     ], user.address)

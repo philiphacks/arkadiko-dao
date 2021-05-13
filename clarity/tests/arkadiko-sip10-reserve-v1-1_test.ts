@@ -35,7 +35,6 @@ Clarinet.test({
         types.uint(20000000),
         types.uint(5000000),
         types.ascii("DIKO-A"),
-        types.ascii("DIKO"),
         types.principal(
           "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-sip10-reserve-v1-1",
         ),
@@ -118,7 +117,6 @@ Clarinet.test({
         types.uint(20000000),
         types.uint(5000000),
         types.ascii("DIKO-A"),
-        types.ascii("DIKO"),
         types.principal(
           "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-sip10-reserve-v1-1",
         ),
@@ -196,7 +194,6 @@ Clarinet.test({
         types.uint(20000000),
         types.uint(5000000),
         types.ascii("DIKO-A"),
-        types.ascii("DIKO"),
         types.principal(
           "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-sip10-reserve-v1-1",
         ),
@@ -285,7 +282,6 @@ Clarinet.test({
         types.uint(20000000),
         types.uint(5000000),
         types.ascii("DIKO-A"),
-        types.ascii("DIKO"),
         types.principal(
           "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-sip10-reserve-v1-1",
         ),
@@ -360,7 +356,6 @@ Clarinet.test({
         types.uint(20000000),
         types.uint(5000000),
         types.ascii("DIKO-A"),
-        types.ascii("DIKO"),
         types.principal(
           "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-sip10-reserve-v1-1",
         ),

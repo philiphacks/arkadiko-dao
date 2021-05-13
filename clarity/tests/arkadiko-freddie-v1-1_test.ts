@@ -26,7 +26,6 @@ Clarinet.test({
         types.uint(5000000),
         types.uint(1925000),
         types.ascii("STX-A"),
-        types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
         types.principal(
           "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
@@ -108,7 +107,6 @@ Clarinet.test({
         types.uint(5000000),
         types.uint(1925000),
         types.ascii("STX-A"),
-        types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
         types.principal(
           "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
@@ -134,7 +132,6 @@ Clarinet.test({
         types.uint(900000000), // 900 STX (1800 USD worth of collateral)
         types.uint(1000000000), // 1000 xUSD
         types.ascii("STX-B"),
-        types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
         types.principal(
           "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
@@ -166,7 +163,6 @@ Clarinet.test({
         types.uint(1000000000),
         types.uint(1000000000), // mint 1000 xUSD
         types.ascii("STX-A"),
-        types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
         types.principal(
           "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
@@ -194,7 +190,6 @@ Clarinet.test({
         types.uint(1000000000),
         types.uint(1000000000), // mint 1000 xUSD
         types.ascii("STX-A"),
-        types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
         types.principal(
           "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
@@ -262,7 +257,6 @@ Clarinet.test({
         types.uint(1000000000),
         types.uint(1000000000), // mint 1000 xUSD
         types.ascii("STX-A"),
-        types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
         types.principal(
           "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
@@ -317,7 +311,7 @@ Clarinet.test({
 });
 
 Clarinet.test({
-  name: "freddie: minting xUSD with conflicting FT <> collateral type is illegal",
+  name: "freddie: collateralize-and-mint with wrong parameters",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     let deployer = accounts.get("deployer")!;
     let block = chain.mineBlock([
@@ -329,7 +323,6 @@ Clarinet.test({
         types.uint(5000000),
         types.uint(1925000),
         types.ascii("STX-A"),
-        types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-sip10-reserve-v1-1"),
         types.principal(
           "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
@@ -347,7 +340,6 @@ Clarinet.test({
         types.uint(500000000),
         types.uint(925000),
         types.ascii("DIKO-A"),
-        types.ascii("DIKO"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
         types.principal(
           "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
@@ -361,21 +353,6 @@ Clarinet.test({
         types.uint(500000000),
         types.uint(925000),
         types.ascii("STX-A"),
-        types.ascii("DIKO"),
-        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
-        types.principal(
-          "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
-        ),
-      ], deployer.address),
-    ]);
-    block.receipts[0].result.expectErr().expectUint(118); // wrong token error
-
-    block = chain.mineBlock([
-      Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
-        types.uint(500000000),
-        types.uint(925000),
-        types.ascii("STX-A"),
-        types.ascii("DIKO"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-sip10-reserve-v1-1"),
         types.principal(
           "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
@@ -393,7 +370,6 @@ Clarinet.test({
         types.uint(500000000),
         types.uint(925000),
         types.ascii("DIKO-A"),
-        types.ascii("DIKO"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-sip10-reserve-v1-1"),
         types.principal(
           "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.xusd-token",
@@ -407,7 +383,6 @@ Clarinet.test({
         types.uint(500000000),
         types.uint(925000),
         types.ascii("DIKO-A"),
-        types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
         types.principal(
           "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
@@ -418,6 +393,94 @@ Clarinet.test({
 
   }
 });
+
+Clarinet.test({
+  name: "freddie: wrong parameters for deposit, withdraw, mint, burn",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    let deployer = accounts.get("deployer")!;
+    let wallet_1 = accounts.get("wallet_1")!;
+    let block = chain.mineBlock([
+      Tx.contractCall("arkadiko-oracle-v1-1", "update-price", [
+        types.ascii("STX"),
+        types.uint(77),
+      ], deployer.address),
+      Tx.contractCall("arkadiko-oracle-v1-1", "update-price", [
+        types.ascii("DIKO"),
+        types.uint(50),
+      ], deployer.address),
+      Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
+        types.uint(5000000),
+        types.uint(1),
+        types.ascii("DIKO-A"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-sip10-reserve-v1-1"),
+        types.principal(
+          "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
+        ),
+      ], deployer.address),
+    ]);
+
+    block.receipts[2].result
+      .expectOk()
+      .expectUint(1);
+
+      // Should not be able to deposit in STX reserve
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-freddie-v1-1", "deposit", [
+        types.uint(1),
+        types.uint(500000000), // 500 STX
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
+      ], deployer.address)
+    ]);
+    // TODO
+    // block.receipts[0].result
+    //   .expectErr()
+    //   .expectUint(45);
+    
+    // Mint extra
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-freddie-v1-1", "mint", [
+        types.uint(1),
+        types.uint(1), // mint 1 xUSD
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1")
+      ], deployer.address),
+    ]);
+    // TODO
+    // block.receipts[0].result
+    //   .expectErr()
+    //   .expectUint(118);
+
+    // Withdraw
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-freddie-v1-1", "withdraw", [
+        types.uint(1),
+        types.uint(1), // 1 STX
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
+      ], deployer.address)
+    ]);
+    // TODO
+    // block.receipts[0].result
+    //   .expectErr()
+    //   .expectUint(46);
+
+    //  Burn
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-freddie-v1-1", "burn", [
+        types.uint(1),
+        types.uint(1), // burn 1 xUSD
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token")
+      ], deployer.address),
+    ]);
+    // TODO
+    // block.receipts[0].result
+    //   .expectErr()
+    //   .expectUint(112);
+
+  },
+});
+
 
 Clarinet.test({
   name: "freddie: mint and burn",
@@ -434,7 +497,6 @@ Clarinet.test({
         types.uint(1000000000), // 1000 STX
         types.uint(300000000), // mint 300 xUSD
         types.ascii("STX-A"),
-        types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
       ], deployer.address)
@@ -537,7 +599,6 @@ Clarinet.test({
         types.uint(1000000000), // 1000 STX
         types.uint(300000000), // mint 300 xUSD
         types.ascii("STX-A"),
-        types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
       ], deployer.address)
@@ -621,7 +682,6 @@ Clarinet.test({
         types.uint(1000000000), // 1000 STX
         types.uint(300000000), // mint 300 xUSD
         types.ascii("STX-A"),
-        types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
       ], deployer.address)
@@ -687,7 +747,6 @@ Clarinet.test({
         types.uint(1000000000), // 1000 STX
         types.uint(300000000), // mint 300 xUSD
         types.ascii("DIKO-A"),
-        types.ascii("DIKO"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-sip10-reserve-v1-1"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
       ], deployer.address)
@@ -719,7 +778,6 @@ Clarinet.test({
         types.uint(1000000000), // 1000 STX
         types.uint(300000000), // mint 300 xUSD
         types.ascii("STX-A"),
-        types.ascii("STX"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
       ], deployer.address)
@@ -727,3 +785,4 @@ Clarinet.test({
     block.receipts[2].result.expectErr().expectUint(411);
   }
 });
+

@@ -252,16 +252,18 @@
   )
 )
 
+
+
 (define-public (collateralize-and-mint
     (collateral-amount uint)
     (debt uint)
     (collateral-type (string-ascii 12))
-    (collateral-token (string-ascii 12))
     (reserve <vault-trait>)
     (ft <mock-ft-trait>)
   )
   (let (
     (sender tx-sender)
+    (collateral-token (get token (unwrap-panic (contract-call? .arkadiko-collateral-types-v1-1 get-collateral-type-by-name collateral-type))))
     (ratio (unwrap-panic (contract-call? reserve calculate-current-collateral-to-debt-ratio collateral-token debt collateral-amount)))
   )
     (asserts!
