@@ -33,14 +33,13 @@
 )
 
 ;; (match (print (ft-transfer? token ucollateral-amount sender (as-contract tx-sender)))
-(define-public (collateralize-and-mint (token <mock-ft-trait>) (token-string (string-ascii 12)) (type (string-ascii 12)) (ucollateral-amount uint) (debt uint) (sender principal))
+(define-public (collateralize-and-mint (token <mock-ft-trait>) (token-string (string-ascii 12)) (ucollateral-amount uint) (debt uint) (sender principal))
   (let (
     (token-symbol (unwrap-panic (contract-call? token get-symbol)))
   )
     (asserts! (is-eq contract-caller .arkadiko-freddie-v1-1) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq token-string token-symbol) (err ERR-WRONG-TOKEN))
     (asserts! (not (is-eq token-string "STX")) (err ERR-WRONG-TOKEN))
-    (asserts! (is-eq (get token (unwrap-panic (contract-call? .arkadiko-collateral-types-v1-1 get-collateral-type-by-name type))) token-symbol) (err ERR-WRONG-TOKEN))
 
     ;; token should be a trait e.g. 'SP3GWX3NE58KXHESRYE4DYQ1S31PQJTCRXB3PE9SB.arkadiko-token
     (match (contract-call? token transfer ucollateral-amount sender (as-contract tx-sender))

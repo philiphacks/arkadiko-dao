@@ -282,7 +282,7 @@
       (err ERR-MAXIMUM-DEBT-REACHED)
     )
 
-    (try! (contract-call? reserve collateralize-and-mint ft collateral-token collateral-type collateral-amount debt sender))
+    (try! (contract-call? reserve collateralize-and-mint ft collateral-token collateral-amount debt sender))
     (try! (as-contract (contract-call? .arkadiko-dao mint-token .xusd-token debt sender)))
     (let (
       (vault-id (+ (contract-call? .arkadiko-vault-data-v1-1 get-last-vault-id) u1))

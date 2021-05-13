@@ -89,11 +89,10 @@
 ;; accept collateral in STX tokens
 ;; save STX in stx-reserve-address
 ;; calculate price and collateralisation ratio
-(define-public (collateralize-and-mint (token <mock-ft-trait>) (token-string (string-ascii 12)) (type (string-ascii 12)) (ustx-amount uint) (debt uint) (sender principal))
+(define-public (collateralize-and-mint (token <mock-ft-trait>) (token-string (string-ascii 12)) (ustx-amount uint) (debt uint) (sender principal))
   (begin
     (asserts! (is-eq contract-caller .arkadiko-freddie-v1-1) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq token-string "STX") (err ERR-WRONG-TOKEN))
-    (asserts! (is-eq (get token (unwrap-panic (contract-call? .arkadiko-collateral-types-v1-1 get-collateral-type-by-name type))) "STX") (err ERR-WRONG-TOKEN))
 
     (match (print (stx-transfer? ustx-amount sender (as-contract tx-sender)))
       success (begin
