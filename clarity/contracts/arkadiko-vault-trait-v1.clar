@@ -13,10 +13,10 @@
     (collateralize-and-mint (<mock-ft-trait> (string-ascii 12) uint uint principal) (response uint uint))
 
     ;; deposit extra collateral
-    (deposit (<mock-ft-trait> uint) (response bool uint))
+    (deposit (<mock-ft-trait> (string-ascii 12) uint) (response bool uint))
 
     ;; withdraw excess collateral
-    (withdraw (<mock-ft-trait> principal uint) (response bool uint))
+    (withdraw (<mock-ft-trait> (string-ascii 12) principal uint) (response bool uint))
 
     ;; mint additional stablecoin
     (mint ((string-ascii 12) principal uint uint uint (string-ascii 12)) (response bool uint))

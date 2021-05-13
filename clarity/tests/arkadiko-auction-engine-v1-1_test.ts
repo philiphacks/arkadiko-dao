@@ -117,6 +117,11 @@ Clarinet.test({
     ], deployer.address);
     call.result.expectOk().expectUint(79000000); // 79 dollars left
 
+    call = await chain.callReadOnlyFn("xstx-token", "get-balance-of", [
+      types.principal(deployer.address),
+    ], deployer.address);
+    call.result.expectOk().expectUint(0);
+
     // now try withdrawing the xSTX tokens that are not mine
     result = redeemLotCollateral(chain, wallet_1);
     result.expectErr().expectUint(2403);
@@ -185,8 +190,8 @@ Clarinet.test({
     block = chain.mineBlock([
       Tx.contractCall("arkadiko-freddie-v1-1", "withdraw-leftover-collateral", [
         types.uint(1),
-        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
-        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-sip10-reserve-v1-1"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.xstx-token"),
       ], deployer.address)
     ]);
     block.receipts[0].result.expectOk().expectBool(true);
@@ -601,7 +606,7 @@ Clarinet.test({
           "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.xstx-token",
         ),
         types.principal(
-          "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-sip10-reserve-v1-1",
+          "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1",
         ),
         types.uint(1),
         types.uint(0)
@@ -783,7 +788,7 @@ function redeemLotCollateral(chain: Chain, user: Account) {
         "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.xstx-token",
       ),
       types.principal(
-        "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-sip10-reserve-v1-1",
+        "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-sip10-reserve-v1-1", // TODO: test if stx reserve
       ),
       types.uint(1),
       types.uint(0)

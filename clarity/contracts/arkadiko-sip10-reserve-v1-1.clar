@@ -49,12 +49,13 @@
   )
 )
 
-(define-public (deposit (token <mock-ft-trait>) (additional-ucollateral-amount uint))
+(define-public (deposit (token <mock-ft-trait>) (token-string (string-ascii 12)) (additional-ucollateral-amount uint))
   (let (
     (token-symbol (unwrap-panic (contract-call? token get-symbol)))
   )
     (asserts! (is-eq contract-caller .arkadiko-freddie-v1-1) (err ERR-NOT-AUTHORIZED))
-    (asserts! (not (is-eq token-symbol "STX")) (err ERR-WRONG-TOKEN))
+    (asserts! (is-eq token-string token-symbol) (err ERR-WRONG-TOKEN))
+    (asserts! (not (is-eq token-string "STX")) (err ERR-WRONG-TOKEN))
 
     (match (contract-call? token transfer additional-ucollateral-amount tx-sender (as-contract tx-sender))
       success (ok true)
@@ -63,11 +64,12 @@
   )
 )
 
-(define-public (withdraw (token <mock-ft-trait>) (vault-owner principal) (ucollateral-amount uint))
+(define-public (withdraw (token <mock-ft-trait>) (token-string (string-ascii 12)) (vault-owner principal) (ucollateral-amount uint))
   (let (
     (token-symbol (unwrap-panic (contract-call? token get-symbol)))
   )
     (asserts! (is-eq contract-caller .arkadiko-freddie-v1-1) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq token-string token-symbol) (err ERR-WRONG-TOKEN))
     (asserts! (not (is-eq token-symbol "STX")) (err ERR-WRONG-TOKEN))
 
     (match (as-contract (contract-call? token transfer ucollateral-amount (as-contract tx-sender) vault-owner))
@@ -77,12 +79,12 @@
   )
 )
 
-(define-public (mint (token (string-ascii 12)) (vault-owner principal) (ucollateral-amount uint) (current-debt uint) (extra-debt uint) (collateral-type (string-ascii 12)))
+(define-public (mint (token-string (string-ascii 12)) (vault-owner principal) (ucollateral-amount uint) (current-debt uint) (extra-debt uint) (collateral-type (string-ascii 12)))
   (begin
     (asserts! (is-eq contract-caller .arkadiko-freddie-v1-1) (err ERR-NOT-AUTHORIZED))
-    (asserts! (not (is-eq token "STX")) (err ERR-WRONG-TOKEN))
+    (asserts! (not (is-eq token-string "STX")) (err ERR-WRONG-TOKEN))
 
-    (let ((max-new-debt (- (unwrap-panic (calculate-xusd-count token ucollateral-amount collateral-type)) current-debt)))
+    (let ((max-new-debt (- (unwrap-panic (calculate-xusd-count token-string ucollateral-amount collateral-type)) current-debt)))
       (if (>= max-new-debt extra-debt)
         (match (as-contract (contract-call? .arkadiko-dao mint-token .xusd-token extra-debt vault-owner))
           success (ok true)

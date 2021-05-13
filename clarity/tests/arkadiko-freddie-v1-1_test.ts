@@ -433,9 +433,9 @@ Clarinet.test({
       ], deployer.address)
     ]);
     // TODO
-    // block.receipts[0].result
-    //   .expectErr()
-    //   .expectUint(45);
+    block.receipts[0].result
+      .expectErr()
+      .expectUint(45);
     
     // Mint extra
     block = chain.mineBlock([
@@ -446,9 +446,9 @@ Clarinet.test({
       ], deployer.address),
     ]);
     // TODO
-    // block.receipts[0].result
-    //   .expectErr()
-    //   .expectUint(118);
+    block.receipts[0].result
+      .expectErr()
+      .expectUint(118);
 
     // Withdraw
     block = chain.mineBlock([
@@ -460,9 +460,9 @@ Clarinet.test({
       ], deployer.address)
     ]);
     // TODO
-    // block.receipts[0].result
-    //   .expectErr()
-    //   .expectUint(46);
+    block.receipts[0].result
+      .expectErr()
+      .expectUint(46);
 
     //  Burn
     block = chain.mineBlock([
@@ -474,9 +474,9 @@ Clarinet.test({
       ], deployer.address),
     ]);
     // TODO
-    // block.receipts[0].result
-    //   .expectErr()
-    //   .expectUint(112);
+    block.receipts[0].result
+      .expectErr()
+      .expectUint(112);
 
   },
 });

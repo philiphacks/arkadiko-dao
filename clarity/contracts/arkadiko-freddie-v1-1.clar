@@ -70,6 +70,12 @@
   )
 )
 
+(define-read-only (get-collateral-token-for-vault (vault-id uint))
+  (let ((vault (get-vault-by-id vault-id)))
+    (ok (get collateral-token vault))
+  )
+)
+
 (define-read-only (calculate-current-collateral-to-debt-ratio (vault-id uint))
   (let ((vault (get-vault-by-id vault-id)))
     (if (is-eq (get is-liquidated vault) true)
@@ -318,6 +324,7 @@
 (define-public (deposit (vault-id uint) (uamount uint) (reserve <vault-trait>) (ft <mock-ft-trait>))
   (let (
     (vault (get-vault-by-id vault-id))
+    (collateral-token (unwrap-panic (get-collateral-token-for-vault vault-id)))
     (new-collateral (+ uamount (get collateral vault)))
     (updated-vault (merge vault {
       collateral: new-collateral,
@@ -333,7 +340,7 @@
     )
     (asserts! (is-eq (get is-liquidated vault) false) (err ERR-NOT-AUTHORIZED))
 
-    (unwrap! (contract-call? reserve deposit ft uamount) (err ERR-DEPOSIT-FAILED))
+    (unwrap! (contract-call? reserve deposit ft collateral-token uamount) (err ERR-DEPOSIT-FAILED))
     (try! (contract-call? .arkadiko-vault-data-v1-1 update-vault vault-id updated-vault))
     (try! (contract-call? .arkadiko-vault-rewards-v1-1 add-collateral uamount (get owner vault)))
     (print { type: "vault", action: "deposit", data: updated-vault })
@@ -342,7 +349,10 @@
 )
 
 (define-public (withdraw (vault-id uint) (uamount uint) (reserve <vault-trait>) (ft <mock-ft-trait>))
-  (let ((vault (get-vault-by-id vault-id)))
+  (let (
+    (vault (get-vault-by-id vault-id))
+    (collateral-token (unwrap-panic (get-collateral-token-for-vault vault-id)))
+  )
     (asserts!
       (and
         (is-eq (unwrap-panic (contract-call? .arkadiko-dao get-emergency-shutdown-activated)) false)
@@ -370,7 +380,7 @@
           })))
       ;; TODO: FIX (make "STX" dynamic)
       (asserts! (>= ratio (unwrap-panic (contract-call? .arkadiko-collateral-types-v1-1 get-collateral-to-debt-ratio (get collateral-type vault)))) (err ERR-INSUFFICIENT-COLLATERAL))
-      (unwrap! (contract-call? reserve withdraw ft (get owner vault) uamount) (err ERR-WITHDRAW-FAILED))
+      (unwrap! (contract-call? reserve withdraw ft collateral-token (get owner vault) uamount) (err ERR-WITHDRAW-FAILED))
       (try! (contract-call? .arkadiko-vault-data-v1-1 update-vault vault-id updated-vault))
       (try! (contract-call? .arkadiko-vault-rewards-v1-1 remove-collateral uamount (get owner vault)))
       (print { type: "vault", action: "withdraw", data: updated-vault })
@@ -606,7 +616,10 @@
 )
 
 (define-public (withdraw-leftover-collateral (vault-id uint) (reserve <vault-trait>) (ft <mock-ft-trait>))
-  (let ((vault (get-vault-by-id vault-id)))
+  (let (
+    (vault (get-vault-by-id vault-id))
+    (collateral-token (unwrap-panic (get-collateral-token-for-vault vault-id)))
+  )
     (asserts!
       (and
         (is-eq (unwrap-panic (contract-call? .arkadiko-dao get-emergency-shutdown-activated)) false)
@@ -618,7 +631,7 @@
     (asserts! (is-eq true (get is-liquidated vault)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq true (get auction-ended vault)) (err ERR-NOT-AUTHORIZED))
 
-    (if (unwrap-panic (contract-call? reserve withdraw ft (get owner vault) (get leftover-collateral vault)))
+    (if (unwrap-panic (contract-call? reserve withdraw ft collateral-token (get owner vault) (get leftover-collateral vault)))
       (begin
         (try! (contract-call? .arkadiko-vault-data-v1-1 update-vault vault-id (merge vault {
             updated-at-block-height: block-height,
