@@ -818,11 +818,43 @@ Clarinet.test({
     vault['revoked-stacking'].expectBool(false);
     vault['stacked-tokens'].expectUint(1000000000);
 
-    // TODO: redeem xSTX
+    // Redeem xSTX
+    result = redeemLotCollateral(chain, deployer);
+    result.expectOk().expectBool(true);
 
-    // TODO: try to exchange xSTX for STX while vault still stacking
+    call = await chain.callReadOnlyFn("xstx-token", "get-balance-of", [
+      types.principal(deployer.address),
+    ], deployer.address);
+    call.result.expectOk().expectUint(694444444);
 
-    // TODO: exchange xSTX for STX
+    // try to exchange xSTX for STX while vault still stacking
+    let block = chain.mineBlock([
+      Tx.contractCall("arkadiko-freddie-v1-1", "redeem-stx", [
+        types.uint(694444444)
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectOk().expectBool(false); // No STX to redeem
+
+    // Advance so stacking cycle ends
+    chain.mineEmptyBlock(144 * 20);
+
+    // Release stacked STX for vault
+    block = chain.mineBlock([
+      // revoke stacking for vault 1
+      Tx.contractCall("arkadiko-freddie-v1-1", "release-stacked-stx", [
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stacker-v1-1"),
+        types.uint(1)
+      ], deployer.address),
+    ]);
+    block.receipts[0].result.expectOk().expectBool(true);
+
+    // Now there is STX to redeem
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-freddie-v1-1", "redeem-stx", [
+        types.uint(694444444)
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectOk().expectBool(true); 
 
   }
 });
