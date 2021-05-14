@@ -110,12 +110,13 @@
   )
 )
 
-(define-public (redeem-collateral (token <mock-ft-trait>) (ucollateral uint) (owner principal))
+(define-public (redeem-collateral (token <mock-ft-trait>) (token-string (string-ascii 12)) (ucollateral uint) (owner principal))
   (let (
     (token-symbol (unwrap-panic (contract-call? token get-symbol)))
   )
     (asserts! (is-eq contract-caller .arkadiko-freddie-v1-1) (err ERR-NOT-AUTHORIZED))
-    (asserts! (not (is-eq token-symbol "STX")) (err ERR-WRONG-TOKEN))
+    (asserts! (is-eq token-string token-symbol) (err ERR-WRONG-TOKEN))
+    (asserts! (not (is-eq token-string "STX")) (err ERR-WRONG-TOKEN))
     
     (as-contract (contract-call? token transfer ucollateral (as-contract tx-sender) owner))
   )

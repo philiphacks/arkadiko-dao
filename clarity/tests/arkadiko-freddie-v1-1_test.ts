@@ -432,7 +432,6 @@ Clarinet.test({
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
       ], deployer.address)
     ]);
-    // TODO
     block.receipts[0].result
       .expectErr()
       .expectUint(45);
@@ -445,7 +444,6 @@ Clarinet.test({
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1")
       ], deployer.address),
     ]);
-    // TODO
     block.receipts[0].result
       .expectErr()
       .expectUint(118);
@@ -459,7 +457,6 @@ Clarinet.test({
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
       ], deployer.address)
     ]);
-    // TODO
     block.receipts[0].result
       .expectErr()
       .expectUint(46);
@@ -473,7 +470,6 @@ Clarinet.test({
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token")
       ], deployer.address),
     ]);
-    // TODO
     block.receipts[0].result
       .expectErr()
       .expectUint(112);

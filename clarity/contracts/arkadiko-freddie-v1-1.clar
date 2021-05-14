@@ -611,10 +611,10 @@
   )
 )
 
-(define-public (redeem-auction-collateral (ft <mock-ft-trait>) (reserve <vault-trait>) (collateral-amount uint) (sender principal))
+(define-public (redeem-auction-collateral (ft <mock-ft-trait>) (token-string (string-ascii 12)) (reserve <vault-trait>) (collateral-amount uint) (sender principal))
   (begin
     (asserts! (is-eq contract-caller (unwrap-panic (contract-call? .arkadiko-dao get-qualified-name-by-name "auction-engine"))) (err ERR-NOT-AUTHORIZED))
-    (contract-call? reserve redeem-collateral ft collateral-amount sender)
+    (contract-call? reserve redeem-collateral ft token-string collateral-amount sender)
   )
 )
 

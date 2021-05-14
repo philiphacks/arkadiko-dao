@@ -181,9 +181,11 @@
   )
 )
 
-(define-public (redeem-collateral (token <mock-ft-trait>) (stx-collateral uint) (owner principal))
+(define-public (redeem-collateral (token <mock-ft-trait>) (token-string (string-ascii 12)) (stx-collateral uint) (owner principal))
   (begin
     (asserts! (is-eq contract-caller .arkadiko-freddie-v1-1) (err ERR-NOT-AUTHORIZED))
+    (asserts! (is-eq token-string "STX") (err ERR-WRONG-TOKEN))
+
     (as-contract (stx-transfer? stx-collateral (as-contract tx-sender) owner))
   )
 )

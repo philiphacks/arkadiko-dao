@@ -348,8 +348,16 @@
   (let (
     (last-bid (get-last-bid auction-id lot-index))
     (auction (get-auction-by-id auction-id))
+    (token-string (get collateral-token auction))
   )
-    (asserts! (is-eq (unwrap-panic (contract-call? ft get-symbol)) (get collateral-token auction)) (err ERR-TOKEN-TYPE-MISMATCH))
+    (asserts! 
+      (or
+        (is-eq (unwrap-panic (contract-call? ft get-symbol)) (get collateral-token auction))
+        (is-eq "STX" token-string)
+      )
+      (err ERR-TOKEN-TYPE-MISMATCH)
+    )
+    
     (asserts! (is-eq (contract-of vault-manager) (unwrap-panic (contract-call? .arkadiko-dao get-qualified-name-by-name "freddie"))) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq tx-sender (get owner last-bid)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq (unwrap-panic (get-auction-open auction-id)) false) (err ERR-AUCTION-NOT-CLOSED))
@@ -375,9 +383,9 @@
       ;; request "collateral-amount" gov tokens from the DAO
       (begin
         (try! (contract-call? .arkadiko-dao request-diko-tokens ft (get collateral-amount auction)))
-        (try! (contract-call? vault-manager redeem-auction-collateral ft reserve (get collateral-amount last-bid) tx-sender))
+        (try! (contract-call? vault-manager redeem-auction-collateral ft token-string reserve (get collateral-amount last-bid) tx-sender))
       )
-      (try! (contract-call? vault-manager redeem-auction-collateral ft reserve (get collateral-amount last-bid) tx-sender))
+      (try! (contract-call? vault-manager redeem-auction-collateral ft token-string reserve (get collateral-amount last-bid) tx-sender))
     )
     (print { type: "lot", action: "redeemed", data: { auction-id: auction-id, lot-index: lot-index } })
     (ok true)
