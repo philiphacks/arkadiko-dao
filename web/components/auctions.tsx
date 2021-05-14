@@ -22,6 +22,25 @@ export const Auctions: React.FC = () => {
   useEffect(() => {
     let mounted = true;
 
+    const auctionOpen = async (auctionId) => {
+      const auctionOpenCall = await callReadOnlyFunction({
+        contractAddress,
+        contractName: "arkadiko-auction-engine-v1-1",
+        functionName: "get-auction-open",
+        functionArgs: [uintCV(auctionId)],
+        senderAddress: stxAddress || '',
+        network: network,
+      });
+      const isOpen = cvToJSON(auctionOpenCall);
+      return isOpen.value.value;
+    };
+
+    async function asyncForEach(array, callback) {
+      for (let index = 0; index < array.length; index++) {
+        await callback(array[index], index, array);
+      }
+    }
+
     const getData = async () => {
       const auctions = await callReadOnlyFunction({
         contractAddress,
@@ -33,10 +52,11 @@ export const Auctions: React.FC = () => {
       });
       const json = cvToJSON(auctions);
       let serializedAuctions:Array<AuctionProps> = [];
-      json.value.value.forEach((e: object) => {
+      await asyncForEach(json.value.value, async (e: object) => {
         const vault = tupleCV(e);
         const data = vault.data.value;
-        if (data['is-open'].value) {
+        const isOpen = await auctionOpen(data['id'].value);
+        if (isOpen) {
           serializedAuctions.push({
             id: data['id'].value,
             lotId: data['lots-sold'].value,
@@ -48,49 +68,50 @@ export const Auctions: React.FC = () => {
         }
       });
 
-      const getLot = async (auctionId:number, lotId:number) => {
-        const lot = await callReadOnlyFunction({
-          contractAddress,
-          contractName: "arkadiko-auction-engine-v1-1",
-          functionName: "get-last-bid",
-          functionArgs: [uintCV(auctionId), uintCV(lotId)],
-          senderAddress: stxAddress || '',
-          network: network,
-        });
+      // TODO: fix
+      // const getLot = async (auctionId:number, lotId:number) => {
+      //   const lot = await callReadOnlyFunction({
+      //     contractAddress,
+      //     contractName: "arkadiko-auction-engine-v1-1",
+      //     functionName: "get-last-bid",
+      //     functionArgs: [uintCV(auctionId), uintCV(lotId)],
+      //     senderAddress: stxAddress || '',
+      //     network: network,
+      //   });
 
-        return cvToJSON(lot);
-      };
+      //   return cvToJSON(lot);
+      // };
 
-      const lots = await callReadOnlyFunction({
-        contractAddress,
-        contractName: "arkadiko-auction-engine-v1-1",
-        functionName: "get-winning-lots",
-        functionArgs: [standardPrincipalCV(stxAddress || '')],
-        senderAddress: stxAddress || '',
-        network: network,
-      });
-      const jsonLots = cvToJSON(lots);
-      let winLot;
+      // const lots = await callReadOnlyFunction({
+      //   contractAddress,
+      //   contractName: "arkadiko-auction-engine-v1-1",
+      //   functionName: "get-winning-lots",
+      //   functionArgs: [standardPrincipalCV(stxAddress || '')],
+      //   senderAddress: stxAddress || '',
+      //   network: network,
+      // });
+      // const jsonLots = cvToJSON(lots);
+      // let winLot;
 
-      let serializedLots:Array<{ 'lot-id':string, 'auction-id': string, 'collateral-amount': number, 'collateral-token': string, 'xusd': number }> = [];
-      jsonLots.value.ids.value.forEach(async (e: object) => {
-        const lot = tupleCV(e);
-        const data = lot.data.value;
-        if (data['auction-id'].value !== 0) {
-          winLot = await getLot(data['auction-id'].value, data['lot-index'].value);
+      // let serializedLots:Array<{ 'lot-id':string, 'auction-id': string, 'collateral-amount': number, 'collateral-token': string, 'xusd': number }> = [];
+      // jsonLots.value.ids.value.forEach(async (e: object) => {
+      //   const lot = tupleCV(e);
+      //   const data = lot.data.value;
+      //   if (data['auction-id'].value !== 0) {
+      //     winLot = await getLot(data['auction-id'].value, data['lot-index'].value);
 
-          if (winLot && winLot.value['is-accepted'].value) {
-            serializedLots.push({
-              'lot-id': data['lot-index'].value,
-              'auction-id': data['auction-id'].value,
-              'collateral-amount': winLot.value['collateral-amount'].value,
-              'collateral-token': winLot.value['collateral-token'].value,
-              'xusd': winLot.value['xusd'].value
-            });
-            setLots(serializedLots);
-          }
-        }
-      });
+      //     if (winLot && winLot.value['is-accepted'].value) {
+      //       serializedLots.push({
+      //         'lot-id': data['lot-index'].value,
+      //         'auction-id': data['auction-id'].value,
+      //         'collateral-amount': winLot.value['collateral-amount'].value,
+      //         'collateral-token': winLot.value['collateral-token'].value,
+      //         'xusd': winLot.value['xusd'].value
+      //       });
+      //       setLots(serializedLots);
+      //     }
+      //   }
+      // });
 
       setAuctions(serializedAuctions);
 

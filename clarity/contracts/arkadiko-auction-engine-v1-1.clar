@@ -92,6 +92,10 @@
   )
 )
 
+;; (define-read-only (get-bids (auction-id uint))
+
+;; )
+
 ;; Check if auction open (not enough dept raised + end block height not reached)
 (define-read-only (get-auction-open (auction-id uint))
   (let (
