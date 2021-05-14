@@ -228,7 +228,7 @@ Clarinet.test({
 
     // withdraw the xUSD from freddie to the deployer's (contract owner) address
     block = chain.mineBlock([
-      Tx.contractCall("arkadiko-freddie-v1-1", "redeem-xusd", [types.uint(fee)], deployer.address)
+      Tx.contractCall("arkadiko-freddie-v1-1", "redeem-tokens", [types.uint(fee), types.uint(0)], deployer.address)
     ]);
     block.receipts[0].result.expectOk().expectBool(true);
 
@@ -782,3 +782,98 @@ Clarinet.test({
   }
 });
 
+Clarinet.test({
+  name: "freddie: get pending DIKO rewards for liquidated vault",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    let deployer = accounts.get("deployer")!;
+    let wallet_1 = accounts.get("wallet_1")!;
+
+    let block = chain.mineBlock([
+      Tx.contractCall("arkadiko-oracle-v1-1", "update-price", [
+        types.ascii("STX"),
+        types.uint(77),
+      ], deployer.address),
+      Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
+        types.uint(5000000),
+        types.uint(1925000),
+        types.ascii("STX-A"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
+        types.principal(
+          "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
+        ),
+      ], deployer.address),
+    ]);
+    block.receipts[0].result
+      .expectOk()
+      .expectUint(77);
+    block.receipts[1].result
+      .expectOk()
+      .expectUint(1925000);
+
+    // Advance 30 blocks
+    chain.mineEmptyBlock(144*30);
+
+    // Get pending rewards for user
+    let call = await chain.callReadOnlyFn(
+      "arkadiko-vault-rewards-v1-1",
+      "get-pending-rewards",
+      [types.principal(deployer.address)],
+      wallet_1.address,
+    );
+    call.result.expectOk().expectUint(947068138000);
+
+    // Freddie should not have DIKO yet
+    call = await chain.callReadOnlyFn("arkadiko-token", "get-balance-of", [
+      types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-freddie-v1-1'),
+    ], deployer.address);
+    call.result.expectOk().expectUint(0);
+
+    block = chain.mineBlock([
+      // Simulates a crash price of STX - from 77 cents to 55 cents
+      Tx.contractCall("arkadiko-oracle-v1-1", "update-price", [
+        types.ascii("STX"),
+        types.uint(55),
+      ], deployer.address),
+      // Notify liquidator
+      Tx.contractCall("arkadiko-liquidator-v1-1", "notify-risky-vault", [
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-freddie-v1-1'),
+        types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-auction-engine-v1-1'),
+        types.uint(1),
+      ], deployer.address),
+    ]);
+    block.receipts[0].result
+      .expectOk()
+      .expectUint(55);
+    block.receipts[1].result
+      .expectOk()
+      .expectUint(5200);
+
+    // Freddie should have received pending DIKO rewards
+    call = await chain.callReadOnlyFn("arkadiko-token", "get-balance-of", [
+      types.principal('STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-freddie-v1-1'),
+    ], deployer.address);
+    call.result.expectOk().expectUint(947068138000);
+
+    // Payout address balance
+    call = await chain.callReadOnlyFn("arkadiko-token", "get-balance-of", [
+      types.principal(deployer.address),
+    ], deployer.address);
+    call.result.expectOk().expectUint(890000000000);
+
+    // Advance 30 blocks
+    chain.mineEmptyBlock(144*30);
+
+    // Redeem DIKO
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-freddie-v1-1", "redeem-tokens", [types.uint(0), types.uint(947068138000)], deployer.address)
+    ]);
+    block.receipts[0].result.expectOk().expectBool(true);
+
+    // Payout address balance
+    call = await chain.callReadOnlyFn("arkadiko-token", "get-balance-of", [
+      types.principal(deployer.address),
+    ], deployer.address);
+    call.result.expectOk().expectUint(890000000000 + 947068138000);
+
+  },
+});

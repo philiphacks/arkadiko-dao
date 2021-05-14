@@ -543,6 +543,8 @@
     (asserts! (is-eq contract-caller .arkadiko-liquidator-v1-1) (err ERR-NOT-AUTHORIZED))
 
     (try! (contract-call? .arkadiko-vault-data-v1-1 reset-stacking-payouts vault-id))
+    (try! (contract-call? .arkadiko-vault-rewards-v1-1 claim-pending-rewards-liquidated-vault (get owner vault)))
+
     (let (
       (collateral (get collateral vault))
       (liquidation-penalty (unwrap-panic (contract-call? .arkadiko-collateral-types-v1-1 get-liquidation-penalty (get collateral-type vault))))
@@ -657,14 +659,28 @@
   (contract-call? .xusd-token get-balance-of (as-contract tx-sender))
 )
 
-;; redeem xUSD working capital for the foundation
+(define-read-only (get-diko-balance)
+  (contract-call? .arkadiko-token get-balance-of (as-contract tx-sender))
+)
+
+;; redeem xUSD and DIKO working capital for the foundation
 ;; taken from stability fees paid by vault owners
-(define-public (redeem-xusd (xusd-amount uint))
+(define-public (redeem-tokens (xusd-amount uint) (diko-amount uint))
   (begin
     (asserts! (> (- block-height (var-get block-height-last-paid)) (* BLOCKS-PER-DAY u31)) (err ERR-NOT-AUTHORIZED))
 
     (var-set block-height-last-paid block-height)
-    (contract-call? .xusd-token transfer xusd-amount (as-contract tx-sender) (contract-call? .arkadiko-dao get-payout-address))
+
+    (if (and (> xusd-amount u0) (> diko-amount u0))
+      (begin
+        (try! (contract-call? .arkadiko-token transfer diko-amount (as-contract tx-sender) (contract-call? .arkadiko-dao get-payout-address)))
+        (contract-call? .xusd-token transfer xusd-amount (as-contract tx-sender) (contract-call? .arkadiko-dao get-payout-address))
+      )
+      (if (> xusd-amount u0)
+        (contract-call? .xusd-token transfer xusd-amount (as-contract tx-sender) (contract-call? .arkadiko-dao get-payout-address))
+        (contract-call? .arkadiko-token transfer diko-amount (as-contract tx-sender) (contract-call? .arkadiko-dao get-payout-address))
+      )
+    )
   )
 )
 
