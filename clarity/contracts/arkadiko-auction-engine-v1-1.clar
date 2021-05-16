@@ -371,8 +371,16 @@
   (let (
     (last-bid (get-last-bid auction-id lot-index))
     (auction (get-auction-by-id auction-id))
+    (token-string (get collateral-token auction))
   )
-    (asserts! (is-eq (unwrap-panic (contract-call? ft get-symbol)) (get collateral-token auction)) (err ERR-TOKEN-TYPE-MISMATCH))
+    (asserts!
+      (or
+        (is-eq (unwrap-panic (contract-call? ft get-symbol)) token-string)
+        (is-eq "STX" token-string)
+        (is-eq "xSTX" token-string)
+      )
+      (err ERR-TOKEN-TYPE-MISMATCH)
+    )
     (asserts! (is-eq (contract-of vault-manager) (unwrap-panic (contract-call? .arkadiko-dao get-qualified-name-by-name "freddie"))) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq tx-sender (get owner last-bid)) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq (unwrap-panic (get-auction-open auction-id)) false) (err ERR-AUCTION-NOT-CLOSED))

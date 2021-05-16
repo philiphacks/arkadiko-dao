@@ -58,5 +58,5 @@ const setPrice = async (price) => {
 //   let price = response['data']['4847']['quote']['USD']['price'];
 //   await setPrice(price);
 // });
+setPrice(1.08);
 
-setPrice(0.28);

@@ -68,50 +68,50 @@ export const Auctions: React.FC = () => {
         }
       });
 
-      // TODO: fix
-      // const getLot = async (auctionId:number, lotId:number) => {
-      //   const lot = await callReadOnlyFunction({
-      //     contractAddress,
-      //     contractName: "arkadiko-auction-engine-v1-1",
-      //     functionName: "get-last-bid",
-      //     functionArgs: [uintCV(auctionId), uintCV(lotId)],
-      //     senderAddress: stxAddress || '',
-      //     network: network,
-      //   });
+      const getLastBid = async (auctionId:number, lotId:number) => {
+        const lastBid = await callReadOnlyFunction({
+          contractAddress,
+          contractName: "arkadiko-auction-engine-v1-1",
+          functionName: "get-last-bid",
+          functionArgs: [uintCV(auctionId), uintCV(lotId)],
+          senderAddress: stxAddress || '',
+          network: network,
+        });
+        const bid = cvToJSON(lastBid).value;
+        return bid;
+      }
 
-      //   return cvToJSON(lot);
-      // };
+      const lots = await callReadOnlyFunction({
+        contractAddress,
+        contractName: "arkadiko-auction-engine-v1-1",
+        functionName: "get-winning-lots",
+        functionArgs: [standardPrincipalCV(stxAddress || '')],
+        senderAddress: stxAddress || '',
+        network: network,
+      });
+      const jsonLots = cvToJSON(lots);
+      let isAuctionOpen;
 
-      // const lots = await callReadOnlyFunction({
-      //   contractAddress,
-      //   contractName: "arkadiko-auction-engine-v1-1",
-      //   functionName: "get-winning-lots",
-      //   functionArgs: [standardPrincipalCV(stxAddress || '')],
-      //   senderAddress: stxAddress || '',
-      //   network: network,
-      // });
-      // const jsonLots = cvToJSON(lots);
-      // let winLot;
+      let serializedLots:Array<{ 'lot-id':string, 'auction-id': string, 'collateral-amount': number, 'collateral-token': string, 'xusd': number }> = [];
+      await asyncForEach(jsonLots.value.ids.value, async (e: object) => {
+        const lot = tupleCV(e);
+        const data = lot.data.value;
+        if (data['auction-id'].value !== 0) {
+          isAuctionOpen = await auctionOpen(data['auction-id'].value);
+          const lastBid = await getLastBid(data['auction-id'].value, data['lot-index'].value);
 
-      // let serializedLots:Array<{ 'lot-id':string, 'auction-id': string, 'collateral-amount': number, 'collateral-token': string, 'xusd': number }> = [];
-      // jsonLots.value.ids.value.forEach(async (e: object) => {
-      //   const lot = tupleCV(e);
-      //   const data = lot.data.value;
-      //   if (data['auction-id'].value !== 0) {
-      //     winLot = await getLot(data['auction-id'].value, data['lot-index'].value);
-
-      //     if (winLot && winLot.value['is-accepted'].value) {
-      //       serializedLots.push({
-      //         'lot-id': data['lot-index'].value,
-      //         'auction-id': data['auction-id'].value,
-      //         'collateral-amount': winLot.value['collateral-amount'].value,
-      //         'collateral-token': winLot.value['collateral-token'].value,
-      //         'xusd': winLot.value['xusd'].value
-      //       });
-      //       setLots(serializedLots);
-      //     }
-      //   }
-      // });
+          if (!isAuctionOpen && !lastBid['redeemed'].value) {
+            serializedLots.push({
+              'lot-id': data['lot-index'].value,
+              'auction-id': data['auction-id'].value,
+              'collateral-amount': lastBid['collateral-amount'].value,
+              'collateral-token': lastBid['collateral-token'].value,
+              'xusd': lastBid['xusd'].value
+            });
+            setLots(serializedLots);
+          }
+        }
+      });
 
       setAuctions(serializedAuctions);
 
@@ -181,7 +181,7 @@ export const Auctions: React.FC = () => {
                   {lots.length > 0 ? (
                     <LotGroup lots={lots} />
                   ) : (
-                    <p className="mt-2">You have no winning lots you can redeem.</p>
+                    <p className="mt-2">You have no winning lots you can redeem. Winning lots can be redeemed when the parent auction closes.</p>
                   )}
                 </div>
 

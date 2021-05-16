@@ -39,7 +39,7 @@ export const Lot: React.FC<LotProps> = ({ id, lotId, collateralAmount, collatera
 
   return (
     <tr className="bg-white">
-      <TxStatus />
+       <TxStatus />
 
       <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-500">
         <span className="text-gray-900 font-medium">{id}.{lotId + 1}</span>
