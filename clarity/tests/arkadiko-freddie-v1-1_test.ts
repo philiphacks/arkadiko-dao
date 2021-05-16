@@ -421,7 +421,6 @@ Clarinet.test({
       ], deployer.address),
     ]);
     block.receipts[0].result.expectErr().expectUint(98); // wrong token error
-<<<<<<< HEAD
 
     block = chain.mineBlock([
       Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
@@ -436,9 +435,6 @@ Clarinet.test({
     ]);
     // TODO
     block.receipts[0].result.expectErr().expectUint(118);
-
-=======
->>>>>>> master
   }
 });
 
@@ -1177,8 +1173,6 @@ Clarinet.test({
         types.ascii("STX"),
         types.uint(200),
       ], deployer.address),
-<<<<<<< HEAD
-=======
       Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
         types.uint(1000000000), // 1000 STX
         types.uint(300000000), // mint 300 xUSD
@@ -1197,7 +1191,6 @@ Clarinet.test({
 
     // Try to collateralize and mint
     block = chain.mineBlock([
->>>>>>> master
       Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
         types.uint(1000000000), // 1000 STX
         types.uint(300000000), // mint 300 xUSD
@@ -1208,7 +1201,6 @@ Clarinet.test({
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
       ], deployer.address)
     ]);
-<<<<<<< HEAD
 
     // Turn on emergency shutdown
     block = chain.mineBlock([
@@ -1227,8 +1219,6 @@ Clarinet.test({
         types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
       ], deployer.address)
     ]);
-=======
->>>>>>> master
     block.receipts[0].result.expectErr().expectUint(411);
 
     // Mint
