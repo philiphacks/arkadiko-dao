@@ -49,6 +49,15 @@
   }
 )
 
+(define-map winning-lots
+  { user: principal }
+  { ids: (list 100 (tuple (auction-id uint) (lot-index uint))) }
+)
+(define-map redeeming-lot
+  { user: principal }
+  { auction-id: uint, lot-index: uint }
+)
+
 (define-data-var last-auction-id uint u0)
 (define-data-var auction-ids (list 1500 uint) (list u0))
 (define-data-var lot-size uint u1000000000) ;; 1000 xUSD
@@ -92,9 +101,12 @@
   )
 )
 
-;; (define-read-only (get-bids (auction-id uint))
-
-;; )
+(define-read-only (get-winning-lots (owner principal))
+  (default-to
+    { ids: (list (tuple (auction-id u0) (lot-index u0))) }
+    (map-get? winning-lots { user: owner })
+  )
+)
 
 ;; Check if auction open (not enough dept raised + end block height not reached)
 (define-read-only (get-auction-open (auction-id uint))
@@ -294,6 +306,7 @@
         (ok u0)
       )
     )
+    (lots (get-winning-lots tx-sender))
   )
     ;; Lot is sold once bid is > lot-size
     (asserts! (< (get xusd last-bid) (var-get lot-size)) (err ERR-LOT-SOLD))
@@ -302,7 +315,7 @@
 
     ;; Return xUSD of last bid to (now lost) bidder
     (if (> (get xusd last-bid) u0)
-      (try! (return-xusd (get owner last-bid) (get xusd last-bid)))
+      (try! (return-xusd (get owner last-bid) (get xusd last-bid) auction-id lot-index))
       true
     )
     ;; Transfer xUSD from liquidator to this contract
@@ -326,6 +339,12 @@
         collateral-token: (get collateral-token auction),
         owner: tx-sender,
         redeemed: false
+      }
+    )
+    (map-set winning-lots
+      { user: tx-sender }
+      {
+        ids: (unwrap-panic (as-max-len? (append (get ids lots) (tuple (auction-id auction-id) (lot-index lot-index))) u100))
       }
     )
 
@@ -389,9 +408,26 @@
   )
 )
 
-(define-private (return-xusd (owner principal) (xusd uint))
+(define-private (remove-winning-lot (lot (tuple (auction-id uint) (lot-index uint))))
+  (let ((current-lot (unwrap-panic (map-get? redeeming-lot { user: tx-sender }))))
+    (if 
+      (and
+        (is-eq (get auction-id lot) (get auction-id current-lot))
+        (is-eq (get lot-index lot) (get lot-index current-lot))
+      )
+      false
+      true
+    )
+  )
+)
+
+(define-private (return-xusd (owner principal) (xusd uint) (auction-id uint) (lot-index uint))
   (if (> xusd u0)
-    (as-contract (contract-call? .xusd-token transfer xusd (as-contract tx-sender) owner))
+    (let ((lots (get-winning-lots tx-sender)))
+      (map-set redeeming-lot { user: tx-sender } { auction-id: auction-id, lot-index: lot-index})
+      (map-set winning-lots { user: tx-sender } { ids: (filter remove-winning-lot (get ids lots)) })
+      (as-contract (contract-call? .xusd-token transfer xusd (as-contract tx-sender) owner))
+    )
     (err u0) ;; don't really care if this fails.
   )
 )
