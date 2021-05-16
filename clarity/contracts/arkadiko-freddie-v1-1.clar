@@ -80,9 +80,9 @@
             (ok
               (/
                 (* (get collateral vault) (get last-price-in-cents stx-price-in-cents))
-                (get debt vault)
+                ;; (get debt vault)
                 ;; TODO: cost is too high to use this in the front-end - fix this
-                ;; (+ (get debt vault) (unwrap-panic (get-stability-fee-for-vault vault-id)))
+                (+ (get debt vault) (unwrap-panic (get-stability-fee-for-vault vault-id)))
               )
             )
             (err u0)
@@ -529,7 +529,6 @@
     )
     (asserts! (is-eq contract-caller .arkadiko-liquidator-v1-1) (err ERR-NOT-AUTHORIZED))
 
-    (try! (contract-call? .arkadiko-vault-data-v1-1 reset-stacking-payouts vault-id))
     (let (
       (collateral (get collateral vault))
       (liquidation-penalty (unwrap-panic (contract-call? .arkadiko-collateral-types-v1-1 get-liquidation-penalty (get collateral-type vault))))

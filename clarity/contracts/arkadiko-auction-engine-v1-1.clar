@@ -349,7 +349,7 @@
     )
 
     ;; Set stacker payout
-    (try! (contract-call? .arkadiko-vault-data-v1-1 add-stacker-payout (get vault-id auction) collateral-amount tx-sender))
+    (try! (contract-call? .arkadiko-vault-data-v1-1 set-stacker-payout (get vault-id auction) lot-index collateral-amount tx-sender))
     (print { type: "bid", action: "registered", data: { auction-id: auction-id, lot-index: lot-index, xusd: xusd } })
 
     ;; End auction if needed
