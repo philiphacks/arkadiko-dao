@@ -416,6 +416,19 @@
   )
 )
 
+(define-private (remove-winning-lot (lot (tuple (auction-id uint) (lot-index uint))))
+  (let ((current-lot (unwrap-panic (map-get? redeeming-lot { user: tx-sender }))))
+    (if 
+      (and
+        (is-eq (get auction-id lot) (get auction-id current-lot))
+        (is-eq (get lot-index lot) (get lot-index current-lot))
+      )
+      false
+      true
+    )
+  )
+)
+
 (define-private (return-xusd (owner principal) (xusd uint) (auction-id uint) (lot-index uint))
   (if (> xusd u0)
     (let ((lots (get-winning-lots tx-sender)))
