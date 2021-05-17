@@ -406,9 +406,9 @@
       ;; request "collateral-amount" gov tokens from the DAO
       (begin
         (try! (contract-call? .arkadiko-dao request-diko-tokens ft (get collateral-amount auction)))
-        (try! (contract-call? vault-manager redeem-auction-collateral ft reserve (get collateral-amount last-bid) tx-sender))
+        (try! (contract-call? vault-manager redeem-auction-collateral ft token-string reserve (get collateral-amount last-bid) tx-sender))
       )
-      (try! (contract-call? vault-manager redeem-auction-collateral ft reserve (get collateral-amount last-bid) tx-sender))
+      (try! (contract-call? vault-manager redeem-auction-collateral ft token-string reserve (get collateral-amount last-bid) tx-sender))
     )
     (print { type: "lot", action: "redeemed", data: { auction-id: auction-id, lot-index: lot-index } })
     (ok true)
