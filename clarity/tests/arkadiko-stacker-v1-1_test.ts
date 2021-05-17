@@ -312,16 +312,16 @@ Clarinet.test({
       ], deployer.address)
     ]);
 
-    // Check if transfer of yields is approx 450 STX
+    // Check if transfer of yields is approx 450 STX - 10% that we keep
     // part of it stays with the foundation since not all collateral is usually sold of
     let [stxTransferEvent1, stxTransferEvent2] = block.receipts[1].events;
     stxTransferEvent1.stx_transfer_event.sender.expectPrincipal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stacker-v1-1");
     stxTransferEvent1.stx_transfer_event.recipient.expectPrincipal(deployer.address);
-    stxTransferEvent1.stx_transfer_event.amount.expectInt(312494498);
+    stxTransferEvent1.stx_transfer_event.amount.expectInt(312498000);
 
     stxTransferEvent2.stx_transfer_event.sender.expectPrincipal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stacker-v1-1");
     stxTransferEvent2.stx_transfer_event.recipient.expectPrincipal(deployer.address);
-    stxTransferEvent2.stx_transfer_event.amount.expectInt(118124195);
+    stxTransferEvent2.stx_transfer_event.amount.expectInt(118122300);
   }
 });
 
