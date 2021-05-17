@@ -184,7 +184,6 @@
 (define-private (payout-liquidated-vault (vault-id uint))
   (let (
     (vault (contract-call? .arkadiko-vault-data-v1-1 get-vault-by-id vault-id))
-    ;; (stacking-entry (contract-call? .arkadiko-vault-data-v1-1 get-stacking-payout vault-id u0))
     (stacking-lots (contract-call? .arkadiko-vault-data-v1-1 get-stacking-payout-lots vault-id))
   )
     (asserts! (is-eq (get is-liquidated vault) true) (err ERR-NOT-AUTHORIZED))
@@ -200,7 +199,7 @@
 (define-private (payout-lot-bidder (lot-index uint))
   (let (
     (vault (contract-call? .arkadiko-vault-data-v1-1 get-vault-by-id (var-get payout-vault-id)))
-    (stx-in-vault (get stacked-tokens vault))
+    (stx-in-vault (- (get stacked-tokens vault) (/ (get stacked-tokens vault) u10))) ;; we keep 10%
     (stacker-payout (contract-call? .arkadiko-vault-data-v1-1 get-stacking-payout (get id vault) lot-index))
     (percentage (/ (* u100000 (get collateral-amount stacker-payout)) stx-in-vault)) ;; in basis points
     (basis-points (/ (* u100000 stx-in-vault) (var-get stacking-stx-stacked))) ;; this gives the percentage of collateral bought in auctions vs stx stacked
