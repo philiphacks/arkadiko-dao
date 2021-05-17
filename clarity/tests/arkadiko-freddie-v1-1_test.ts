@@ -147,6 +147,18 @@ Clarinet.test({
     // after 1 year of not paying debt on vault, collateralisation ratio should be lower
     call = await chain.callReadOnlyFn("arkadiko-freddie-v1-1", "calculate-current-collateral-to-debt-ratio", [types.uint(1)], deployer.address);
     call.result.expectOk().expectUint(163);
+
+    // Change price
+    chain.mineBlock([
+      Tx.contractCall("arkadiko-oracle-v1-1", "update-price", [
+        types.ascii("STX"),
+        types.uint(400),
+      ], deployer.address)
+    ]);
+
+    // Price doubled
+    call = await chain.callReadOnlyFn("arkadiko-freddie-v1-1", "calculate-current-collateral-to-debt-ratio", [types.uint(1)], deployer.address);
+    call.result.expectOk().expectUint(327);
   }
 });
 
@@ -875,5 +887,162 @@ Clarinet.test({
     ], deployer.address);
     call.result.expectOk().expectUint(890000000000 + 947068138000);
 
+  },
+});
+
+Clarinet.test({
+  name: "freddie: while stacking, not all actions are allowed",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    let deployer = accounts.get("deployer")!;
+
+    let block = chain.mineBlock([
+      // Initialize price of STX to $2 in the oracle
+      Tx.contractCall("arkadiko-oracle-v1-1", "update-price", [
+        types.ascii("STX"),
+        types.uint(200),
+      ], deployer.address),
+      Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
+        types.uint(1000000000), // 1000 STX
+        types.uint(300000000), // mint 300 xUSD
+        types.ascii("STX-A"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
+      ], deployer.address)
+    ]);
+    block.receipts[1].result
+      .expectOk()
+      .expectUint(300000000);
+
+    // Try burn
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-freddie-v1-1", "burn", [
+        types.uint(1),
+        types.uint(300000000),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token")
+      ], deployer.address)
+    ]);
+    block.receipts[0].result
+      .expectErr()
+      .expectUint(414); 
+
+    // Try withdraw
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-freddie-v1-1", "withdraw", [
+        types.uint(1),
+        types.uint(200000000), 
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token")
+      ], deployer.address)
+    ]);
+    block.receipts[0].result
+      .expectErr()
+      .expectUint(414);
+  }
+});
+
+Clarinet.test({
+  name: "freddie: test zero values",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    let deployer = accounts.get("deployer")!;
+    let block = chain.mineBlock([
+      Tx.contractCall("arkadiko-oracle-v1-1", "update-price", [
+        types.ascii("STX"),
+        types.uint(77),
+      ], deployer.address)
+    ]);
+
+    // collateralize 0 & mint 0
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
+        types.uint(0),
+        types.uint(0),
+        types.ascii("STX-A"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
+        types.principal(
+          "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
+        ),
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectErr().expectUint(417); // wrong debt (0)
+
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
+        types.uint(500000000),
+        types.uint(925000),
+        types.ascii("STX-A"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
+        types.principal(
+          "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
+        ),
+      ], deployer.address)
+    ]);
+
+    // Mint 0
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-freddie-v1-1", "mint", [
+        types.uint(1),
+        types.uint(0),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1")
+      ], deployer.address)
+    ]);
+    // ERR-MINT-FAILED in stx-reserve
+    block.receipts[0].result
+      .expectErr()
+      .expectUint(117);
+
+    // Burn 0
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-freddie-v1-1", "burn", [
+        types.uint(1),
+        types.uint(0),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token")
+      ], deployer.address)
+    ]);
+    // 
+    block.receipts[0].result
+      .expectErr()
+      .expectUint(1);
+
+    // Deposit extra
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-freddie-v1-1", "deposit", [
+        types.uint(1),
+        types.uint(0), 
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
+      ], deployer.address)
+    ]);
+    // ERR-DEPOSIT-FAILED
+    block.receipts[0].result
+      .expectErr()
+      .expectUint(45);
+
+    // Toggle stacking, allowing withdraw
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-freddie-v1-1", "toggle-stacking", [
+        types.uint(1)
+      ], deployer.address),
+      // now vault 1 has revoked stacking, enable vault withdrawals
+      Tx.contractCall("arkadiko-freddie-v1-1", "enable-vault-withdrawals", [
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stacker-v1-1"),
+        types.uint(1)
+      ], deployer.address)
+    ]);
+
+    // Withdraw 0
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-freddie-v1-1", "withdraw", [
+        types.uint(1),
+        types.uint(0), // 100 STX
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token"),
+      ], deployer.address)
+    ]);
+    // ERR-INSUFFICIENT-COLLATERAL
+    block.receipts[0].result
+      .expectErr()
+      .expectUint(49);
   },
 });

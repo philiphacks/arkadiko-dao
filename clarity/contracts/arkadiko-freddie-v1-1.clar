@@ -276,7 +276,7 @@
   (let (
     (sender tx-sender)
     (collateral-token (get token (unwrap-panic (contract-call? .arkadiko-collateral-types-v1-1 get-collateral-type-by-name collateral-type))))
-    (ratio (unwrap-panic (contract-call? reserve calculate-current-collateral-to-debt-ratio collateral-token debt collateral-amount)))
+    (ratio (unwrap! (contract-call? reserve calculate-current-collateral-to-debt-ratio collateral-token debt collateral-amount) (err ERR-WRONG-DEBT)))
   )
     (asserts!
       (and
