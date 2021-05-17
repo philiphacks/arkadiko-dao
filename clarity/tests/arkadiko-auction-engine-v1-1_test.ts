@@ -771,7 +771,7 @@ Clarinet.test({
         types.uint(0)
       ], deployer.address)
     ]);
-    block.receipts[0].result.expectErr().expectUint(98);
+    block.receipts[0].result.expectErr().expectUint(212);
 
   }
 });
