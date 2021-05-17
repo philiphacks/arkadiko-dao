@@ -357,7 +357,7 @@
         (is-eq collateral-token "STX")
         (is-eq (unwrap-panic (contract-call? .arkadiko-collateral-types-v1-1 get-token-address (get collateral-type vault))) (contract-of ft))
       )
-      (err ERR-NOT-AUTHORIZED)
+      (err ERR-WRONG-COLLATERAL-TOKEN)
     )
 
     (unwrap! (contract-call? reserve deposit ft collateral-token uamount) (err ERR-DEPOSIT-FAILED))
@@ -390,7 +390,7 @@
         (is-eq collateral-token "STX")
         (is-eq (unwrap-panic (contract-call? .arkadiko-collateral-types-v1-1 get-token-address (get collateral-type vault))) (contract-of ft))
       )
-      (err ERR-NOT-AUTHORIZED)
+      (err ERR-WRONG-COLLATERAL-TOKEN)
     )
 
     (let ((ratio (unwrap-panic 
@@ -474,7 +474,7 @@
         (is-eq (get collateral-token vault) "STX")
         (is-eq (unwrap-panic (contract-call? .arkadiko-collateral-types-v1-1 get-token-address (get collateral-type vault))) (contract-of ft))
       )
-      (err ERR-NOT-AUTHORIZED)
+      (err ERR-WRONG-COLLATERAL-TOKEN)
     )
 
     (try! (pay-stability-fee vault-id))
