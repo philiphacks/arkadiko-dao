@@ -104,7 +104,7 @@ Clarinet.test({
       wallet_1.address
     );
     let vault = call.result.expectTuple();
-    vault['leftover-collateral'].expectUint(43055547);
+    vault['collateral'].expectUint(43055547);
     vault['is-liquidated'].expectBool(true);
     vault['auction-ended'].expectBool(true);
 
@@ -185,17 +185,6 @@ Clarinet.test({
       types.principal(deployer.address),
     ], deployer.address);
     call.result.expectOk().expectUint(0);
-
-    // Withdraw leftover collateral
-    block = chain.mineBlock([
-      Tx.contractCall("arkadiko-freddie-v1-1", "withdraw-leftover-collateral", [
-        types.uint(1),
-        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-sip10-reserve-v1-1"),
-        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.xstx-token"),
-      ], deployer.address)
-    ]);
-    block.receipts[0].result.expectOk().expectBool(true);
-
   }
 });
 
@@ -314,7 +303,7 @@ Clarinet.test({
       wallet_1.address
     );
     let vault = call.result.expectTuple();
-    vault['leftover-collateral'].expectUint(0);
+    vault['collateral'].expectUint(0);
     vault['is-liquidated'].expectBool(true);
     vault['auction-ended'].expectBool(true);
   }

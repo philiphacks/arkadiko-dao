@@ -20,7 +20,6 @@ export interface VaultProps {
   debt: number;
   isLiquidated: boolean;
   auctionEnded: boolean;
-  leftoverCollateral: number;
   collateralData: object;
   stackedTokens: number;
   revokedStacking: boolean;
@@ -40,7 +39,7 @@ export const debtClass = (liquidationRatio: number, ratio: number) => {
 
 export const Vault: React.FC<VaultProps> = ({
   id, collateral, collateralType, collateralToken, debt,
-  isLiquidated, auctionEnded, leftoverCollateral, collateralData
+  isLiquidated, auctionEnded, collateralData
 }) => {
   const { doContractCall } = useConnect();
   const contractAddress = process.env.REACT_APP_CONTRACT_ADDRESS || '';
@@ -128,13 +127,7 @@ export const Vault: React.FC<VaultProps> = ({
       </td>
       <td className="px-6 py-4 text-left whitespace-nowrap text-sm text-gray-900">
         <span className="text-gray-900 font-medium">
-          {isLiquidated ? auctionEnded ? (leftoverCollateral > 0) ? (
-            <Text onClick={() => callWithdrawLeftoverCollateral()}
-                  _hover={{ cursor: 'pointer'}}
-                  className="px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-              Withdraw Leftover Collateral
-            </Text>
-          ) : (
+          {isLiquidated ? auctionEnded ? (
             <span>Vault liquidated & closed</span>
           ) : (
             <span>Auctioning Collateral...</span>

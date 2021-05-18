@@ -297,7 +297,7 @@ Clarinet.test({
       wallet_1.address
     );
     let vault = call.result.expectTuple();
-    vault['leftover-collateral'].expectUint(43055552);
+    vault['collateral'].expectUint(43055552);
     vault['is-liquidated'].expectBool(true);
     vault['auction-ended'].expectBool(true);
 

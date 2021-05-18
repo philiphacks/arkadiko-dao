@@ -20,7 +20,6 @@ export const VaultGroup: React.FC<VaultGroupProps> = ({ vaults }) => {
       debt={vault['debt']}
       isLiquidated={vault['isLiquidated']}
       auctionEnded={vault['auctionEnded']}
-      leftoverCollateral={vault['leftoverCollateral']}
       collateralData={collateralTypes[vault['collateralType']]}
     />
   );

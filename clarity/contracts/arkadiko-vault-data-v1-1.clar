@@ -20,8 +20,7 @@
   stability-fee-accrued: uint,
   stability-fee-last-accrued: uint, ;; indicates the block height at which the stability fee was last accrued (calculated)
   is-liquidated: bool,
-  auction-ended: bool,
-  leftover-collateral: uint
+  auction-ended: bool
 })
 (define-map vault-entries { user: principal } { ids: (list 1200 uint) })
 (define-map closing-vault
@@ -64,8 +63,7 @@
       stability-fee-accrued: u0,
       stability-fee-last-accrued: u0,
       is-liquidated: false,
-      auction-ended: false,
-      leftover-collateral: u0
+      auction-ended: false
     }
     (map-get? vaults { id: id })
   )
@@ -103,7 +101,7 @@
   )
 )
 
-(define-public (update-vault (vault-id uint) (data (tuple (id uint) (owner principal) (collateral uint) (collateral-type (string-ascii 12)) (collateral-token (string-ascii 12)) (stacked-tokens uint) (revoked-stacking bool) (debt uint) (created-at-block-height uint) (updated-at-block-height uint) (stability-fee-accrued uint) (stability-fee-last-accrued uint) (is-liquidated bool) (auction-ended bool) (leftover-collateral uint))))
+(define-public (update-vault (vault-id uint) (data (tuple (id uint) (owner principal) (collateral uint) (collateral-type (string-ascii 12)) (collateral-token (string-ascii 12)) (stacked-tokens uint) (revoked-stacking bool) (debt uint) (created-at-block-height uint) (updated-at-block-height uint) (stability-fee-accrued uint) (stability-fee-last-accrued uint) (is-liquidated bool) (auction-ended bool))))
   (let ((vault (get-vault-by-id vault-id)))
     (asserts!
       (or

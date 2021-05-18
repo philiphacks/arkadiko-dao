@@ -92,12 +92,12 @@
             (ok
               (/
                 (* (get collateral vault) (get last-price-in-cents stx-price-in-cents))
-                ;; (get debt vault)
+                (get debt vault)
                 ;; TODO: cost is too high to use this in the front-end - fix this
-                (+ (get debt vault) (unwrap-panic (get-stability-fee-for-vault vault-id)))
+                ;; (+ (get debt vault) (unwrap-panic (get-stability-fee-for-vault vault-id)))
               )
             )
-            (err u0)
+            (err u200)
           )
         )
       )
@@ -319,8 +319,7 @@
         stability-fee-accrued: u0,
         stability-fee-last-accrued: block-height,
         is-liquidated: false,
-        auction-ended: false,
-        leftover-collateral: u0
+        auction-ended: false
       })
     )
       (try! (contract-call? .arkadiko-vault-data-v1-1 update-vault-entries sender vault-id))
@@ -597,8 +596,7 @@
               collateral-token: "xSTX",
               updated-at-block-height: block-height,
               is-liquidated: true,
-              auction-ended: false,
-              leftover-collateral: u0
+              auction-ended: false
             }))
           )
           (try! (contract-call? .arkadiko-sip10-reserve-v1-1 mint-xstx collateral))
@@ -609,8 +607,7 @@
               collateral: u0,
               updated-at-block-height: block-height,
               is-liquidated: true,
-              auction-ended: false,
-              leftover-collateral: u0
+              auction-ended: false
             }))
           )
           (ok (tuple (ustx-amount collateral) (extra-debt extra-debt) (vault-debt (get debt vault)) (discount discount)))
@@ -632,14 +629,24 @@
     (asserts! (is-eq contract-caller (unwrap-panic (contract-call? .arkadiko-dao get-qualified-name-by-name "auction-engine"))) (err ERR-NOT-AUTHORIZED))
     (asserts! (is-eq (get is-liquidated vault) true) (err ERR-VAULT-NOT-LIQUIDATED))
 
-    (try! (contract-call? .arkadiko-vault-data-v1-1 update-vault vault-id (merge vault {
-        collateral: u0,
-        updated-at-block-height: block-height,
-        auction-ended: true,
-        leftover-collateral: leftover-collateral
-      }))
-    )
     (try! (contract-call? .arkadiko-vault-rewards-v1-1 remove-collateral (get collateral vault) (get owner vault)))
+    (if (is-eq "xSTX" (get collateral-token vault))
+      (try! (contract-call? .arkadiko-vault-data-v1-1 update-vault vault-id (merge vault {
+          collateral-token: "STX",
+          collateral: leftover-collateral,
+          updated-at-block-height: block-height,
+          auction-ended: true,
+          is-liquidated: false
+        }))
+      )
+      (try! (contract-call? .arkadiko-vault-data-v1-1 update-vault vault-id (merge vault {
+          collateral: leftover-collateral,
+          updated-at-block-height: block-height,
+          auction-ended: true,
+          is-liquidated: false
+        }))
+      )
+    )
     (try! (contract-call? .arkadiko-collateral-types-v1-1 subtract-debt-from-collateral-type (get collateral-type vault) (get debt vault)))
     (ok true)
   )
@@ -649,45 +656,6 @@
   (begin
     (asserts! (is-eq contract-caller (unwrap-panic (contract-call? .arkadiko-dao get-qualified-name-by-name "auction-engine"))) (err ERR-NOT-AUTHORIZED))
     (contract-call? reserve redeem-collateral ft token-string collateral-amount sender)
-  )
-)
-
-(define-public (withdraw-leftover-collateral (vault-id uint) (reserve <vault-trait>) (ft <mock-ft-trait>))
-  (let (
-    (vault (get-vault-by-id vault-id))
-    (collateral-token (unwrap-panic (get-collateral-token-for-vault vault-id)))
-  )
-    (asserts!
-      (and
-        (is-eq (unwrap-panic (contract-call? .arkadiko-dao get-emergency-shutdown-activated)) false)
-        (is-eq (var-get freddie-shutdown-activated) false)
-      )
-      (err ERR-EMERGENCY-SHUTDOWN-ACTIVATED)
-    )
-    (asserts! (is-eq tx-sender (get owner vault)) (err ERR-NOT-AUTHORIZED))
-    (asserts! (is-eq true (get is-liquidated vault)) (err ERR-VAULT-NOT-LIQUIDATED))
-    (asserts! (is-eq true (get auction-ended vault)) (err ERR-AUCTION-NOT-ENDED))
-    (asserts! (is-eq u0 (get stacked-tokens vault)) (err ERR-STACKING-IN-PROGRESS))
-    (asserts!
-      (or
-        (is-eq collateral-token "xSTX")
-        (is-eq (unwrap-panic (contract-call? .arkadiko-collateral-types-v1-1 get-token-address (get collateral-type vault))) (contract-of ft))
-      )
-      (err ERR-WRONG-COLLATERAL-TOKEN)
-    )
-
-    (try! (pay-stability-fee vault-id))
-    (if (unwrap-panic (contract-call? reserve withdraw ft collateral-token (get owner vault) (get leftover-collateral vault)))
-      (begin
-        (try! (contract-call? .arkadiko-vault-data-v1-1 update-vault vault-id (merge vault {
-            updated-at-block-height: block-height,
-            leftover-collateral: u0
-          }))
-        )
-        (ok true)
-      )
-      (err ERR-WITHDRAW-FAILED)
-    )
   )
 )
 

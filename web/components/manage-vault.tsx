@@ -66,7 +66,6 @@ export const ManageVault = ({ match }) => {
           collateralToken: data['collateral-token'].value,
           isLiquidated: data['is-liquidated'].value,
           auctionEnded: data['auction-ended'].value,
-          leftoverCollateral: data['leftover-collateral'].value,
           debt: data['debt'].value,
           stackedTokens: data['stacked-tokens'].value,
           revokedStacking: data['revoked-stacking'].value,
@@ -407,10 +406,6 @@ export const ManageVault = ({ match }) => {
 
   return (
     <Container>
-      {auctionEnded && <Redirect to="/vaults" />}
-
-      <TxStatus />
-
       <Modal isOpen={showDepositModal}>
         <div className="flex pt-4 px-4 pb-20 text-center sm:block sm:p-0">
           <div className="inline-block align-bottom bg-white rounded-lg px-2 pt-5 pb-4 text-left overflow-hidden sm:my-8 sm:align-middle sm:max-w-sm sm:w-full sm:p-6" role="dialog" aria-modal="true" aria-labelledby="modal-headline">
