@@ -49,5 +49,9 @@ const errToHumanReadable = (err: string) => {
     return 'An unknown error occurred. Please try again';
   }
 
-  return 'An unknown error occurred. Please try again';
+  return errorMessages[errId] || 'An unknown error occurred. Please try again';
+};
+
+const errorMessages = {
+  '4401': 'Not Authorized'
 };
