@@ -307,6 +307,7 @@
       )
     )
     (lots (get-winning-lots tx-sender))
+    (total-debt-raised (- (+ xusd (get total-debt-raised auction)) (get xusd last-bid)))
   )
     ;; Lot is sold once bid is > lot-size
     (asserts! (< (get xusd last-bid) (var-get lot-size)) (err ERR-LOT-SOLD))
@@ -327,7 +328,7 @@
       (merge auction {
         lots-sold: (+ (unwrap-panic lot-got-sold) (get lots-sold auction)),
         total-collateral-sold: (- (+ collateral-amount (get total-collateral-sold auction)) (get collateral-amount last-bid)),
-        total-debt-raised: (- (+ xusd (get total-debt-raised auction)) (get xusd last-bid))
+        total-debt-raised: total-debt-raised
       })
     )
     ;; Update bids
@@ -356,7 +357,7 @@
     (if
       (or
         (>= block-height (get ends-at auction))
-        (>= (- (+ xusd (get total-debt-raised auction)) (get xusd last-bid)) (get debt-to-raise auction))
+        (>= total-debt-raised (get debt-to-raise auction))
       )
       ;; auction is over - close all bids
       ;; send collateral to winning bidders
@@ -474,8 +475,8 @@
 
     (let (
       (vault (contract-call? .arkadiko-vault-data-v1-1 get-vault-by-id (get vault-id auction)))
+      (debt-erased (min-of (get debt vault) (get total-debt-raised auction)))
     )
-      ;; 
       (if (> (get debt vault) (get total-debt-burned auction))
         (begin
           (try! (contract-call? .arkadiko-dao burn-token .xusd-token
@@ -489,6 +490,7 @@
         )
         true
       )
+      (try! (contract-call? .arkadiko-vault-data-v1-1 update-vault (get vault-id auction) (merge vault { debt: (- (get debt vault) debt-erased) })))
     )
     (try!
       (if (>= (get total-debt-raised auction) (get debt-to-raise auction))
