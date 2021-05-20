@@ -53,6 +53,7 @@ const errToHumanReadable = (err: string) => {
 };
 
 const errorMessages = {
+  'u1': 'You do not have enough balance to make this transaction',
   'u4401': 'Not Authorized',
   'u414': 'Stacking still in progress - please withdraw later',
   'u52': 'No liquidation required'
