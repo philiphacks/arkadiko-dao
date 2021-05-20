@@ -480,6 +480,9 @@ export const ManageVault = ({ match }) => {
                   <p className="text-sm text-gray-500">
                     Choose how much collateral you want to withdraw. You can withdraw a maximum of {maximumCollateralToWithdraw} {vault?.collateralToken.toUpperCase()}.
                   </p>
+                  <p className="text-sm text-gray-500">
+                    We will automatically harvest any DIKO you are eligible for when withdrawing.
+                  </p>
 
                   <div className="mt-4 relative rounded-md shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
