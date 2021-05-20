@@ -65,7 +65,7 @@ Clarinet.test({
 });
 
 Clarinet.test({
-  name: "vault-data: claim DIKO rewards",
+  name: "vault-rewards: claim DIKO rewards",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     let deployer = accounts.get("deployer")!;
     let wallet_1 = accounts.get("wallet_1")!;
@@ -160,7 +160,7 @@ Clarinet.test({
 });
 
 Clarinet.test({
-  name: "vault-data: user collateral",
+  name: "vault-rewards: user loses rewards when vault gets liquidated",
   async fn(chain: Chain, accounts: Map<string, Account>) {
     let deployer = accounts.get("deployer")!;
     let wallet_1 = accounts.get("wallet_1")!;
