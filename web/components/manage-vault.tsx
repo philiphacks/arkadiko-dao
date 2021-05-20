@@ -428,6 +428,9 @@ export const ManageVault = ({ match }) => {
                   <p className="text-sm text-gray-500">
                     Choose how much extra collateral you want to post. You have a balance of {state.balance['stx'] / 1000000} {vault?.collateralToken.toUpperCase()}.
                   </p>
+                  <p className="text-sm text-gray-500">
+                    We will automatically harvest any DIKO you are eligible for when depositing.
+                  </p>
 
                   <div className="mt-4 relative rounded-md shadow-sm">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
