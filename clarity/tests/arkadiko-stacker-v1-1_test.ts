@@ -531,3 +531,146 @@ Clarinet.test({
     vault['collateral'].expectUint(1000000000);
   }
 });
+
+Clarinet.test({
+  name: "stacker: payout without setting STX received",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    let deployer = accounts.get("deployer")!;
+    let block = chain.mineBlock([
+      Tx.contractCall("arkadiko-oracle-v1-1", "update-price", [
+        types.ascii("STX"),
+        types.uint(200),
+      ], deployer.address),
+      Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
+        types.uint(1000000000),
+        types.uint(1000000000), 
+        types.ascii("STX-A"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
+        types.principal(
+          "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
+        ),
+      ], deployer.address)
+    ]);
+
+    let call = await chain.callReadOnlyFn("arkadiko-stx-reserve-v1-1", "get-tokens-to-stack", [], deployer.address);
+    call.result.expectOk().expectUint(1000000000); 
+
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-stacker-v1-1", "initiate-stacking", [
+        types.tuple({ 'version': '0x00', 'hashbytes': '0xf632e6f9d29bfb07bc8948ca6e0dd09358f003ac'}),
+        types.uint(1), // start block height
+        types.uint(1) // 1 cycle lock period
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectOk().expectUint(1000000000);
+
+    call = await chain.callReadOnlyFn("arkadiko-stacker-v1-1", "get-stx-balance", [], deployer.address);
+    call.result.expectOk().expectUint(1000000000);
+
+    chain.mineEmptyBlock(300);
+
+    // trigger payout - but there is 0 STX to pay out
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-stacker-v1-1", "payout", [
+        types.uint(1)
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectOk().expectBool(true);
+
+    // Vault collateral has not changed
+    call = await chain.callReadOnlyFn("arkadiko-vault-data-v1-1", "get-vault-by-id", [types.uint(1)], deployer.address);
+    let vault = call.result.expectTuple();
+    vault['stacked-tokens'].expectUint(1000000000);
+    vault['collateral'].expectUint(1000000000);
+  }
+});
+
+Clarinet.test({
+  name: "stacker: vault rewards should auto-harvest after payout",
+  async fn(chain: Chain, accounts: Map<string, Account>) {
+    let deployer = accounts.get("deployer")!;
+
+    let block = chain.mineBlock([
+      Tx.contractCall("arkadiko-oracle-v1-1", "update-price", [
+        types.ascii("STX"),
+        types.uint(200),
+      ], deployer.address),
+      Tx.contractCall("arkadiko-freddie-v1-1", "collateralize-and-mint", [
+        types.uint(1000000000),
+        types.uint(1000000000), // mint 1000 xUSD
+        types.ascii("STX-A"),
+        types.principal("STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-stx-reserve-v1-1"),
+        types.principal(
+          "STSTW15D618BSZQB85R058DS46THH86YQQY6XCB7.arkadiko-token",
+        ),
+      ], deployer.address)
+    ]);
+
+    let call = await chain.callReadOnlyFn("arkadiko-stx-reserve-v1-1", "get-tokens-to-stack", [], deployer.address);
+    call.result.expectOk().expectUint(1000000000); // 1000 STX
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-stacker-v1-1", "initiate-stacking", [
+        types.tuple({ 'version': '0x00', 'hashbytes': '0xf632e6f9d29bfb07bc8948ca6e0dd09358f003ac'}),
+        types.uint(1), // start block height
+        types.uint(1) // 1 cycle lock period
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectOk().expectUint(1000000000);
+
+    call = await chain.callReadOnlyFn("arkadiko-stacker-v1-1", "get-stx-balance", [], deployer.address);
+    call.result.expectOk().expectUint(1000000000);
+
+    // Rewards after 2 blocks
+    call = chain.callReadOnlyFn("arkadiko-vault-rewards-v1-1", "get-pending-rewards", [types.principal(deployer.address)], deployer.address);
+    call.result.expectOk().expectUint(640000000)
+
+    chain.mineEmptyBlock(300);
+
+    // Rewards after 302 blocks
+    call = chain.callReadOnlyFn("arkadiko-vault-rewards-v1-1", "get-pending-rewards", [types.principal(deployer.address)], deployer.address);
+    call.result.expectOk().expectUint(96640000000)
+
+    // Initial DIKO balance
+    call = chain.callReadOnlyFn("arkadiko-token", "get-balance-of", [types.principal(deployer.address)], deployer.address);
+    call.result.expectOk().expectUint(890000000000);   
+
+    // Collateral info
+    call = chain.callReadOnlyFn("arkadiko-vault-rewards-v1-1", "get-collateral-of ", [types.principal(deployer.address)], deployer.address);
+    let collateralInfo = call.result.expectTuple();
+    collateralInfo['cumm-reward-per-collateral'].expectUint(0);
+    collateralInfo['collateral'].expectUint(1000000000);
+    
+    // Payout should restart vault rewards
+    block = chain.mineBlock([
+      Tx.contractCall("arkadiko-stacker-v1-1", "set-stacking-stx-received", [
+        types.uint(1000000000),
+      ], deployer.address),
+      Tx.contractCall("arkadiko-stacker-v1-1", "payout", [
+        types.uint(1)
+      ], deployer.address)
+    ]);
+    block.receipts[0].result.expectOk().expectBool(true);
+    block.receipts[1].result.expectOk().expectBool(true);
+
+    // Auto harvested DIKO
+    call = chain.callReadOnlyFn("arkadiko-token", "get-balance-of", [types.principal(deployer.address)], deployer.address);
+    call.result.expectOk().expectUint(986640000000);   
+
+    // Pending rewards only for 1 block
+    call = chain.callReadOnlyFn("arkadiko-vault-rewards-v1-1", "get-pending-rewards", [types.principal(deployer.address)], deployer.address);
+    call.result.expectOk().expectUint(320000000);
+
+    // Reward info - cumm reward and collateral is now updated
+    call = chain.callReadOnlyFn("arkadiko-vault-rewards-v1-1", "get-collateral-of ", [types.principal(deployer.address)], deployer.address);
+    collateralInfo = call.result.expectTuple();
+    collateralInfo['cumm-reward-per-collateral'].expectUint(96640000);
+    collateralInfo['collateral'].expectUint(2000000000);
+
+    // Vault info is updated
+    call = await chain.callReadOnlyFn("arkadiko-vault-data-v1-1", "get-vault-by-id", [types.uint(1)], deployer.address);
+    let vault = call.result.expectTuple();
+    vault['stacked-tokens'].expectUint(2000000000);
+    vault['collateral'].expectUint(2000000000);
+  }
+});
+
