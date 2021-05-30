@@ -20,9 +20,6 @@ interface Contract {
 
 const contracts: Contract[] = [
   {
-    name: 'mock-ft-trait'
-  },
-  {
     name: 'vault-trait',
   },
   {
